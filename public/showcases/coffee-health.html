@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coffee &amp; Your Health</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+:root {
+  --accent: #B8621B;
+  --accent-light: #D4883F;
+  --accent-glow: rgba(184,98,27,0.15);
+  --green: #10B981;
+  --blue: #1462D2;
+  --amber: #F59E0B;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Jost',sans-serif}
+
+/* === Themes === */
+body{display:flex;flex-direction:column}
+
+/* Light (default) */
+[data-theme="light"] body{background:#FAFAF8;color:#1A1A1A}
+[data-theme="light"]{
+  --bg:#FAFAF8;--bg-warm:#F5F0EB;--bg-deep:#EDE5DA;
+  --text:#1A1A1A;--text-muted:#6B6358;--text-soft:#9A9083;
+  --card-bg:#FFFFFF;--card-bd:rgba(139,109,71,0.1);--card-sh:0 2px 16px rgba(0,0,0,0.04);
+  --grid-c:rgba(139,109,71,0.03);--orb-op:0.07;
+  --nav-bg:rgba(255,255,255,0.92);--nav-bd:rgba(139,109,71,0.1);
+  --btn-bg:rgba(139,109,71,0.04);--btn-bd:rgba(139,109,71,0.15);
+  --counter:rgba(26,26,26,0.35);--track:rgba(139,109,71,0.08);
+  --quote-bg:#F5F0EB;
+}
+/* Night */
+[data-theme="night"] body{background:#1A1510;color:#F5F0EB}
+[data-theme="night"]{
+  --bg:#1A1510;--bg-warm:#241E16;--bg-deep:#2E2519;
+  --text:#F5F0EB;--text-muted:rgba(245,240,235,0.6);--text-soft:rgba(245,240,235,0.35);
+  --card-bg:rgba(255,255,255,0.04);--card-bd:rgba(255,255,255,0.08);--card-sh:none;
+  --grid-c:rgba(255,255,255,0.02);--orb-op:0.12;
+  --nav-bg:rgba(26,21,16,0.9);--nav-bd:rgba(255,255,255,0.06);
+  --btn-bg:rgba(255,255,255,0.04);--btn-bd:rgba(255,255,255,0.12);
+  --counter:rgba(245,240,235,0.4);--track:rgba(255,255,255,0.08);
+  --quote-bg:rgba(184,98,27,0.08);
+}
+
+.deck{flex:1;position:relative;overflow:hidden}
+.slide{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity 0.6s cubic-bezier(.4,0,.2,1),transform 0.6s cubic-bezier(.4,0,.2,1);
+  transform:translateY(30px);overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:auto;transform:translateY(0)}
+
+/* Backgrounds */
+.bg-layer{position:absolute;inset:0;pointer-events:none}
+.grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;opacity:var(--orb-op)}
+
+/* Reveals */
+.rv{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease}
+.active .rv{opacity:1;transform:translateY(0)}
+.active .rv.d1{transition-delay:.1s}.active .rv.d2{transition-delay:.2s}
+.active .rv.d3{transition-delay:.3s}.active .rv.d4{transition-delay:.4s}
+.active .rv.d5{transition-delay:.5s}.active .rv.d6{transition-delay:.6s}
+
+.rvl{opacity:0;transform:translateX(-20px);transition:opacity 0.5s ease,transform 0.5s ease}
+.active .rvl{opacity:1;transform:translateX(0)}
+.active .rvl.d1{transition-delay:.1s}.active .rvl.d2{transition-delay:.2s}
+.active .rvl.d3{transition-delay:.3s}
+
+.rvs{opacity:0;transform:scale(.85);transition:opacity 0.5s ease,transform 0.5s ease}
+.active .rvs{opacity:1;transform:scale(1)}
+.active .rvs.d1{transition-delay:.1s}.active .rvs.d2{transition-delay:.2s}
+
+/* === SLIDE 0: Title === */
+.s0-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;padding:60px 48px;position:relative;
+  background:radial-gradient(ellipse at 30% 60%,var(--bg-warm) 0%,var(--bg) 70%);
+}
+.s0-kicker{font-size:12px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.s0-h1{font-size:clamp(36px,4.5vw,56px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;color:var(--text);max-width:700px;margin-bottom:20px}
+.s0-sub{font-size:clamp(15px,1.6vw,19px);font-weight:300;line-height:1.6;color:var(--text-muted);max-width:520px}
+.s0-cup{position:absolute;bottom:40px;right:60px;font-size:80px;opacity:0.06}
+
+/* === SLIDE 1: Hero Number === */
+.s1-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;padding:48px;
+  background:radial-gradient(ellipse at 50% 40%,var(--bg-warm) 0%,var(--bg) 70%);
+}
+.s1-number{font-size:clamp(100px,15vw,160px);font-weight:800;color:var(--accent);line-height:0.9;letter-spacing:-4px}
+.s1-label{font-size:clamp(18px,2vw,24px);font-weight:500;color:var(--text);margin-top:8px;letter-spacing:-0.5px}
+.s1-sub{font-size:14px;color:var(--text-muted);margin-top:12px;max-width:400px;line-height:1.5}
+.s1-row{display:flex;gap:48px;margin-top:40px}
+.s1-mini{text-align:center}
+.s1-mini-val{font-size:28px;font-weight:700;line-height:1}
+.s1-mini-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-soft);margin-top:6px}
+
+/* === SLIDE 2: Split — Mechanisms === */
+.s2-wrap{
+  display:grid;grid-template-columns:1fr 1fr;height:100%;
+  background:var(--bg);
+}
+.s2-left{display:flex;flex-direction:column;justify-content:center;padding:48px 40px 48px 56px}
+.s2-right{display:flex;align-items:center;justify-content:center;padding:48px;background:var(--bg-warm);position:relative;overflow:hidden}
+.s2-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.s2-h2{font-size:clamp(24px,3vw,34px);font-weight:700;color:var(--text);line-height:1.15;letter-spacing:-0.5px;margin-bottom:16px}
+.s2-body{font-size:15px;line-height:1.7;color:var(--text-muted);max-width:400px}
+.s2-icons{display:flex;flex-direction:column;gap:28px}
+.s2-icon-row{display:flex;align-items:center;gap:20px}
+.s2-icon-circle{
+  width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;
+}
+.s2-icon-text h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px}
+.s2-icon-text p{font-size:13px;color:var(--text-muted);line-height:1.4}
+
+/* === SLIDE 3: Dose-Response Bars === */
+.s3-wrap{
+  display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px 56px;
+  background:radial-gradient(ellipse at 70% 30%,var(--bg-warm) 0%,var(--bg) 70%);
+}
+.s3-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.s3-h2{font-size:clamp(22px,2.8vw,32px);font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:32px}
+.s3-bars{display:flex;flex-direction:column;gap:20px;max-width:700px}
+.s3-bar-row{display:flex;align-items:center;gap:16px}
+.s3-bar-label{font-size:14px;font-weight:600;color:var(--text);min-width:80px;text-align:right}
+.s3-bar-track{flex:1;height:36px;background:var(--card-bg);border:1px solid var(--card-bd);border-radius:8px;overflow:hidden;position:relative}
+.s3-bar-fill{height:100%;border-radius:7px;transition:width 1s ease;display:flex;align-items:center;padding-left:12px;font-size:14px;font-weight:700;color:#fff}
+.s3-bar-best{border:2px solid var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.s3-bar-note{font-size:12px;color:var(--text-soft);min-width:60px;font-weight:500}
+
+/* === SLIDE 4: Quote === */
+.s4-wrap{
+  display:flex;align-items:center;justify-content:center;height:100%;
+  padding:48px;text-align:center;position:relative;
+  background:var(--quote-bg);
+}
+.s4-mark{
+  position:absolute;top:60px;left:50%;transform:translateX(-50%);
+  font-size:200px;font-weight:900;color:var(--accent);opacity:0.06;line-height:1;
+}
+.s4-inner{max-width:560px;position:relative;z-index:1}
+.s4-line{width:48px;height:3px;border-radius:2px;background:var(--accent);margin:0 auto 28px}
+.s4-quote{font-size:clamp(18px,2.2vw,24px);font-style:italic;line-height:1.6;color:var(--text);font-weight:400}
+.s4-attr{font-size:14px;color:var(--text-muted);margin-top:24px;font-weight:500}
+
+/* === SLIDE 5: Action Cards === */
+.s5-wrap{
+  display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px 56px;
+  background:radial-gradient(ellipse at 20% 70%,var(--bg-warm) 0%,var(--bg) 70%);
+}
+.s5-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.s5-h2{font-size:clamp(22px,2.8vw,32px);font-weight:700;color:var(--text);letter-spacing:-0.5px;margin-bottom:32px}
+.s5-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.s5-card{
+  background:var(--card-bg);border:1px solid var(--card-bd);border-radius:16px;
+  padding:28px 24px;text-align:center;box-shadow:var(--card-sh);
+  transition:all 0.3s ease;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+}
+.s5-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-light));
+}
+.s5-card:hover{transform:translateY(-4px);border-color:var(--accent)}
+.s5-card-num{
+  width:40px;height:40px;border-radius:50%;background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;
+  margin:0 auto 16px;
+}
+.s5-card h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3;min-height:40px;display:flex;align-items:center}
+.s5-card p{font-size:13px;color:var(--text-muted);line-height:1.5;flex:1}
+
+/* === SLIDE 6: Closing === */
+.s6-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;padding:60px 48px;
+  background:radial-gradient(ellipse at 50% 50%,var(--bg-warm) 0%,var(--bg) 70%);
+}
+.s6-line{width:40px;height:3px;border-radius:2px;background:var(--accent);margin-bottom:28px}
+.s6-h1{font-size:clamp(32px,4vw,48px);font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-1px;margin-bottom:16px;max-width:600px}
+.s6-sub{font-size:clamp(15px,1.6vw,19px);font-weight:300;color:var(--text-muted);max-width:480px;line-height:1.5}
+
+/* === Footer === */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;flex-direction:column;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--nav-bd);
+}
+.progress-line{width:100%;height:2px;background:transparent}
+.progress-fill{height:100%;background:var(--accent);transition:width .5s ease;border-radius:0 1px 1px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:38px}
+.nav-title{font-size:11px;font-weight:600;color:var(--text-soft);letter-spacing:0.5px;min-width:140px}
+.nav-center{display:flex;align-items:center;gap:12px}
+.nav-arrow{
+  border:none;background:none;color:var(--text-muted);
+  font-size:20px;padding:2px 8px;cursor:pointer;border-radius:6px;
+  transition:all .2s ease;font-family:'Jost',sans-serif;line-height:1;
+}
+.nav-arrow:hover{background:var(--btn-bg);color:var(--text)}
+.nav-arrow:disabled{opacity:.2;cursor:default}
+.nav-arrow:disabled:hover{background:none;color:var(--text-muted)}
+.slide-counter{font-size:12px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;min-width:40px;text-align:center}
+.nav-utils{display:flex;align-items:center;gap:2px;min-width:140px;justify-content:flex-end}
+.nav-util{
+  width:30px;height:30px;border-radius:8px;border:none;
+  background:transparent;color:var(--text-soft);font-size:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;font-family:'Jost',sans-serif;
+}
+.nav-util:hover{background:var(--btn-bg);color:var(--text)}
+
+@media(max-width:768px){
+  .s2-wrap{grid-template-columns:1fr}
+  .s2-right{display:none}
+  .s5-cards{grid-template-columns:1fr}
+  .s1-row{flex-direction:column;gap:20px}
+  .nav-inner{padding:0 16px;height:36px}
+  .nav-title{display:none}
+  .nav-utils{min-width:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 0: Title -->
+<div class="slide active" data-slide="0">
+  <div class="s0-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:400px;height:400px;top:-120px;right:-80px"></div>
+    <div class="orb" style="background:#D4883F;width:250px;height:250px;bottom:-60px;left:-40px"></div>
+    <div class="s0-kicker rv">Meta-Analysis &middot; 1.2 Million Participants</div>
+    <h1 class="s0-h1 rv d1">3&ndash;4 Cups of Coffee Daily Cuts All-Cause Mortality by 12%</h1>
+    <p class="s0-sub rv d2">The most consumed psychoactive substance on Earth is also one of the most studied &mdash; and the evidence is overwhelmingly positive.</p>
+    <div class="s0-cup rv d3">&#9749;</div>
+  </div>
+</div>
+
+<!-- SLIDE 1: Hero Number -->
+<div class="slide" data-slide="1">
+  <div class="s1-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+    <div class="s1-number rvs">12%</div>
+    <div class="s1-label rv d1">Lower All-Cause Mortality</div>
+    <p class="s1-sub rv d2">Pooled analysis of 40 prospective studies and 3.8 million person-years of follow-up data.</p>
+    <div class="s1-row rv d3">
+      <div class="s1-mini">
+        <div class="s1-mini-val" style="color:var(--green)">20%</div>
+        <div class="s1-mini-lbl">Less Type 2 Diabetes</div>
+      </div>
+      <div class="s1-mini">
+        <div class="s1-mini-val" style="color:var(--blue)">25%</div>
+        <div class="s1-mini-lbl">Lower Depression</div>
+      </div>
+      <div class="s1-mini">
+        <div class="s1-mini-val" style="color:var(--amber)">65%</div>
+        <div class="s1-mini-lbl">Less Alzheimer&rsquo;s Risk</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Split — Mechanisms -->
+<div class="slide" data-slide="2">
+  <div class="s2-wrap">
+    <div class="s2-left">
+      <div class="s2-kicker rvl">The Mechanisms</div>
+      <h2 class="s2-h2 rvl d1">Coffee protects three systems simultaneously</h2>
+      <p class="s2-body rvl d2">Over 1,000 bioactive compounds work together &mdash; not just caffeine. The real heroes are chlorogenic acids, polyphenols, and diterpenes.</p>
+    </div>
+    <div class="s2-right">
+      <div class="grid" style="opacity:0.5"></div>
+      <div class="s2-icons">
+        <div class="s2-icon-row rv d1">
+          <div class="s2-icon-circle" style="background:rgba(16,185,129,0.12);color:var(--green)">&#9829;</div>
+          <div class="s2-icon-text">
+            <h3>Liver</h3>
+            <p>Chlorogenic acids reduce inflammation. 4+ cups cuts cirrhosis risk by 80%.</p>
+          </div>
+        </div>
+        <div class="s2-icon-row rv d2">
+          <div class="s2-icon-circle" style="background:rgba(20,98,210,0.12);color:var(--blue)">&#9733;</div>
+          <div class="s2-icon-text">
+            <h3>Brain</h3>
+            <p>Caffeine blocks adenosine receptors, boosting dopamine and focus for 4&ndash;6 hours.</p>
+          </div>
+        </div>
+        <div class="s2-icon-row rv d3">
+          <div class="s2-icon-circle" style="background:rgba(245,158,11,0.12);color:var(--amber)">&#9878;</div>
+          <div class="s2-icon-text">
+            <h3>Metabolism</h3>
+            <p>Polyphenols improve insulin sensitivity and reduce oxidative stress in every organ.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Dose-Response Bars -->
+<div class="slide" data-slide="3">
+  <div class="s3-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:350px;height:350px;top:-100px;right:-60px"></div>
+    <div class="s3-kicker rv">The Nuance</div>
+    <h2 class="s3-h2 rv d1">The dose matters &mdash; and most people accidentally get it right</h2>
+    <div class="s3-bars">
+      <div class="s3-bar-row rv d2">
+        <div class="s3-bar-label">1&ndash;2 cups</div>
+        <div class="s3-bar-track">
+          <div class="s3-bar-fill" style="width:53%;background:var(--accent-light)" data-w="53%">8%</div>
+        </div>
+        <div class="s3-bar-note">8% lower</div>
+      </div>
+      <div class="s3-bar-row rv d3">
+        <div class="s3-bar-label">3&ndash;4 cups</div>
+        <div class="s3-bar-track s3-bar-best">
+          <div class="s3-bar-fill" style="width:80%;background:var(--accent)" data-w="80%">12%</div>
+        </div>
+        <div class="s3-bar-note" style="color:var(--accent);font-weight:700">Sweet spot</div>
+      </div>
+      <div class="s3-bar-row rv d4">
+        <div class="s3-bar-label">5&ndash;6 cups</div>
+        <div class="s3-bar-track">
+          <div class="s3-bar-fill" style="width:60%;background:var(--accent-light)" data-w="60%">9%</div>
+        </div>
+        <div class="s3-bar-note">9% lower</div>
+      </div>
+      <div class="s3-bar-row rv d5">
+        <div class="s3-bar-label">7+ cups</div>
+        <div class="s3-bar-track">
+          <div class="s3-bar-fill" style="width:33%;background:var(--text-soft)" data-w="33%">5%</div>
+        </div>
+        <div class="s3-bar-note">Plateaus</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Quote -->
+<div class="slide" data-slide="4">
+  <div class="s4-wrap">
+    <div class="grid"></div>
+    <div class="s4-mark rv">&ldquo;</div>
+    <div class="s4-inner">
+      <div class="s4-line rv"></div>
+      <p class="s4-quote rv d1">Coffee is the single largest source of antioxidants in the Western diet &mdash; more than fruits and vegetables combined.</p>
+      <p class="s4-attr rv d2">&mdash; Dr. Joe Vinson, University of Scranton, Journal of Agricultural and Food Chemistry</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: Action Cards -->
+<div class="slide" data-slide="5">
+  <div class="s5-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:300px;height:300px;bottom:-80px;left:-60px"></div>
+    <div class="s5-kicker rv">Now What</div>
+    <h2 class="s5-h2 rv d1">Three adjustments that maximize your daily benefit</h2>
+    <div class="s5-cards">
+      <div class="s5-card rv d2">
+        <div class="s5-card-num">1</div>
+        <h3>Last cup before 2pm</h3>
+        <p>Protect your sleep architecture without losing the dose. Caffeine&rsquo;s half-life is 5&ndash;6 hours.</p>
+      </div>
+      <div class="s5-card rv d3">
+        <div class="s5-card-num">2</div>
+        <h3>Try one week black</h3>
+        <p>Milk reduces polyphenol absorption by 25%. The antioxidant difference is measurable in blood panels.</p>
+      </div>
+      <div class="s5-card rv d4">
+        <div class="s5-card-num">3</div>
+        <h3>Choose medium roast</h3>
+        <p>Lighter roasts retain more chlorogenic acid than dark roasts. Medium is the sweet spot for both flavor and health.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Closing -->
+<div class="slide" data-slide="6">
+  <div class="s6-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+    <div class="s6-line rv"></div>
+    <h1 class="s6-h1 rv d1">Your morning coffee isn&rsquo;t a vice.</h1>
+    <p class="s6-sub rv d2">It&rsquo;s one of the most evidence-backed health habits you already have.</p>
+  </div>
+</div>
+
+</div>
+
+<nav class="nav-bar">
+  <div class="progress-line">
+    <div class="progress-fill" id="progressFill" style="width:14.3%"></div>
+  </div>
+  <div class="nav-inner">
+    <div class="nav-title">Coffee &amp; Your Health</div>
+    <div class="nav-center">
+      <button class="nav-arrow" id="prevBtn" disabled title="Previous"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></svg></button>
+      <span class="slide-counter" id="slideCounter">1 / 7</span>
+      <button class="nav-arrow" id="nextBtn" title="Next"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></button>
+    </div>
+    <div class="nav-utils">
+      <button class="nav-util" id="exportBtn" title="Export PPTX"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"/></svg></button>
+      <button class="nav-util" id="themeToggle" title="Toggle theme"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.36A88,88,0,0,1,65.64,67.09a89,89,0,0,1,31.76-26A106.18,106.18,0,0,0,107,80a106.14,106.14,0,0,0,69,69,89,89,0,0,1-26,31.76,88.18,88.18,0,0,1,39.93,9.6Z"/></svg></button>
+      <button class="nav-util" id="fsBtn" title="Fullscreen"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48V96a8,8,0,0,1-16,0V56H160a8,8,0,0,1,0-16h48A8,8,0,0,1,216,48ZM96,200H56V160a8,8,0,0,0-16,0v48a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16Zm112-48a8,8,0,0,0-8,8v40H160a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V160A8,8,0,0,0,208,152ZM96,48H48A8,8,0,0,0,40,56V96a8,8,0,0,0,16,0V64H96a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function(){
+  var slides=document.querySelectorAll('.slide'),total=7,current=0;
+  var prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn');
+  var counter=document.getElementById('slideCounter'),progress=document.getElementById('progressFill');
+
+  function goTo(i){
+    if(i<0||i>=total||i===current)return;
+    slides[current].classList.remove('active');current=i;
+    slides[current].classList.add('active');update();
+    window.location.hash='slide-'+(current+1);
+  }
+  function update(){
+    counter.textContent=(current+1)+' / '+total;
+    progress.style.width=((current+1)/total*100)+'%';
+    prevBtn.disabled=current===0;nextBtn.disabled=current===total-1;
+  }
+
+  prevBtn.addEventListener('click',function(){goTo(current-1)});
+  nextBtn.addEventListener('click',function(){goTo(current+1)});
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown'){e.preventDefault();goTo(current+1)}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();goTo(current-1)}
+    if(e.key==='Home'){e.preventDefault();goTo(0)}
+    if(e.key==='End'){e.preventDefault();goTo(total-1)}
+    if(e.key==='f'||e.key==='F')toggleFs();
+    if(e.key>='1'&&e.key<='9'){var n=parseInt(e.key)-1;if(n<total)goTo(n)}
+  });
+
+  var touchX=0;
+  document.addEventListener('touchstart',function(e){touchX=e.touches[0].clientX});
+  document.addEventListener('touchend',function(e){
+    var d=touchX-e.changedTouches[0].clientX;
+    if(Math.abs(d)>60){d>0?goTo(current+1):goTo(current-1)}
+  });
+
+  document.getElementById('deck').addEventListener('click',function(e){
+    if(e.target.closest('.nav-bar')||e.target.closest('button'))return;
+    var r=this.getBoundingClientRect(),x=e.clientX-r.left;
+    x<r.width*0.15?goTo(current-1):goTo(current+1);
+  });
+
+  var themeBtn=document.getElementById('themeToggle');
+  var moonSVG='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.36A88,88,0,0,1,65.64,67.09a89,89,0,0,1,31.76-26A106.18,106.18,0,0,0,107,80a106.14,106.14,0,0,0,69,69,89,89,0,0,1-26,31.76,88.18,88.18,0,0,1,39.93,9.6Z"/></svg>';
+  var sunSVG='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>';
+  themeBtn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')||'light';
+    var next=cur==='light'?'night':'light';
+    document.documentElement.setAttribute('data-theme',next);
+    themeBtn.innerHTML=next==='light'?moonSVG:sunSVG;
+  });
+
+  function toggleFs(){
+    if(document.fullscreenElement)document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }
+  document.getElementById('fsBtn').addEventListener('click',toggleFs);
+
+  // PPTX Export
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    if(typeof PptxGenJS==='undefined'){alert('PptxGenJS loading...');return}
+    var isDark=(document.documentElement.getAttribute('data-theme')||'light')==='night';
+    var T=isDark?{bg:'1A1510',card:'241E16',text:'F5F0EB',muted:'9A9083',accent:'B8621B'}
+                :{bg:'FAFAF8',card:'FFFFFF',text:'1A1A1A',muted:'6B6358',accent:'B8621B'};
+    var p=new PptxGenJS();p.layout='LAYOUT_16x9';p.title='Coffee & Your Health';
+    var F='Calibri',M=0.7,CW=8.6;
+
+    // Slide 0: Title
+    var s0=p.addSlide();s0.background={color:T.bg};
+    s0.addText('META-ANALYSIS \u00B7 1.2 MILLION PARTICIPANTS',{x:M,y:1.5,w:CW,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:4,align:'center'});
+    s0.addText('3\u20134 Cups of Coffee Daily Cuts\nAll-Cause Mortality by 12%',{x:M,y:2.0,w:CW,h:1,fontFace:F,fontSize:38,bold:true,color:T.text,align:'center'});
+    s0.addText('The most consumed psychoactive substance on Earth is also one of the most studied.',{x:1.5,y:3.2,w:7,h:.5,fontFace:F,fontSize:16,color:T.muted,align:'center'});
+
+    // Slide 1: Hero Number
+    var s1=p.addSlide();s1.background={color:T.bg};
+    s1.addText('12%',{x:M,y:1.0,w:CW,h:1.8,fontFace:F,fontSize:96,bold:true,color:T.accent,align:'center'});
+    s1.addText('Lower All-Cause Mortality',{x:M,y:2.8,w:CW,h:.4,fontFace:F,fontSize:22,color:T.text,align:'center'});
+    s1.addText('20%',{x:1.5,y:3.8,w:2,h:.5,fontFace:F,fontSize:28,bold:true,color:'10B981',align:'center'});
+    s1.addText('Less Diabetes',{x:1.5,y:4.2,w:2,h:.3,fontFace:F,fontSize:10,color:T.muted,align:'center',charSpacing:1});
+    s1.addText('25%',{x:4,y:3.8,w:2,h:.5,fontFace:F,fontSize:28,bold:true,color:'1462D2',align:'center'});
+    s1.addText('Lower Depression',{x:4,y:4.2,w:2,h:.3,fontFace:F,fontSize:10,color:T.muted,align:'center',charSpacing:1});
+    s1.addText('65%',{x:6.5,y:3.8,w:2,h:.5,fontFace:F,fontSize:28,bold:true,color:'F59E0B',align:'center'});
+    s1.addText("Less Alzheimer's",{x:6.5,y:4.2,w:2,h:.3,fontFace:F,fontSize:10,color:T.muted,align:'center',charSpacing:1});
+
+    // Slide 2: Split
+    var s2=p.addSlide();s2.background={color:T.bg};
+    s2.addText('THE MECHANISMS',{x:M,y:.5,w:4,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:3});
+    s2.addText('Coffee protects three systems simultaneously',{x:M,y:1,w:4,h:.8,fontFace:F,fontSize:26,bold:true,color:T.text});
+    s2.addText('Over 1,000 bioactive compounds work together \u2014 not just caffeine.',{x:M,y:2,w:4,h:.5,fontFace:F,fontSize:14,color:T.muted,lineSpacingMultiple:1.4});
+    var organs=['Liver: 80% less cirrhosis risk','Brain: 4\u20136 hour focus boost','Metabolism: Reduced oxidative stress'];
+    organs.forEach(function(o,i){
+      s2.addShape(p.shapes.ROUNDED_RECTANGLE,{x:5.5,y:1+i*1.2,w:4,h:.9,fill:{color:T.card},rectRadius:.08,shadow:{type:'outer',blur:4,offset:1,color:'000000',opacity:.06}});
+      s2.addText(o,{x:5.7,y:1+i*1.2,w:3.6,h:.9,fontFace:F,fontSize:14,color:T.text,valign:'middle'});
+    });
+
+    // Slide 3: Dose bars
+    var s3=p.addSlide();s3.background={color:T.bg};
+    s3.addText('THE NUANCE',{x:M,y:.5,w:CW,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:3});
+    s3.addText('The dose matters \u2014 and most people get it right',{x:M,y:1,w:CW,h:.5,fontFace:F,fontSize:26,bold:true,color:T.text});
+    var doses=[{l:'1\u20132 cups',w:3.5,v:'8%'},{l:'3\u20134 cups',w:5.5,v:'12%'},{l:'5\u20136 cups',w:4,v:'9%'},{l:'7+ cups',w:2.2,v:'5%'}];
+    doses.forEach(function(d,i){
+      var by=2+i*.9;
+      s3.addText(d.l,{x:M,y:by,w:1.3,h:.5,fontFace:F,fontSize:13,color:T.text,align:'right',bold:true});
+      s3.addShape(p.shapes.ROUNDED_RECTANGLE,{x:2.2,y:by+.05,w:d.w,h:.4,fill:{color:i===1?T.accent:'D4883F'},rectRadius:.04});
+      s3.addText(d.v,{x:2.2+d.w+.2,y:by,w:1,h:.5,fontFace:F,fontSize:13,color:i===1?T.accent:T.muted,bold:i===1});
+    });
+
+    // Slide 4: Quote
+    var s4=p.addSlide();s4.background={color:T.bg};
+    s4.addShape(p.shapes.LINE,{x:4.5,y:1.8,w:1,h:0,line:{color:T.accent,width:3}});
+    s4.addText('\u201CCoffee is the single largest source of antioxidants in the Western diet \u2014 more than fruits and vegetables combined.\u201D',{x:1.5,y:2.2,w:7,h:1.2,fontFace:F,fontSize:22,italic:true,color:T.text,align:'center',lineSpacingMultiple:1.5});
+    s4.addText('\u2014 Dr. Joe Vinson, University of Scranton',{x:1.5,y:3.6,w:7,h:.4,fontFace:F,fontSize:14,color:T.muted,align:'center'});
+
+    // Slide 5: Actions
+    var s5=p.addSlide();s5.background={color:T.bg};
+    s5.addText('NOW WHAT',{x:M,y:.5,w:CW,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:3});
+    s5.addText('Three adjustments that maximize your daily benefit',{x:M,y:1,w:CW,h:.5,fontFace:F,fontSize:26,bold:true,color:T.text});
+    var actions=[{n:'1',t:'Last cup before 2pm',d:'Protect sleep without losing the dose'},{n:'2',t:'Try one week black',d:'25% more polyphenol absorption'},{n:'3',t:'Choose medium roast',d:'More chlorogenic acid than dark roasts'}];
+    actions.forEach(function(a,i){
+      var ax=M+i*3;
+      s5.addShape(p.shapes.ROUNDED_RECTANGLE,{x:ax,y:2,w:2.6,h:2,fill:{color:T.card},rectRadius:.12,shadow:{type:'outer',blur:6,offset:2,color:'000000',opacity:.08}});
+      s5.addShape(p.shapes.OVAL,{x:ax+.9,y:2.2,w:.8,h:.8,fill:{color:T.accent}});
+      s5.addText(a.n,{x:ax+.9,y:2.2,w:.8,h:.8,fontFace:F,fontSize:20,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+      s5.addText(a.t,{x:ax+.2,y:3.1,w:2.2,h:.4,fontFace:F,fontSize:14,bold:true,color:T.text,align:'center'});
+      s5.addText(a.d,{x:ax+.2,y:3.5,w:2.2,h:.4,fontFace:F,fontSize:11,color:T.muted,align:'center',lineSpacingMultiple:1.3});
+    });
+
+    // Slide 6: Closing
+    var s6=p.addSlide();s6.background={color:T.bg};
+    s6.addShape(p.shapes.LINE,{x:4.5,y:2,w:1,h:0,line:{color:T.accent,width:3}});
+    s6.addText("Your morning coffee isn't a vice.",{x:M,y:2.4,w:CW,h:.8,fontFace:F,fontSize:38,bold:true,color:T.text,align:'center'});
+    s6.addText("It's one of the most evidence-backed health habits you already have.",{x:1.5,y:3.3,w:7,h:.5,fontFace:F,fontSize:16,color:T.muted,align:'center'});
+
+    var tm=isDark?'Night':'Light';
+    p.writeFile({fileName:'Coffee-Health-'+tm+'.pptx'});
+  });
+
+  // Hash nav
+  var hash=window.location.hash;
+  if(hash&&hash.startsWith('#slide-')){
+    var n=parseInt(hash.replace('#slide-',''))-1;
+    if(n>0&&n<total){slides[0].classList.remove('active');current=n;slides[current].classList.add('active')}
+  }
+  update();
+})();
+</script>
+</body>
+</html>

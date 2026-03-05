@@ -1,0 +1,241 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { CheckSquare, Square, Rocket, Package } from '@phosphor-icons/react';
+import { ARCHETYPES } from '@/lib/archetypes';
+import type { SkillData } from '@/lib/skills';
+
+interface Props {
+  skills: SkillData[];
+}
+
+export function GenerateClient({ skills }: Props) {
+  const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
+  const [description, setDescription] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('archetype');
+    if (slug) {
+      const found = ARCHETYPES.find((a) => a.slug === slug);
+      if (found) {
+        setSelectedArchetype(found.slug);
+        setSelectedSkills(new Set(found.skills));
+      }
+    }
+  }, []);
+
+  const handleSelectArchetype = (slug: string) => {
+    const arch = ARCHETYPES.find((a) => a.slug === slug);
+    if (!arch) return;
+    if (selectedArchetype === slug) {
+      setSelectedArchetype(null);
+      setSelectedSkills(new Set());
+    } else {
+      setSelectedArchetype(slug);
+      setSelectedSkills(new Set(arch.skills));
+    }
+  };
+
+  const toggleSkill = (slug: string) => {
+    setSelectedSkills((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug);
+      else next.add(slug);
+      return next;
+    });
+  };
+
+  const handleGenerate = async () => {
+    if (selectedSkills.size === 0) return;
+    setIsGenerating(true);
+    try {
+      const { generateProjectZip } = await import('@/lib/generate-project-zip');
+      const archetype = ARCHETYPES.find((a) => a.slug === selectedArchetype);
+      const selectedSkillData = skills.filter((s) => selectedSkills.has(s.slug));
+
+      const blob = await generateProjectZip({
+        archetypeName: archetype?.title || 'Custom Project',
+        archetypeDescription: archetype?.description || 'A custom project with selected skills.',
+        selectedSkills: selectedSkillData,
+        userDescription: description,
+        includeTemplate: selectedArchetype === 'presentation',
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedArchetype || 'project'}-skills.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  return (
+    <div style={{ maxWidth: 800 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-heading)', marginBottom: 8 }}>
+        Generate Project
+      </h1>
+      <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 32 }}>
+        Select an archetype, choose skills, describe your idea — get a project ready for Claude Code.
+      </p>
+
+      {/* Step 1: Archetype */}
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          1. Select Archetype
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+          {ARCHETYPES.map((a) => {
+            const isSelected = selectedArchetype === a.slug;
+            return (
+              <button
+                key={a.slug}
+                onClick={() => handleSelectArchetype(a.slug)}
+                style={{
+                  padding: 20,
+                  borderRadius: 8,
+                  border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  background: isSelected ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  fontFamily: 'inherit',
+                }}
+              >
+                <span style={{ fontSize: 28 }}>{a.icon}</span>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-heading)', margin: '0 0 4px' }}>{a.title}</p>
+                  <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.4 }}>{a.description}</p>
+                </div>
+              </button>
+            );
+          })}
+          <button
+            onClick={() => { setSelectedArchetype(null); setSelectedSkills(new Set()); }}
+            style={{
+              padding: 20,
+              borderRadius: 8,
+              border: selectedArchetype === null ? '2px solid var(--color-primary)' : '1px dashed var(--color-border)',
+              background: selectedArchetype === null ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              cursor: 'pointer',
+              textAlign: 'left',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              fontFamily: 'inherit',
+            }}
+          >
+            <Package size={28} color="var(--color-text-muted)" />
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-heading)', margin: '0 0 4px' }}>Custom</p>
+              <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: 0 }}>Pick your own skills</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Step 2: Skills */}
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          2. Choose Skills
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {skills.map((s) => {
+            const checked = selectedSkills.has(s.slug);
+            const Icon = checked ? CheckSquare : Square;
+            return (
+              <button
+                key={s.slug}
+                onClick={() => toggleSkill(s.slug)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: '12px 16px',
+                  borderRadius: 6,
+                  border: checked ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
+                  background: checked ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'inherit',
+                  width: '100%',
+                }}
+              >
+                <Icon size={20} weight={checked ? 'fill' : 'regular'} color={checked ? 'var(--color-primary)' : 'var(--color-text-muted)'} />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-heading)' }}>{s.title}</span>
+                  {s.isOfficial && <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 3, background: 'var(--color-success-muted)', color: 'var(--color-success)', fontWeight: 600, marginLeft: 8 }}>Official</span>}
+                  <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '2px 0 0', lineHeight: 1.3 }}>{s.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Step 3: Description */}
+      <div style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          3. Describe Your Idea
+        </h2>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Describe what you want to build. Claude Code will use this along with the selected skills to guide development..."
+          style={{
+            width: '100%',
+            minHeight: 120,
+            padding: 16,
+            borderRadius: 8,
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-body)',
+            fontFamily: 'inherit',
+            fontSize: 14,
+            lineHeight: 1.5,
+            resize: 'vertical',
+            outline: 'none',
+          }}
+        />
+      </div>
+
+      {/* Generate */}
+      <button
+        onClick={handleGenerate}
+        disabled={selectedSkills.size === 0 || isGenerating}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '12px 24px',
+          borderRadius: 6,
+          border: 'none',
+          background: selectedSkills.size === 0 ? 'var(--color-border)' : 'var(--color-primary)',
+          color: selectedSkills.size === 0 ? 'var(--color-text-muted)' : '#fff',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: selectedSkills.size === 0 ? 'default' : 'pointer',
+          fontFamily: 'inherit',
+          opacity: isGenerating ? 0.7 : 1,
+        }}
+      >
+        <Rocket size={18} weight="fill" />
+        {isGenerating ? 'Generating...' : 'Generate & Download ZIP'}
+      </button>
+
+      {selectedSkills.size > 0 && (
+        <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 12 }}>
+          Your ZIP will include: CLAUDE.md + {selectedSkills.size} skill{selectedSkills.size > 1 ? 's' : ''}
+          {selectedArchetype === 'presentation' ? ' + presentation template' : ''}
+        </p>
+      )}
+    </div>
+  );
+}

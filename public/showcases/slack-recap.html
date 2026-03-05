@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Introducing Slack Recap</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+:root {
+  --accent: #611F69;
+  --accent-light: #8B4F93;
+  --accent-glow: rgba(97,31,105,0.15);
+  --teal: #2BAC76;
+  --sky: #1264A3;
+  --coral: #E01E5A;
+  --gold: #ECB22E;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Jost',sans-serif}
+
+body{display:flex;flex-direction:column}
+
+/* Light (default) */
+[data-theme="light"] body{background:#FFFFFF;color:#1D1C1D}
+[data-theme="light"]{
+  --bg:#FFFFFF;--bg-alt:#F8F8F8;--bg-purple:#F9F0FA;
+  --text:#1D1C1D;--text-muted:#616061;--text-soft:#ABABAD;
+  --card-bg:#FFFFFF;--card-bd:rgba(29,28,29,0.08);--card-sh:0 1px 8px rgba(0,0,0,0.06);
+  --grid-c:rgba(97,31,105,0.02);--orb-op:0.06;
+  --nav-bg:rgba(255,255,255,0.95);--nav-bd:rgba(29,28,29,0.1);
+  --btn-bg:rgba(29,28,29,0.04);--btn-bd:rgba(29,28,29,0.13);
+  --counter:rgba(29,28,29,0.4);--track:rgba(29,28,29,0.08);
+}
+/* Night */
+[data-theme="night"] body{background:#1A1D21;color:#D1D2D3}
+[data-theme="night"]{
+  --bg:#1A1D21;--bg-alt:#222529;--bg-purple:rgba(97,31,105,0.12);
+  --text:#D1D2D3;--text-muted:#ABABAD;--text-soft:#616061;
+  --card-bg:rgba(255,255,255,0.04);--card-bd:rgba(255,255,255,0.08);--card-sh:none;
+  --grid-c:rgba(255,255,255,0.015);--orb-op:0.1;
+  --nav-bg:rgba(26,29,33,0.95);--nav-bd:rgba(255,255,255,0.06);
+  --btn-bg:rgba(255,255,255,0.04);--btn-bd:rgba(255,255,255,0.1);
+  --counter:rgba(209,210,211,0.4);--track:rgba(255,255,255,0.06);
+}
+
+.deck{flex:1;position:relative;overflow:hidden}
+.slide{
+  position:absolute;inset:0;opacity:0;pointer-events:none;
+  transition:opacity 0.6s cubic-bezier(.4,0,.2,1),transform 0.6s cubic-bezier(.4,0,.2,1);
+  transform:translateY(30px);overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:auto;transform:translateY(0)}
+
+.grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid-c) 1px,transparent 1px),linear-gradient(90deg,var(--grid-c) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;opacity:var(--orb-op)}
+
+.rv{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease,transform 0.6s ease}
+.active .rv{opacity:1;transform:translateY(0)}
+.active .rv.d1{transition-delay:.1s}.active .rv.d2{transition-delay:.2s}
+.active .rv.d3{transition-delay:.3s}.active .rv.d4{transition-delay:.4s}
+.active .rv.d5{transition-delay:.5s}.active .rv.d6{transition-delay:.6s}
+.active .rv.d7{transition-delay:.7s}
+
+.rvl{opacity:0;transform:translateX(-20px);transition:opacity 0.5s ease,transform 0.5s ease}
+.active .rvl{opacity:1;transform:translateX(0)}
+.active .rvl.d1{transition-delay:.15s}.active .rvl.d2{transition-delay:.3s}
+.active .rvl.d3{transition-delay:.45s}
+
+.rvs{opacity:0;transform:scale(.85);transition:opacity 0.5s ease,transform 0.5s ease}
+.active .rvs{opacity:1;transform:scale(1)}
+.active .rvs.d1{transition-delay:.1s}
+
+/* === SLIDE 0: Title — asymmetric, bold product launch === */
+.s0-wrap{
+  display:flex;align-items:center;height:100%;padding:60px 64px;
+  background:linear-gradient(135deg,var(--bg) 0%,var(--bg-purple) 100%);
+  position:relative;
+}
+.s0-left{flex:1;max-width:560px}
+.s0-badge{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
+  border-radius:20px;background:var(--accent);color:#fff;
+  font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:24px;
+}
+.s0-h1{font-size:clamp(34px,4.5vw,52px);font-weight:800;line-height:1.05;letter-spacing:-1.5px;color:var(--text);margin-bottom:16px}
+.s0-sub{font-size:clamp(15px,1.5vw,18px);font-weight:300;line-height:1.6;color:var(--text-muted);max-width:420px}
+.s0-deco{
+  position:absolute;right:80px;top:50%;transform:translateY(-50%);
+  width:280px;height:280px;border-radius:28px;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-light) 100%);
+  display:flex;align-items:center;justify-content:center;font-size:100px;
+  box-shadow:0 40px 80px rgba(97,31,105,0.2);
+}
+
+/* === SLIDE 1: Morning Timeline (Problem) === */
+.s1-wrap{
+  display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px 64px;
+  background:var(--bg);position:relative;
+}
+.s1-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--coral);margin-bottom:16px}
+.s1-h2{font-size:clamp(24px,3vw,36px);font-weight:700;color:var(--text);letter-spacing:-.5px;margin-bottom:40px;max-width:600px}
+.s1-timeline{display:flex;align-items:stretch;gap:0;position:relative}
+.s1-slot{
+  flex:1;padding:16px;border-left:2px solid var(--card-bd);position:relative;
+  min-height:100px;
+}
+.s1-slot:first-child{border-left:none}
+.s1-time{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px}
+.s1-activity{font-size:13px;color:var(--text-muted);line-height:1.4}
+.s1-wasted{
+  position:absolute;top:-8px;left:0;right:0;height:4px;border-radius:2px;
+}
+.s1-total{
+  margin-top:24px;padding:16px 20px;border-radius:12px;
+  background:rgba(224,30,90,0.06);border:1px solid rgba(224,30,90,0.15);
+  display:inline-flex;align-items:center;gap:12px;
+}
+.s1-total-num{font-size:28px;font-weight:800;color:var(--coral)}
+.s1-total-lbl{font-size:14px;color:var(--text-muted)}
+
+/* === SLIDE 2: Agitation Stats — big numbers === */
+.s2-wrap{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  height:100%;padding:48px;text-align:center;
+  background:radial-gradient(ellipse at 50% 50%,var(--bg-purple) 0%,var(--bg) 70%);
+}
+.s2-h2{font-size:clamp(20px,2.5vw,28px);font-weight:600;color:var(--text);margin-bottom:48px;max-width:500px}
+.s2-nums{display:flex;gap:64px;align-items:stretch}
+.s2-num-block{text-align:center;display:flex;flex-direction:column;align-items:center}
+.s2-big{font-size:clamp(56px,8vw,80px);font-weight:800;line-height:1;letter-spacing:-2px}
+.s2-unit{font-size:clamp(24px,3vw,32px);font-weight:300;color:var(--text-muted);margin-left:2px}
+.s2-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-soft);margin-top:auto;max-width:140px;padding-top:12px}
+
+/* === SLIDE 3: Section Divider === */
+.s3-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;padding:48px;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-light) 100%);
+}
+.s3-emoji{font-size:64px;margin-bottom:20px}
+.s3-h2{font-size:clamp(36px,4.5vw,56px);font-weight:800;color:#FFFFFF;letter-spacing:-1px}
+.s3-line{width:48px;height:3px;border-radius:2px;background:rgba(255,255,255,0.4);margin-top:20px}
+
+/* === SLIDE 4: Three-Step Flow === */
+.s4-wrap{
+  display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px 56px;
+  background:var(--bg);position:relative;
+}
+.s4-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.s4-h2{font-size:clamp(22px,2.8vw,32px);font-weight:700;color:var(--text);letter-spacing:-.5px;margin-bottom:40px}
+.s4-flow{display:flex;align-items:flex-start;gap:0;position:relative}
+.s4-step{flex:1;text-align:center;position:relative;padding:0 16px}
+.s4-step-num{
+  width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;color:#fff;margin:0 auto 16px;
+}
+.s4-step h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px}
+.s4-step p{font-size:13px;color:var(--text-muted);line-height:1.5;max-width:200px;margin:0 auto}
+.s4-arrow{
+  position:absolute;top:28px;width:60px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-soft);font-size:24px;z-index:2;
+}
+.s4-arrow-1{left:calc(33.3% - 30px)}
+.s4-arrow-2{left:calc(66.6% - 30px)}
+
+/* === SLIDE 5: Before/After Comparison === */
+.s5-wrap{
+  display:grid;grid-template-columns:1fr 1fr;height:100%;
+}
+.s5-before{
+  display:flex;flex-direction:column;justify-content:center;padding:48px 40px;
+  background:var(--bg-alt);
+}
+.s5-after{
+  display:flex;flex-direction:column;justify-content:center;padding:48px 40px;
+  background:var(--bg-purple);
+}
+.s5-col-tag{
+  display:inline-block;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;width:fit-content;
+}
+.s5-before .s5-col-tag{background:rgba(224,30,90,0.1);color:var(--coral)}
+.s5-after .s5-col-tag{background:rgba(43,172,118,0.1);color:var(--teal)}
+.s5-col-h3{font-size:20px;font-weight:700;color:var(--text);margin-bottom:24px;line-height:1.3;min-height:52px}
+.s5-item{
+  display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;
+  font-size:14px;line-height:1.5;color:var(--text-muted);
+}
+.s5-item-icon{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:2px}
+.s5-before .s5-item-icon{color:var(--coral)}
+.s5-after .s5-item-icon{color:var(--teal)}
+
+/* === SLIDE 6: Results — large hero numbers === */
+.s6-wrap{
+  display:flex;flex-direction:column;justify-content:center;height:100%;padding:48px 56px;
+  background:radial-gradient(ellipse at 30% 70%,var(--bg-purple) 0%,var(--bg) 70%);
+}
+.s6-kicker{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+.s6-h2{font-size:clamp(22px,2.8vw,30px);font-weight:700;color:var(--text);letter-spacing:-.5px;margin-bottom:32px}
+.s6-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.s6-card{
+  background:var(--card-bg);border:1px solid var(--card-bd);border-radius:16px;
+  padding:28px 24px;text-align:center;box-shadow:var(--card-sh);
+  transition:all .3s ease;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+}
+.s6-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--accent);
+}
+.s6-card:hover{transform:translateY(-4px)}
+.s6-card-val{font-size:40px;font-weight:800;line-height:1;margin-bottom:8px}
+.s6-card-lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);line-height:1.3}
+
+/* === SLIDE 7: Quote === */
+.s7-wrap{
+  display:flex;align-items:center;height:100%;padding:48px 80px;
+  background:var(--bg);position:relative;
+}
+.s7-bar{
+  width:4px;border-radius:2px;background:var(--accent);align-self:stretch;
+  flex-shrink:0;margin-right:40px;
+}
+.s7-content{max-width:600px}
+.s7-quote{font-size:clamp(18px,2.2vw,24px);font-style:italic;line-height:1.6;color:var(--text);font-weight:400;margin-bottom:24px}
+.s7-attr-name{font-size:15px;font-weight:700;color:var(--text)}
+.s7-attr-role{font-size:13px;color:var(--text-muted);margin-top:4px}
+
+/* === SLIDE 8: Closing === */
+.s8-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;text-align:center;padding:60px 48px;
+  background:linear-gradient(135deg,var(--bg) 0%,var(--bg-purple) 100%);position:relative;
+}
+.s8-h1{font-size:clamp(32px,4.5vw,52px);font-weight:800;color:var(--text);line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px;max-width:700px}
+.s8-sub{font-size:clamp(14px,1.5vw,17px);font-weight:400;color:var(--text-muted);max-width:400px;line-height:1.5}
+.s8-cta{
+  margin-top:32px;display:inline-flex;padding:14px 32px;border-radius:12px;
+  background:var(--accent);color:#fff;font-size:15px;font-weight:600;
+  letter-spacing:.5px;
+}
+
+/* === Footer === */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  display:flex;flex-direction:column;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--nav-bd);
+}
+.progress-line{width:100%;height:2px;background:transparent}
+.progress-fill{height:100%;background:var(--accent);transition:width .5s ease;border-radius:0 1px 1px 0}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:38px}
+.nav-title{font-size:11px;font-weight:600;color:var(--text-soft);letter-spacing:0.5px;min-width:140px}
+.nav-center{display:flex;align-items:center;gap:12px}
+.nav-arrow{
+  border:none;background:none;color:var(--text-muted);
+  font-size:20px;padding:2px 8px;cursor:pointer;border-radius:6px;
+  transition:all .2s ease;font-family:'Jost',sans-serif;line-height:1;
+}
+.nav-arrow:hover{background:var(--btn-bg);color:var(--text)}
+.nav-arrow:disabled{opacity:.2;cursor:default}
+.nav-arrow:disabled:hover{background:none;color:var(--text-muted)}
+.slide-counter{font-size:12px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;min-width:40px;text-align:center}
+.nav-utils{display:flex;align-items:center;gap:2px;min-width:140px;justify-content:flex-end}
+.nav-util{
+  width:30px;height:30px;border-radius:8px;border:none;
+  background:transparent;color:var(--text-soft);font-size:14px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s ease;font-family:'Jost',sans-serif;
+}
+.nav-util:hover{background:var(--btn-bg);color:var(--text)}
+
+@media(max-width:768px){
+  .s0-deco{display:none}
+  .s0-wrap{padding:40px 32px}
+  .s1-timeline{flex-direction:column}
+  .s1-slot{border-left:none;border-top:2px solid var(--card-bd);padding:12px 0}
+  .s1-slot:first-child{border-top:none}
+  .s2-nums{flex-direction:column;gap:32px;align-items:center}
+  .s4-flow{flex-direction:column;gap:24px}
+  .s4-arrow{display:none}
+  .s5-wrap{grid-template-columns:1fr}
+  .s6-cards{grid-template-columns:1fr}
+  .nav-inner{padding:0 16px;height:36px}
+  .nav-title{display:none}
+  .nav-utils{min-width:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- SLIDE 0: Title — asymmetric product launch -->
+<div class="slide active" data-slide="0">
+  <div class="s0-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:400px;height:400px;top:-100px;left:-80px"></div>
+    <div class="s0-left">
+      <div class="s0-badge rv">&#x26A1; Slack AI</div>
+      <h1 class="s0-h1 rv d1">Your Team Spends 58 Minutes Every Morning Just Catching Up</h1>
+      <p class="s0-sub rv d2">Slack Recap gives every person a personalized briefing in under 2 minutes.</p>
+    </div>
+    <div class="s0-deco rvs d2">&#x26A1;</div>
+  </div>
+</div>
+
+<!-- SLIDE 1: Morning Timeline (Problem) -->
+<div class="slide" data-slide="1">
+  <div class="s1-wrap">
+    <div class="grid"></div>
+    <div class="s1-kicker rv">The Catch-Up Tax</div>
+    <h2 class="s1-h2 rv d1">This is what every knowledge worker&rsquo;s morning actually looks like</h2>
+    <div class="s1-timeline">
+      <div class="s1-slot rv d2">
+        <div class="s1-wasted" style="background:var(--coral);opacity:0.3"></div>
+        <div class="s1-time">9:00</div>
+        <div class="s1-activity">Open Slack. 78 unread messages across 12 channels.</div>
+      </div>
+      <div class="s1-slot rv d3">
+        <div class="s1-wasted" style="background:var(--coral);opacity:0.5"></div>
+        <div class="s1-time">9:18</div>
+        <div class="s1-activity">Scroll through threads. Try to find what decisions were made yesterday.</div>
+      </div>
+      <div class="s1-slot rv d4">
+        <div class="s1-wasted" style="background:var(--coral);opacity:0.7"></div>
+        <div class="s1-time">9:32</div>
+        <div class="s1-activity">Ask a colleague to re-explain something from a thread you missed.</div>
+      </div>
+      <div class="s1-slot rv d5">
+        <div class="s1-wasted" style="background:var(--coral);opacity:0.9"></div>
+        <div class="s1-time">9:45</div>
+        <div class="s1-activity">Still scrolling. Anxiety rising. Feeling behind.</div>
+      </div>
+      <div class="s1-slot rv d6">
+        <div class="s1-time" style="color:var(--teal)">9:58</div>
+        <div class="s1-activity"><strong>First productive task begins.</strong></div>
+      </div>
+    </div>
+    <div class="s1-total rv d7">
+      <div class="s1-total-num">58 min</div>
+      <div class="s1-total-lbl">wasted every morning<br>per knowledge worker</div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Agitation — raw numbers -->
+<div class="slide" data-slide="2">
+  <div class="s2-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+    <h2 class="s2-h2 rv">By Friday, your team has lost an entire working day to context recovery</h2>
+    <div class="s2-nums">
+      <div class="s2-num-block rv d1">
+        <div class="s2-big" style="color:var(--coral)">78<span class="s2-unit">msgs</span></div>
+        <div class="s2-label">Read before first productive task</div>
+      </div>
+      <div class="s2-num-block rv d2">
+        <div class="s2-big" style="color:var(--accent)">62<span class="s2-unit">%</span></div>
+        <div class="s2-label">Of decisions buried in threads</div>
+      </div>
+      <div class="s2-num-block rv d3">
+        <div class="s2-big" style="color:var(--sky)">2.3<span class="s2-unit">&times;</span></div>
+        <div class="s2-label">More context loss in remote teams</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Section Divider -->
+<div class="slide" data-slide="3">
+  <div class="s3-wrap">
+    <div class="grid" style="background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:60px 60px"></div>
+    <div class="orb" style="background:rgba(255,255,255,1);width:300px;height:300px;top:-80px;right:-60px;opacity:0.08"></div>
+    <div class="s3-emoji rvs">&#x26A1;</div>
+    <h2 class="s3-h2 rv d1">Introducing Slack Recap</h2>
+    <div class="s3-line rv d2"></div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Three-Step Flow -->
+<div class="slide" data-slide="4">
+  <div class="s4-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:300px;height:300px;bottom:-80px;right:-60px"></div>
+    <div class="s4-kicker rv">How It Works</div>
+    <h2 class="s4-h2 rv d1">Open Slack. Read your briefing. Start working.</h2>
+    <div class="s4-flow">
+      <div class="s4-step rv d2">
+        <div class="s4-step-num" style="background:var(--accent)">1</div>
+        <h3>AI reads everything</h3>
+        <p>Every channel, DM, and huddle transcript you&rsquo;re part of &mdash; analyzed in real time.</p>
+      </div>
+      <div class="s4-arrow s4-arrow-1 rv d3">&rarr;</div>
+      <div class="s4-step rv d3">
+        <div class="s4-step-num" style="background:var(--sky)">2</div>
+        <h3>Ranks what matters</h3>
+        <p>Personalized relevance scoring based on your role, projects, and interaction history.</p>
+      </div>
+      <div class="s4-arrow s4-arrow-2 rv d4">&rarr;</div>
+      <div class="s4-step rv d4">
+        <div class="s4-step-num" style="background:var(--teal)">3</div>
+        <h3>One scrollable card</h3>
+        <p>Decisions, action items, and @mentions in a single view. One tap to jump in.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: Before / After Comparison -->
+<div class="slide" data-slide="5">
+  <div class="s5-wrap">
+    <div class="s5-before">
+      <div class="s5-col-tag rvl">Before Recap</div>
+      <h3 class="s5-col-h3 rvl d1">The morning scroll of anxiety</h3>
+      <div class="s5-item rvl d1">
+        <span class="s5-item-icon">&times;</span>
+        <span>78 unread messages across 12 channels</span>
+      </div>
+      <div class="s5-item rvl d2">
+        <span class="s5-item-icon">&times;</span>
+        <span>Decisions buried in nested threads</span>
+      </div>
+      <div class="s5-item rvl d2">
+        <span class="s5-item-icon">&times;</span>
+        <span>Context lost overnight &mdash; ask colleagues to repeat</span>
+      </div>
+      <div class="s5-item rvl d3">
+        <span class="s5-item-icon">&times;</span>
+        <span>58 minutes before first productive task</span>
+      </div>
+    </div>
+    <div class="s5-after">
+      <div class="s5-col-tag rv">After Recap</div>
+      <h3 class="s5-col-h3 rv d1">90 seconds to full context</h3>
+      <div class="s5-item rv d1">
+        <span class="s5-item-icon">&#x2713;</span>
+        <span>Personalized briefing of what matters to you</span>
+      </div>
+      <div class="s5-item rv d2">
+        <span class="s5-item-icon">&#x2713;</span>
+        <span>Decisions and action items surfaced automatically</span>
+      </div>
+      <div class="s5-item rv d2">
+        <span class="s5-item-icon">&#x2713;</span>
+        <span>One tap to jump into any thread with context</span>
+      </div>
+      <div class="s5-item rv d3">
+        <span class="s5-item-icon">&#x2713;</span>
+        <span>Building by 9:02</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Results -->
+<div class="slide" data-slide="6">
+  <div class="s6-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:350px;height:350px;top:-80px;left:-60px"></div>
+    <div class="s6-kicker rv">90-Day Enterprise Pilot</div>
+    <h2 class="s6-h2 rv d1">Pilot teams shipped 34% more while reporting lower stress</h2>
+    <div class="s6-cards">
+      <div class="s6-card rv d2">
+        <div class="s6-card-val" style="color:var(--sky)">34%</div>
+        <div class="s6-card-lbl">More Features Shipped</div>
+      </div>
+      <div class="s6-card rv d3">
+        <div class="s6-card-val" style="color:var(--teal)">87%</div>
+        <div class="s6-card-lbl">Less Catch-Up Time</div>
+      </div>
+      <div class="s6-card rv d4">
+        <div class="s6-card-val" style="color:var(--accent)">91%</div>
+        <div class="s6-card-lbl">Would Not Go Back</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Quote — left-bar style -->
+<div class="slide" data-slide="7">
+  <div class="s7-wrap">
+    <div class="grid"></div>
+    <div class="s7-bar rv"></div>
+    <div class="s7-content">
+      <p class="s7-quote rv d1">I used to start every morning with 40 minutes of scrolling anxiety. Now I read my Recap in 90 seconds and I&rsquo;m building by 9:15.</p>
+      <div class="rv d2">
+        <div class="s7-attr-name">Sarah Chen</div>
+        <div class="s7-attr-role">Engineering Lead, Series C SaaS Company (380 employees)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Closing / CTA -->
+<div class="slide" data-slide="8">
+  <div class="s8-wrap">
+    <div class="grid"></div>
+    <div class="orb" style="background:var(--accent);width:500px;height:500px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+    <h1 class="s8-h1 rv">Never miss what matters.<br>Skip what doesn&rsquo;t.</h1>
+    <p class="s8-sub rv d1">Slack Recap &mdash; rolling out to Enterprise Grid this quarter.</p>
+    <div class="s8-cta rv d2">Request Early Access</div>
+  </div>
+</div>
+
+</div>
+
+<nav class="nav-bar">
+  <div class="progress-line">
+    <div class="progress-fill" id="progressFill" style="width:11.1%"></div>
+  </div>
+  <div class="nav-inner">
+    <div class="nav-title">Slack Recap</div>
+    <div class="nav-center">
+      <button class="nav-arrow" id="prevBtn" disabled title="Previous"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"/></svg></button>
+      <span class="slide-counter" id="slideCounter">1 / 9</span>
+      <button class="nav-arrow" id="nextBtn" title="Next"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"/></svg></button>
+    </div>
+    <div class="nav-utils">
+      <button class="nav-util" id="exportBtn" title="Export PPTX"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"/></svg></button>
+      <button class="nav-util" id="themeToggle" title="Toggle theme"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.36A88,88,0,0,1,65.64,67.09a89,89,0,0,1,31.76-26A106.18,106.18,0,0,0,107,80a106.14,106.14,0,0,0,69,69,89,89,0,0,1-26,31.76,88.18,88.18,0,0,1,39.93,9.6Z"/></svg></button>
+      <button class="nav-util" id="fsBtn" title="Fullscreen"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48V96a8,8,0,0,1-16,0V56H160a8,8,0,0,1,0-16h48A8,8,0,0,1,216,48ZM96,200H56V160a8,8,0,0,0-16,0v48a8,8,0,0,0,8,8H96a8,8,0,0,0,0-16Zm112-48a8,8,0,0,0-8,8v40H160a8,8,0,0,0,0,16h48a8,8,0,0,0,8-8V160A8,8,0,0,0,208,152ZM96,48H48A8,8,0,0,0,40,56V96a8,8,0,0,0,16,0V64H96a8,8,0,0,0,0-16Z"/></svg></button>
+    </div>
+  </div>
+</nav>
+
+<script>
+(function(){
+  var slides=document.querySelectorAll('.slide'),total=9,current=0;
+  var prevBtn=document.getElementById('prevBtn'),nextBtn=document.getElementById('nextBtn');
+  var counter=document.getElementById('slideCounter'),progress=document.getElementById('progressFill');
+
+  function goTo(i){
+    if(i<0||i>=total||i===current)return;
+    slides[current].classList.remove('active');current=i;
+    slides[current].classList.add('active');update();
+    window.location.hash='slide-'+(current+1);
+  }
+  function update(){
+    counter.textContent=(current+1)+' / '+total;
+    progress.style.width=((current+1)/total*100)+'%';
+    prevBtn.disabled=current===0;nextBtn.disabled=current===total-1;
+  }
+
+  prevBtn.addEventListener('click',function(){goTo(current-1)});
+  nextBtn.addEventListener('click',function(){goTo(current+1)});
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown'){e.preventDefault();goTo(current+1)}
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();goTo(current-1)}
+    if(e.key==='Home'){e.preventDefault();goTo(0)}
+    if(e.key==='End'){e.preventDefault();goTo(total-1)}
+    if(e.key==='f'||e.key==='F')toggleFs();
+    if(e.key>='1'&&e.key<='9'){var n=parseInt(e.key)-1;if(n<total)goTo(n)}
+  });
+
+  var touchX=0;
+  document.addEventListener('touchstart',function(e){touchX=e.touches[0].clientX});
+  document.addEventListener('touchend',function(e){
+    var d=touchX-e.changedTouches[0].clientX;
+    if(Math.abs(d)>60){d>0?goTo(current+1):goTo(current-1)}
+  });
+
+  document.getElementById('deck').addEventListener('click',function(e){
+    if(e.target.closest('.nav-bar')||e.target.closest('button'))return;
+    var r=this.getBoundingClientRect(),x=e.clientX-r.left;
+    x<r.width*0.15?goTo(current-1):goTo(current+1);
+  });
+
+  var themeBtn=document.getElementById('themeToggle');
+  var moonSVG='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M233.54,142.23a8,8,0,0,0-8-2,88.08,88.08,0,0,1-109.8-109.8,8,8,0,0,0-10-10,104.84,104.84,0,0,0-52.91,37A104,104,0,0,0,136,224a103.09,103.09,0,0,0,62.52-20.88,104.84,104.84,0,0,0,37-52.91A8,8,0,0,0,233.54,142.23ZM188.9,190.36A88,88,0,0,1,65.64,67.09a89,89,0,0,1,31.76-26A106.18,106.18,0,0,0,107,80a106.14,106.14,0,0,0,69,69,89,89,0,0,1-26,31.76,88.18,88.18,0,0,1,39.93,9.6Z"/></svg>';
+  var sunSVG='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M120,40V16a8,8,0,0,1,16,0V40a8,8,0,0,1-16,0Zm72,88a64,64,0,1,1-64-64A64.07,64.07,0,0,1,192,128Zm-16,0a48,48,0,1,0-48,48A48.05,48.05,0,0,0,176,128ZM58.34,69.66A8,8,0,0,0,69.66,58.34l-16-16A8,8,0,0,0,42.34,53.66Zm0,116.68-16,16a8,8,0,0,0,11.32,11.32l16-16a8,8,0,0,0-11.32-11.32ZM192,72a8,8,0,0,0,5.66-2.34l16-16a8,8,0,0,0-11.32-11.32l-16,16A8,8,0,0,0,192,72Zm5.66,114.34a8,8,0,0,0-11.32,11.32l16,16a8,8,0,0,0,11.32-11.32ZM48,128a8,8,0,0,0-8-8H16a8,8,0,0,0,0,16H40A8,8,0,0,0,48,128Zm80,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V216A8,8,0,0,0,128,208Zm112-88H216a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16Z"/></svg>';
+  themeBtn.addEventListener('click',function(){
+    var cur=document.documentElement.getAttribute('data-theme')||'light';
+    var next=cur==='light'?'night':'light';
+    document.documentElement.setAttribute('data-theme',next);
+    themeBtn.innerHTML=next==='light'?moonSVG:sunSVG;
+  });
+
+  function toggleFs(){
+    if(document.fullscreenElement)document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }
+  document.getElementById('fsBtn').addEventListener('click',toggleFs);
+
+  // PPTX Export
+  document.getElementById('exportBtn').addEventListener('click',function(){
+    if(typeof PptxGenJS==='undefined'){alert('PptxGenJS loading...');return}
+    var isDark=(document.documentElement.getAttribute('data-theme')||'light')==='night';
+    var T=isDark?{bg:'1A1D21',card:'222529',text:'D1D2D3',muted:'ABABAD',accent:'611F69',teal:'2BAC76',sky:'1264A3',coral:'E01E5A'}
+                :{bg:'FFFFFF',card:'FFFFFF',text:'1D1C1D',muted:'616061',accent:'611F69',teal:'2BAC76',sky:'1264A3',coral:'E01E5A'};
+    var p=new PptxGenJS();p.layout='LAYOUT_16x9';p.title='Introducing Slack Recap';
+    var F='Calibri',M=0.7,CW=8.6;
+
+    // S0: Title
+    var s=p.addSlide();s.background={color:T.bg};
+    s.addShape(p.shapes.ROUNDED_RECTANGLE,{x:7,y:1.2,w:2.5,h:2.5,fill:{color:T.accent},rectRadius:0.25,shadow:{type:'outer',blur:20,offset:8,color:'000000',opacity:0.15}});
+    s.addText('\u26A1',{x:7,y:1.2,w:2.5,h:2.5,fontFace:F,fontSize:60,align:'center',valign:'middle'});
+    s.addText('Your Team Spends 58 Minutes\nEvery Morning Just Catching Up',{x:M,y:1.2,w:5.5,h:1.2,fontFace:F,fontSize:32,bold:true,color:T.text,lineSpacingMultiple:1.1});
+    s.addText('Slack Recap gives every person a personalized briefing in under 2 minutes.',{x:M,y:2.8,w:5,h:.5,fontFace:F,fontSize:15,color:T.muted});
+
+    // S1: Timeline
+    s=p.addSlide();s.background={color:T.bg};
+    s.addText('THE CATCH-UP TAX',{x:M,y:.45,w:CW,h:.3,fontFace:F,fontSize:11,color:T.coral,bold:true,charSpacing:3});
+    s.addText("This is what every knowledge worker's morning looks like",{x:M,y:.9,w:CW,h:.5,fontFace:F,fontSize:24,bold:true,color:T.text});
+    var times=['9:00 \u2014 78 unread messages','9:18 \u2014 Scrolling threads','9:32 \u2014 Asking colleagues to repeat','9:45 \u2014 Still scrolling','9:58 \u2014 First productive task'];
+    times.forEach(function(t,i){
+      var by=1.8+i*.6;
+      s.addText(t,{x:M+.3,y:by,w:CW-.3,h:.45,fontFace:F,fontSize:13,color:i===4?T.teal:T.muted,bold:i===4});
+      s.addShape(p.shapes.OVAL,{x:M,y:by+.1,w:.2,h:.2,fill:{color:i===4?T.teal:T.coral}});
+    });
+
+    // S2: Big numbers
+    s=p.addSlide();s.background={color:T.bg};
+    s.addText('By Friday, your team has lost an entire working day',{x:M,y:.8,w:CW,h:.5,fontFace:F,fontSize:22,color:T.text,align:'center'});
+    var nums=[{v:'78',u:'msgs',c:T.coral},{v:'62',u:'%',c:T.accent},{v:'2.3',u:'\u00D7',c:T.sky}];
+    var labels=['Read before first task','Decisions buried','More loss in remote'];
+    nums.forEach(function(n,i){
+      var nx=M+.5+i*3;
+      s.addText(n.v+n.u,{x:nx,y:2,w:2.2,h:1,fontFace:F,fontSize:56,bold:true,color:n.c,align:'center'});
+      s.addText(labels[i],{x:nx,y:3,w:2.2,h:.4,fontFace:F,fontSize:11,color:T.muted,align:'center',charSpacing:1});
+    });
+
+    // S3: Divider
+    s=p.addSlide();s.background={color:T.accent};
+    s.addText('\u26A1',{x:M,y:1.6,w:CW,h:.8,fontFace:F,fontSize:48,align:'center'});
+    s.addText('Introducing Slack Recap',{x:M,y:2.5,w:CW,h:.7,fontFace:F,fontSize:40,bold:true,color:'FFFFFF',align:'center'});
+
+    // S4: 3-step
+    s=p.addSlide();s.background={color:T.bg};
+    s.addText('HOW IT WORKS',{x:M,y:.45,w:CW,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:3});
+    s.addText('Open Slack. Read your briefing. Start working.',{x:M,y:.9,w:CW,h:.5,fontFace:F,fontSize:26,bold:true,color:T.text});
+    var steps=[{n:'1',t:'AI reads everything',d:'Every channel, DM, huddle',c:T.accent},{n:'2',t:'Ranks what matters',d:'Personalized relevance scoring',c:T.sky},{n:'3',t:'One scrollable card',d:'Decisions, actions, @mentions',c:T.teal}];
+    steps.forEach(function(st,i){
+      var sx=M+.3+i*3;
+      s.addShape(p.shapes.OVAL,{x:sx+.7,y:2,w:.7,h:.7,fill:{color:st.c}});
+      s.addText(st.n,{x:sx+.7,y:2,w:.7,h:.7,fontFace:F,fontSize:22,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+      s.addText(st.t,{x:sx,y:2.9,w:2.2,h:.4,fontFace:F,fontSize:15,bold:true,color:T.text,align:'center'});
+      s.addText(st.d,{x:sx,y:3.3,w:2.2,h:.4,fontFace:F,fontSize:12,color:T.muted,align:'center'});
+      if(i<2)s.addText('\u2192',{x:sx+2.2,y:2.1,w:.6,h:.5,fontFace:F,fontSize:22,color:T.muted,align:'center'});
+    });
+
+    // S5: Before/After
+    s=p.addSlide();s.background={color:T.bg};
+    s.addShape(p.shapes.RECTANGLE,{x:5,y:0,w:5,h:5.63,fill:{color:isDark?'2A1F2B':'F9F0FA'}});
+    s.addText('BEFORE',{x:M,y:.5,w:4,h:.3,fontFace:F,fontSize:11,color:T.coral,bold:true,charSpacing:2});
+    s.addText('AFTER',{x:5.3,y:.5,w:4,h:.3,fontFace:F,fontSize:11,color:T.teal,bold:true,charSpacing:2});
+    var befores=['78 unread messages','Decisions buried in threads','Ask colleagues to repeat','58 min before first task'];
+    var afters=['Personalized briefing','Decisions surfaced','One tap to jump in','Building by 9:02'];
+    befores.forEach(function(b,i){s.addText('\u2717 '+b,{x:M,y:1.2+i*.6,w:4,h:.4,fontFace:F,fontSize:13,color:T.coral})});
+    afters.forEach(function(a,i){s.addText('\u2713 '+a,{x:5.3,y:1.2+i*.6,w:4,h:.4,fontFace:F,fontSize:13,color:T.teal})});
+
+    // S6: Results
+    s=p.addSlide();s.background={color:T.bg};
+    s.addText('90-DAY ENTERPRISE PILOT',{x:M,y:.45,w:CW,h:.3,fontFace:F,fontSize:11,color:T.accent,bold:true,charSpacing:3});
+    s.addText('Pilot teams shipped 34% more while reporting lower stress',{x:M,y:.9,w:CW,h:.5,fontFace:F,fontSize:24,bold:true,color:T.text,align:'center'});
+    var results=[{v:'34%',l:'More Shipped',c:T.sky},{v:'87%',l:'Less Catch-Up',c:T.teal},{v:'91%',l:'Would Not Go Back',c:T.accent}];
+    results.forEach(function(r,i){
+      var rx=M+.5+i*3;
+      s.addShape(p.shapes.ROUNDED_RECTANGLE,{x:rx,y:2,w:2.2,h:1.8,fill:{color:T.card},rectRadius:.12,shadow:{type:'outer',blur:6,offset:2,color:'000000',opacity:.08}});
+      s.addText(r.v,{x:rx,y:2.3,w:2.2,h:.7,fontFace:F,fontSize:36,bold:true,color:r.c,align:'center'});
+      s.addText(r.l.toUpperCase(),{x:rx+.2,y:3.1,w:1.8,h:.4,fontFace:F,fontSize:10,color:T.muted,align:'center',charSpacing:1});
+    });
+
+    // S7: Quote
+    s=p.addSlide();s.background={color:T.bg};
+    s.addShape(p.shapes.RECTANGLE,{x:M,y:1.5,w:.08,h:2.5,fill:{color:T.accent},rectRadius:0});
+    s.addText('\u201CI used to start every morning with 40 minutes of scrolling anxiety. Now I read my Recap in 90 seconds and I\u2019m building by 9:15.\u201D',{x:1.2,y:1.8,w:7,h:1,fontFace:F,fontSize:20,italic:true,color:T.text,lineSpacingMultiple:1.5});
+    s.addText('Sarah Chen',{x:1.2,y:3.2,w:7,h:.3,fontFace:F,fontSize:14,bold:true,color:T.text});
+    s.addText('Engineering Lead, Series C SaaS Company',{x:1.2,y:3.5,w:7,h:.3,fontFace:F,fontSize:12,color:T.muted});
+
+    // S8: Closing
+    s=p.addSlide();s.background={color:T.bg};
+    s.addText("Never miss what matters.\nSkip what doesn't.",{x:M,y:1.5,w:CW,h:1.2,fontFace:F,fontSize:40,bold:true,color:T.text,align:'center',lineSpacingMultiple:1.15});
+    s.addText('Slack Recap \u2014 rolling out to Enterprise Grid this quarter.',{x:1.5,y:3,w:7,h:.4,fontFace:F,fontSize:15,color:T.muted,align:'center'});
+    s.addShape(p.shapes.ROUNDED_RECTANGLE,{x:3.5,y:3.8,w:3,h:.6,fill:{color:T.accent},rectRadius:.08});
+    s.addText('Request Early Access',{x:3.5,y:3.8,w:3,h:.6,fontFace:F,fontSize:14,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+
+    var tm=isDark?'Night':'Light';
+    p.writeFile({fileName:'Slack-Recap-'+tm+'.pptx'});
+  });
+
+  var hash=window.location.hash;
+  if(hash&&hash.startsWith('#slide-')){
+    var n=parseInt(hash.replace('#slide-',''))-1;
+    if(n>0&&n<total){slides[0].classList.remove('active');current=n;slides[current].classList.add('active')}
+  }
+  update();
+})();
+</script>
+</body>
+</html>
