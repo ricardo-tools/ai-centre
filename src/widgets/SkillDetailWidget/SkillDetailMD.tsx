@@ -1,0 +1,138 @@
+'use client';
+
+import { useState } from 'react';
+import { DownloadSimple, Lightning, FileText, Code, Table, ListBullets } from '@phosphor-icons/react';
+import { useLocale } from '@/screen-renderer/LocaleContext';
+import { Stat } from '@/components/Stat';
+import { ToggleButton } from '@/components/ToggleButton';
+import { SkillShowcase } from '@/components/SkillShowcase';
+import { SkillInPractice } from './SkillInPractice';
+import type { Skill } from '@/domain/Skill';
+import type { ParsedSkillContent } from '@/domain/ParsedSkill';
+
+interface SkillDetailMDProps {
+  skill: Skill;
+  parsed: ParsedSkillContent;
+}
+
+export function SkillDetailMD({ skill, parsed }: SkillDetailMDProps) {
+  const { t } = useLocale();
+  const [view, setView] = useState<'practice' | 'markdown'>('practice');
+
+  const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
+
+  return (
+    <div style={{ maxWidth: 800, padding: 16 }}>
+      {/* Hero */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+          <h1
+            style={{
+              fontSize: 26,
+              fontWeight: 700,
+              color: 'var(--color-text-heading)',
+              margin: 0,
+            }}
+          >
+            {skill.title}
+          </h1>
+          {skill.isOfficial && (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                padding: '2px 8px',
+                borderRadius: 4,
+                background: 'var(--color-primary-muted)',
+                color: 'var(--color-primary)',
+              }}
+            >
+              {t('skills.official')}
+            </span>
+          )}
+        </div>
+
+        <p
+          style={{
+            fontSize: 14,
+            color: 'var(--color-text-body)',
+            lineHeight: 1.5,
+            marginBottom: 16,
+            maxWidth: 600,
+          }}
+        >
+          {skill.description}
+        </p>
+
+        {/* Stats row */}
+        <div style={{ display: 'flex', gap: 20, marginBottom: 16, flexWrap: 'wrap' }}>
+          <Stat icon={<ListBullets size={16} />} label={t('skillDetail.sections')} value={parsed.sectionCount} />
+          <Stat icon={<Code size={16} />} label={t('skillDetail.codeExamples')} value={parsed.codeExampleCount} />
+          <Stat icon={<Table size={16} />} label={t('skillDetail.referenceTables')} value={parsed.referenceTableCount} />
+          <Stat icon={<FileText size={16} />} label={t('skillDetail.version')} value={skill.formatVersion('')} />
+        </div>
+
+        {/* Actions row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a
+            href={downloadUrl}
+            download={skill.downloadFilename}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 16px',
+              borderRadius: 6,
+              background: 'var(--color-primary)',
+              color: '#FFFFFF',
+              textDecoration: 'none',
+              fontSize: 13,
+              fontWeight: 600,
+            }}
+          >
+            <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
+          </a>
+
+          {/* View toggle */}
+          <div
+            style={{
+              display: 'flex',
+              borderRadius: 6,
+              border: '1px solid var(--color-border)',
+              overflow: 'hidden',
+            }}
+          >
+            <ToggleButton
+              active={view === 'practice'}
+              onClick={() => setView('practice')}
+              icon={<Lightning size={14} />}
+              label={t('skillDetail.skillInPractice')}
+            />
+            <ToggleButton
+              active={view === 'markdown'}
+              onClick={() => setView('markdown')}
+              icon={<FileText size={14} />}
+              label={t('skillDetail.viewSkillMd')}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      {view === 'practice' ? (
+        <SkillInPractice slug={skill.slug} parsed={parsed} />
+      ) : (
+        <div
+          style={{
+            padding: 24,
+            borderRadius: 8,
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+          }}
+        >
+          <SkillShowcase content={skill.content} />
+        </div>
+      )}
+    </div>
+  );
+}

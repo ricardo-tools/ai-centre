@@ -163,6 +163,33 @@ export function PresentationShowcase() {
         </div>
       </Section>
 
+      {/* ---- Pre-Flight ---- */}
+      <Section title="Pre-Flight — Brand Context">
+        <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16 }}>Before any planning, ask the user whether this is a branded presentation. This determines the entire art direction.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ padding: 20, borderRadius: 8, border: '2px solid var(--color-primary)', background: 'var(--color-primary-muted)' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)' }}>ezyCollect / Sidetrade</span>
+            <p style={{ fontSize: 12, color: 'var(--color-text-body)', margin: '6px 0 12px', lineHeight: 1.5 }}>Follow brand-design-system closely. Brand orange accent, Jost typography, brand logos, full semantic color system. Ask if the user wants any exceptions.</p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#FF5A28' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#1462D2' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#1F2B7A' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#121948' }} />
+            </div>
+          </div>
+          <div style={{ padding: 20, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)' }}>Topic-Native</span>
+            <p style={{ fontSize: 12, color: 'var(--color-text-body)', margin: '6px 0 12px', lineHeight: 1.5 }}>Accent color, typography, and art direction belong to the topic. Warm amber for coffee, Slack purple for Slack. Brand system provides structural guidance only.</p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#C99640' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#6B46C1' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#1A73E8' }} />
+              <div style={{ width: 20, height: 20, borderRadius: 4, background: '#2E9089' }} />
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ---- 5-Phase Planning Process ---- */}
       <Section title="5-Phase Planning Process">
         <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16 }}>80% strategy, 20% production. Code is the last step, not the first.</p>
@@ -170,7 +197,7 @@ export function PresentationShowcase() {
           {[
             { phase: '1', name: 'Audience & Purpose', desc: 'Who is the audience? What should they think, feel, or do differently? What is at stake?', accent: '#FF5A28' },
             { phase: '2', name: 'Core Message & Narrative', desc: 'Distill the Big Idea in one sentence. Choose a messaging framework. Build the ghost deck.', accent: '#B88A30' },
-            { phase: '3', name: 'Art Direction', desc: 'Mood, accent color native to the topic, background textures, visual metaphor system.', accent: '#2E9089' },
+            { phase: '3', name: 'Art Direction', desc: 'Mood, accent color (brand or topic-native per Phase 0), background textures, visual metaphor.', accent: '#2E9089' },
             { phase: '4', name: 'Slide-by-Slide Blueprint', desc: 'Purpose, governing thought, focal point, composition, visual weight, copy, transition role.', accent: '#1462D2' },
             { phase: '5', name: 'Execution', desc: 'Only now write code. Apply the plan, design system, narrative, and audience understanding.', accent: '#1F2B7A' },
           ].map((p) => (

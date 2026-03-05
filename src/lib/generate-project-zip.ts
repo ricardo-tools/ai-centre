@@ -1,10 +1,10 @@
 import JSZip from 'jszip';
-import type { SkillData } from './skills';
+import type { Skill } from '@/domain/Skill';
 
 interface GenerateZipOptions {
   archetypeName: string;
   archetypeDescription: string;
-  selectedSkills: SkillData[];
+  selectedSkills: Skill[];
   userDescription: string;
   includeTemplate?: boolean;
 }

@@ -30,6 +30,16 @@ Each presentation is a self-contained creative work — not an instance of a tem
 
 Before writing a single line of code, you plan. Professionals spend 80% of their time on strategy and 20% on production. You follow five phases.
 
+### Phase 0: Pre-Flight — Brand Context
+
+Before any planning, ask the user:
+
+> **Is this an ezyCollect / Sidetrade presentation?**
+> - If **yes** → follow the **brand-design-system** closely. Use brand orange (#FF5A28) as the accent, brand typography (Jost), brand logos, and the full semantic color system. The presentation should be unmistakably on-brand. Ask if they want any exceptions (e.g. a different accent for a specific topic within the deck).
+> - If **no** → the accent color, typography, and art direction are free to be topic-native (warm amber for coffee, Slack purple for Slack, etc.). The brand design system still provides structural guidance (spacing, themes, icon library) but the visual identity belongs to the topic.
+
+This question must be asked before proceeding. Do not assume.
+
 ### Phase 1: Audience & Purpose
 
 Answer these before anything else:
@@ -63,7 +73,7 @@ The presenter is the **mentor**. The audience is the **hero**. The presentation 
 Before designing slides, establish the visual language. **The art direction must be unique to this presentation's topic and audience.** A health research talk and a SaaS product launch should feel like they were designed by different creative directors — different warmth, different textures, different spatial rhythm.
 
 - **Mood**: What emotional register? (Authoritative? Warm? Urgent? Playful? Cinematic?)
-- **Color strategy**: Choose 1 accent color + neutrals that feel native to the topic. The accent carries meaning — use it only for emphasis, never decoration. Coffee → warm amber. Finance → deep navy. Product launch → brand color. The color should feel inevitable, not arbitrary.
+- **Color strategy**: For **ezyCollect/Sidetrade presentations** (confirmed in Phase 0), use brand orange (#FF5A28) as the primary accent and electric blue (#1462D2) as secondary — follow the brand design system color hierarchy. For **non-branded presentations**, choose 1 accent color + neutrals that feel native to the topic. The accent carries meaning — use it only for emphasis, never decoration. Coffee → warm amber. Finance → deep navy. Slack → Slack purple. The color should feel inevitable, not arbitrary.
 - **Typography tone**: Weight and size choices communicate confidence (heavy weights) or approachability (lighter weights).
 - **Background texture**: Decide the gradient palette, grid intensity, and orb placement for this deck's personality. A scholarly presentation might use warm radial gradients. A tech product might use sharp linear gradients with cooler hues.
 - **Visual metaphor system**: If you use a metaphor (journey, building, ecosystem), extend it consistently through the entire deck. Do not mix metaphors.

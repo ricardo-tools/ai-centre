@@ -110,23 +110,6 @@ html, body {
   --color-table-stripe: var(--nm-surface-2);
 }
 
-/* === AppShell Layout (Pattern B: TopBar Only) === */
-.app-shell {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.app-shell__topnav {
-  flex-shrink: 0;
-}
-
-.app-shell__main {
-  flex: 1;
-  overflow-y: auto;
-}
-
 /* === Markdown Content Styles === */
 .markdown-content {
   line-height: 1.7;

@@ -1,7 +1,7 @@
-import { notFound } from 'next/navigation';
-import { getSkillBySlug, getAllSkills } from '@/lib/skills';
-import { parseSkillContent } from '@/lib/parse-skill';
-import { SkillDetailClient } from './SkillDetailClient';
+import { getAllSkills } from '@/lib/skills';
+import { ScreenRenderer } from '@/screen-renderer/ScreenRenderer';
+import { skillDetailConfig } from '@/screens/SkillDetail/SkillDetail.screen';
+import { SkillDetailSlot } from './SkillDetailSlot';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -13,15 +13,13 @@ export function generateStaticParams() {
 
 export default async function SkillDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const skill = getSkillBySlug(slug);
-  if (!skill) notFound();
-
-  const parsed = parseSkillContent(skill.content);
 
   return (
-    <SkillDetailClient
-      skill={skill}
-      parsed={parsed}
+    <ScreenRenderer
+      config={skillDetailConfig}
+      slots={{
+        detail: <SkillDetailSlot slug={slug} />,
+      }}
     />
   );
 }

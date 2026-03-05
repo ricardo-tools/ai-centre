@@ -1,7 +1,14 @@
-import { getAllSkills } from '@/lib/skills';
-import { GenerateClient } from './GenerateClient';
+import { ScreenRenderer } from '@/screen-renderer/ScreenRenderer';
+import { generateConfig } from '@/screens/Generate/Generate.screen';
+import { GenerateSlot } from './GenerateSlot';
 
 export default function GeneratePage() {
-  const skills = getAllSkills();
-  return <GenerateClient skills={skills} />;
+  return (
+    <ScreenRenderer
+      config={generateConfig}
+      slots={{
+        generator: <GenerateSlot />,
+      }}
+    />
+  );
 }

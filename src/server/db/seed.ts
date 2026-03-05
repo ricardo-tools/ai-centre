@@ -40,6 +40,12 @@ const SKILLS = [
     file: 'frontend-architecture/SKILL.md',
   },
   {
+    slug: 'presentation',
+    title: 'Presentation',
+    description: 'Standalone HTML/JS presentation builder with keyboard/click navigation, fullscreen mode, themed slides, footer bar, and PptxGenJS-based PPTX export.',
+    file: 'presentation/SKILL.md',
+  },
+  {
     slug: 'print-design',
     title: 'Print Design',
     description: 'Print-ready design standards: 3-zone system (bleed/trim/safe), export requirements (PDF, 300+ DPI), typography for print, QR codes, and pre-flight checklist.',
