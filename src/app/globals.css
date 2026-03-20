@@ -357,6 +357,12 @@ select:focus {
   border-color: var(--color-primary) !important;
 }
 
+/* === OTP Digit Input Focus === */
+.otp-digit:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-muted);
+}
+
 /* === Utility Animations === */
 @keyframes spin {
   from { transform: rotate(0deg); }

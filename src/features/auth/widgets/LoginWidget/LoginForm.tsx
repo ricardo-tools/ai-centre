@@ -60,6 +60,13 @@ export function LoginForm({
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
+  // Auto-focus first digit input when entering verify step
+  useEffect(() => {
+    if (step === 'verify') {
+      setTimeout(() => digitRefs.current[0]?.focus(), 100);
+    }
+  }, [step]);
+
   const handleDigitChange = useCallback(
     (index: number, value: string) => {
       if (!/^\d*$/.test(value)) return;
@@ -91,8 +98,12 @@ export function LoginForm({
       if (e.key === 'Backspace' && !digits[index] && index > 0) {
         digitRefs.current[index - 1]?.focus();
       }
+      if (e.key === 'Enter') {
+        const codeComplete = digits.every((d) => d !== '' && d !== ' ');
+        if (codeComplete) onVerifyOtp();
+      }
     },
-    [digits]
+    [digits, onVerifyOtp]
   );
 
   const handlePaste = useCallback(
@@ -114,8 +125,8 @@ export function LoginForm({
     setResendCooldown(60);
   }, [resendCooldown, onRequestOtp]);
 
-  const cardPadding = compact ? '24px' : '40px';
-  const cardMaxWidth = compact ? 340 : 420;
+  const cardPadding = compact ? 24 : 40;
+  const cardMaxWidth = compact ? 360 : 420;
 
   return (
     <div
@@ -123,7 +134,7 @@ export function LoginForm({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 80px)',
+        minHeight: '100vh',
         padding: compact ? 16 : 32,
         background: 'var(--color-bg)',
       }}
@@ -135,26 +146,51 @@ export function LoginForm({
           background: 'var(--color-surface)',
           borderRadius: 16,
           border: '1px solid var(--color-border)',
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
+        {/* Header with logo */}
         <div
           style={{
             background: 'var(--color-bg-alt)',
-            padding: `${compact ? 20 : 28}px ${cardPadding}`,
+            padding: `${compact ? 24 : 32}px ${cardPadding}px`,
             textAlign: 'center',
+            borderBottom: '1px solid var(--color-border)',
           }}
         >
           <div
             style={{
-              fontSize: compact ? 18 : 22,
-              fontWeight: 700,
-              color: 'var(--color-text-heading)',
-              letterSpacing: 0.3,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              justifyContent: 'center',
             }}
           >
-            {t('app.name')}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/square-color.png"
+              alt="ezyCollect"
+              className="logo-color"
+              style={{ height: 28 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/square-white.svg"
+              alt="ezyCollect"
+              className="logo-white"
+              style={{ height: 28 }}
+            />
+            <span
+              style={{
+                fontSize: compact ? 18 : 20,
+                fontWeight: 700,
+                color: 'var(--color-text-heading)',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {t('app.name')}
+            </span>
           </div>
         </div>
 
@@ -232,6 +268,7 @@ function EmailStep({
           fontSize: 14,
           color: 'var(--color-text-muted)',
           marginBottom: 24,
+          lineHeight: 1.5,
         }}
       >
         {t('login.domainHint')}
@@ -243,7 +280,7 @@ function EmailStep({
           fontSize: 13,
           fontWeight: 500,
           color: 'var(--color-text-body)',
-          marginBottom: 6,
+          marginBottom: 8,
         }}
       >
         {t('login.emailLabel')}
@@ -254,11 +291,12 @@ function EmailStep({
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          border: '1px solid var(--color-border)',
+          border: '2px solid var(--color-border)',
           borderRadius: 8,
-          padding: '10px 12px',
+          padding: '12px 12px',
           background: 'var(--color-bg)',
           marginBottom: 16,
+          transition: 'border-color 150ms',
         }}
       >
         <EnvelopeSimple size={20} weight="regular" style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
@@ -271,6 +309,8 @@ function EmailStep({
             if (e.key === 'Enter') onSubmit();
           }}
           disabled={isLoading}
+          autoFocus
+          autoComplete="email"
           style={{
             flex: 1,
             border: 'none',
@@ -278,6 +318,7 @@ function EmailStep({
             fontFamily: 'inherit',
             fontSize: 15,
             color: 'var(--color-text-body)',
+            outline: 'none',
           }}
         />
       </div>
@@ -288,6 +329,10 @@ function EmailStep({
             fontSize: 13,
             color: 'var(--color-danger)',
             marginBottom: 16,
+            padding: '8px 12px',
+            background: 'var(--color-danger-muted)',
+            borderRadius: 8,
+            lineHeight: 1.5,
           }}
         >
           {getErrorMessage(error, attemptsRemaining, t)}
@@ -299,7 +344,7 @@ function EmailStep({
         disabled={isLoading || !email.trim()}
         style={{
           width: '100%',
-          padding: '12px 16px',
+          padding: '14px 16px',
           background: isLoading || !email.trim() ? 'var(--color-text-muted)' : 'var(--color-primary)',
           color: '#FFFFFF',
           border: 'none',
@@ -312,7 +357,8 @@ function EmailStep({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 8,
-          opacity: isLoading || !email.trim() ? 0.6 : 1,
+          opacity: isLoading || !email.trim() ? 0.5 : 1,
+          transition: 'background 150ms, opacity 150ms',
         }}
       >
         {isLoading ? (
@@ -373,8 +419,9 @@ function VerifyStep({
           fontSize: 13,
           fontFamily: 'inherit',
           cursor: 'pointer',
-          padding: 0,
+          padding: '4px 0',
           marginBottom: 16,
+          transition: 'color 150ms',
         }}
       >
         <ArrowLeft size={16} weight="regular" />
@@ -395,19 +442,20 @@ function VerifyStep({
         style={{
           fontSize: 14,
           color: 'var(--color-text-muted)',
-          marginBottom: 24,
+          marginBottom: 32,
+          lineHeight: 1.5,
         }}
       >
         {t('login.codeSentTo')} <strong style={{ color: 'var(--color-text-body)' }}>{email}</strong>
       </div>
 
-      {/* Code input */}
+      {/* OTP digit inputs */}
       <div
         style={{
           display: 'flex',
-          gap: compact ? 6 : 8,
+          gap: compact ? 8 : 10,
           justifyContent: 'center',
-          marginBottom: 24,
+          marginBottom: 32,
         }}
         onPaste={onPaste}
       >
@@ -424,17 +472,21 @@ function VerifyStep({
             onChange={(e) => onDigitChange(i, e.target.value)}
             onKeyDown={(e) => onDigitKeyDown(i, e)}
             disabled={isLoading}
+            autoComplete="one-time-code"
+            className="otp-digit"
             style={{
-              width: compact ? 40 : 48,
-              height: compact ? 48 : 56,
+              width: compact ? 44 : 48,
+              height: compact ? 52 : 56,
               textAlign: 'center',
-              fontSize: compact ? 20 : 24,
+              fontSize: compact ? 22 : 24,
               fontWeight: 700,
               fontFamily: 'inherit',
               border: '2px solid var(--color-border)',
               borderRadius: 8,
               background: 'var(--color-bg)',
               color: 'var(--color-text-heading)',
+              outline: 'none',
+              transition: 'border-color 150ms, box-shadow 150ms',
             }}
           />
         ))}
@@ -447,6 +499,10 @@ function VerifyStep({
             color: 'var(--color-danger)',
             marginBottom: 16,
             textAlign: 'center',
+            padding: '8px 12px',
+            background: 'var(--color-danger-muted)',
+            borderRadius: 8,
+            lineHeight: 1.5,
           }}
         >
           {getErrorMessage(error, attemptsRemaining, t)}
@@ -458,7 +514,7 @@ function VerifyStep({
         disabled={isLoading || !codeComplete}
         style={{
           width: '100%',
-          padding: '12px 16px',
+          padding: '14px 16px',
           background: isLoading || !codeComplete ? 'var(--color-text-muted)' : 'var(--color-primary)',
           color: '#FFFFFF',
           border: 'none',
@@ -471,8 +527,9 @@ function VerifyStep({
           alignItems: 'center',
           justifyContent: 'center',
           gap: 8,
-          opacity: isLoading || !codeComplete ? 0.6 : 1,
+          opacity: isLoading || !codeComplete ? 0.5 : 1,
           marginBottom: 16,
+          transition: 'background 150ms, opacity 150ms',
         }}
       >
         {isLoading ? (
@@ -492,6 +549,8 @@ function VerifyStep({
             fontSize: 13,
             fontFamily: 'inherit',
             cursor: resendCooldown > 0 ? 'default' : 'pointer',
+            padding: '4px 8px',
+            transition: 'color 150ms',
           }}
         >
           {resendCooldown > 0

@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Jost } from 'next/font/google';
 import './globals.css';
-import { ScreenRenderer } from '@/platform/screen-renderer/ScreenRenderer';
-import { appShellConfig } from '@/platform/screens/AppShell/AppShell.screen';
 import { getSession } from '@/platform/lib/auth';
 import { SessionProvider } from '@/platform/lib/SessionContext';
 import { NavigationProgress } from '@/platform/components/NavigationProgress';
+import { ShellLayout } from './NavWrapper';
 
 const jost = Jost({
   subsets: ['latin'],
@@ -47,17 +46,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={jost.className} style={{ background: 'var(--color-bg)', color: 'var(--color-text-body)' }}>
         <SessionProvider session={session}>
           <NavigationProgress />
-          <ScreenRenderer
-            config={appShellConfig}
-            containerStyle={{ height: '100vh', overflow: 'hidden' }}
-            slots={{
-              'main-content': (
-                <div className="main-content" style={{ overflowY: 'auto', height: '100%' }}>
-                  {children}
-                </div>
-              ),
-            }}
-          />
+          <ShellLayout>
+            {children}
+          </ShellLayout>
         </SessionProvider>
       </body>
     </html>
