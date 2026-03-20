@@ -55,7 +55,8 @@ export async function fetchAllUsers(): Promise<Result<RawUserProfile[], Error>> 
 
     return Ok(mapped);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] fetchAllUsers failed:', err);
+    return Err(new Error('Failed to load users. Please try again.'));
   }
 }
 
@@ -95,7 +96,8 @@ export async function updateUserRole(
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] updateUserRole failed:', err);
+    return Err(new Error('Failed to update user role. Please try again.'));
   }
 }
 
@@ -132,7 +134,8 @@ export async function deactivateUser(userId: string): Promise<Result<void, Error
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] deactivateUser failed:', err);
+    return Err(new Error('Failed to deactivate user. Please try again.'));
   }
 }
 
@@ -169,6 +172,7 @@ export async function reactivateUser(userId: string): Promise<Result<void, Error
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] reactivateUser failed:', err);
+    return Err(new Error('Failed to reactivate user. Please try again.'));
   }
 }

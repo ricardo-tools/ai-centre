@@ -116,7 +116,8 @@ export async function inviteUser(
 
     return Ok(result);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] inviteUser failed:', err);
+    return Err(new Error('Failed to send invitation. Please try again.'));
   }
 }
 
@@ -150,7 +151,8 @@ export async function cancelInvitation(id: string): Promise<Result<void, Error>>
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] cancelInvitation failed:', err);
+    return Err(new Error('Failed to cancel invitation. Please try again.'));
   }
 }
 
@@ -194,7 +196,8 @@ export async function resendInvitation(id: string): Promise<Result<void, Error>>
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] resendInvitation failed:', err);
+    return Err(new Error('Failed to resend invitation. Please try again.'));
   }
 }
 
@@ -244,6 +247,7 @@ export async function fetchInvitations(): Promise<Result<RawInvitation[], Error>
 
     return Ok(mapped);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[user-management] fetchInvitations failed:', err);
+    return Err(new Error('Failed to load invitations. Please try again.'));
   }
 }

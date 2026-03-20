@@ -170,7 +170,22 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
   }
 
   const fileType = isHtml ? 'html' : 'zip';
-  const skillIds = skillIdsRaw ? JSON.parse(skillIdsRaw) as string[] : [];
+
+  // Content validation for HTML uploads
+  if (fileType === 'html') {
+    const content = await file.text();
+    if (content.includes('<script') && content.includes('document.cookie')) {
+      console.warn('[showcase] Potentially malicious HTML uploaded:', file.name);
+    }
+  }
+
+  let skillIds: string[] = [];
+  try {
+    skillIds = skillIdsRaw ? JSON.parse(skillIdsRaw) : [];
+    if (!Array.isArray(skillIds)) skillIds = [];
+  } catch {
+    skillIds = [];
+  }
 
   // Upload file storage
   let blobUrl: string;
@@ -193,9 +208,8 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       blobUrl = `/uploads/${fileName}`;
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'File storage failed';
     console.error('[showcase-gallery] file upload failed:', err);
-    return Err(new ValidationError('storageFailed', message));
+    return Err(new ValidationError('storageFailed', 'File storage failed. Please try again.'));
   }
 
   // Save to DB (or local manifest in dev)
@@ -304,7 +318,13 @@ export async function updateShowcase(showcaseId: string, formData: FormData): Pr
 
   if (!title?.trim()) return Err(new ValidationError('titleRequired', 'Title is required'));
 
-  const skillIds = skillIdsRaw ? JSON.parse(skillIdsRaw) as string[] : [];
+  let skillIds: string[] = [];
+  try {
+    skillIds = skillIdsRaw ? JSON.parse(skillIdsRaw) : [];
+    if (!Array.isArray(skillIds)) skillIds = [];
+  } catch {
+    skillIds = [];
+  }
 
   // If a new file was provided, upload it
   let fileUpdates: { blobUrl: string; fileName: string; fileSizeBytes: number; fileType: 'html' | 'zip' } | null = null;
@@ -331,7 +351,8 @@ export async function updateShowcase(showcaseId: string, formData: FormData): Pr
         blobUrl = `/uploads/${fileName}`;
       }
     } catch (err) {
-      return Err(new ValidationError('storageFailed', err instanceof Error ? err.message : 'File storage failed'));
+      console.error('[showcase-gallery] file upload failed:', err);
+      return Err(new ValidationError('storageFailed', 'File storage failed. Please try again.'));
     }
 
     fileUpdates = { blobUrl, fileName: file.name, fileSizeBytes: file.size, fileType: isHtml ? 'html' : 'zip' };
@@ -374,6 +395,7 @@ export async function updateShowcase(showcaseId: string, formData: FormData): Pr
     }).where(eq(showcaseUploads.id, showcaseId));
     return Ok(undefined);
   } catch (err) {
-    return Err(new ValidationError('updateFailed', err instanceof Error ? err.message : 'Update failed'));
+    console.error('[showcase-gallery] update failed:', err);
+    return Err(new ValidationError('updateFailed', 'Update failed. Please try again.'));
   }
 }

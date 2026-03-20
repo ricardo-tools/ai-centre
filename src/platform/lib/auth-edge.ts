@@ -16,7 +16,12 @@ export async function verifySessionEdge(token: string): Promise<Session | null> 
       roleId: payload.roleId as string,
       roleSlug: payload.roleSlug as string,
     };
-  } catch {
+  } catch (err) {
+    // Log the reason for verification failure (visible in Vercel function logs)
+    const message = err instanceof Error ? err.message : String(err);
+    if (message.includes('AUTH_SECRET')) {
+      console.error('[auth-edge] verifySessionEdge failed: AUTH_SECRET is not configured');
+    }
     return null;
   }
 }

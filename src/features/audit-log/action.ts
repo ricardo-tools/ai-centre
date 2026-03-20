@@ -60,6 +60,7 @@ export async function fetchAuditLog(): Promise<Result<RawAuditEntry[], Error>> {
 
     return Ok(mapped);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[audit-log] fetchAuditLog failed:', err);
+    return Err(new Error('Failed to load audit log. Please try again.'));
   }
 }

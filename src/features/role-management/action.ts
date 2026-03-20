@@ -3,7 +3,7 @@
 import { requirePermission } from '@/platform/lib/guards';
 import { writeAuditEntry } from '@/platform/lib/audit';
 import { type Result, Ok, Err } from '@/platform/lib/result';
-import { SYSTEM_ROLE_SEEDS, ALL_PERMISSIONS } from '@/platform/lib/permissions';
+import { SYSTEM_ROLE_SEEDS, ALL_PERMISSIONS, PERMISSION_REGISTRY } from '@/platform/lib/permissions';
 
 export interface RawRole {
   id: string;
@@ -92,7 +92,8 @@ export async function fetchAllRoles(): Promise<Result<RawRole[], Error>> {
 
     return Ok(mapped);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[role-management] fetchAllRoles failed:', err);
+    return Err(new Error('Failed to load roles. Please try again.'));
   }
 }
 
@@ -141,7 +142,8 @@ export async function fetchRoleById(id: string): Promise<Result<RawRole, Error>>
 
     return Ok(mapped);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[role-management] fetchRoleById failed:', err);
+    return Err(new Error('Failed to load role. Please try again.'));
   }
 }
 
@@ -153,15 +155,22 @@ export async function createRole(
   const auth = await requirePermission('role:create');
   if (!auth.ok) return auth;
 
+  // Validate permission strings against the registry
+  const validKeys = new Set(PERMISSION_REGISTRY.map(p => p.key));
+  const validPermissions = permissions.filter(p => validKeys.has(p as typeof PERMISSION_REGISTRY[number]['key']));
+  if (validPermissions.length !== permissions.length) {
+    console.warn('[role-management] Invalid permissions filtered:', permissions.filter(p => !validKeys.has(p as typeof PERMISSION_REGISTRY[number]['key'])));
+  }
+
   if (!process.env.DATABASE_URL) {
-    console.log(`[dev] createRole: ${name}`, permissions);
+    console.log(`[dev] createRole: ${name}`, validPermissions);
     const mock: RawRole = {
       id: `mock-${Date.now()}`,
       slug: name.toLowerCase().replace(/\s+/g, '-'),
       name,
       description,
       isSystem: false,
-      permissions,
+      permissions: validPermissions,
       userCount: 0,
       createdAt: new Date().toISOString(),
     };
@@ -183,9 +192,9 @@ export async function createRole(
       .values({ name, slug, description, isSystem: false })
       .returning();
 
-    if (permissions.length > 0) {
+    if (validPermissions.length > 0) {
       await db.insert(rolePermissions).values(
-        permissions.map((p) => ({ roleId: newRole.id as string, permission: p })),
+        validPermissions.map((p) => ({ roleId: newRole.id as string, permission: p })),
       );
     }
 
@@ -194,7 +203,7 @@ export async function createRole(
       entityId: newRole.id as string,
       action: 'created',
       userId: auth.value.userId,
-      metadata: { name, permissions },
+      metadata: { name, permissions: validPermissions },
     });
 
     const result: RawRole = {
@@ -203,14 +212,15 @@ export async function createRole(
       name: newRole.name as string,
       description: newRole.description as string,
       isSystem: false,
-      permissions,
+      permissions: validPermissions,
       userCount: 0,
       createdAt: (newRole.createdAt as Date).toISOString(),
     };
 
     return Ok(result);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[role-management] createRole failed:', err);
+    return Err(new Error('Failed to create role. Please try again.'));
   }
 }
 
@@ -223,8 +233,15 @@ export async function updateRole(
   const auth = await requirePermission('role:edit');
   if (!auth.ok) return auth;
 
+  // Validate permission strings against the registry
+  const validKeysUpdate = new Set(PERMISSION_REGISTRY.map(p => p.key));
+  const validPermsUpdate = permissions.filter(p => validKeysUpdate.has(p as typeof PERMISSION_REGISTRY[number]['key']));
+  if (validPermsUpdate.length !== permissions.length) {
+    console.warn('[role-management] Invalid permissions filtered:', permissions.filter(p => !validKeysUpdate.has(p as typeof PERMISSION_REGISTRY[number]['key'])));
+  }
+
   if (!process.env.DATABASE_URL) {
-    console.log(`[dev] updateRole: ${id}`, { name, description, permissions });
+    console.log(`[dev] updateRole: ${id}`, { name, description, permissions: validPermsUpdate });
     return Ok(undefined);
   }
 
@@ -247,9 +264,9 @@ export async function updateRole(
 
     // Replace permissions: delete old, insert new
     await db.delete(rolePermissions).where(eq(rolePermissions.roleId, id));
-    if (permissions.length > 0) {
+    if (validPermsUpdate.length > 0) {
       await db.insert(rolePermissions).values(
-        permissions.map((p) => ({ roleId: id, permission: p })),
+        validPermsUpdate.map((p) => ({ roleId: id, permission: p })),
       );
     }
 
@@ -258,12 +275,13 @@ export async function updateRole(
       entityId: id,
       action: 'updated',
       userId: auth.value.userId,
-      metadata: { name, permissions },
+      metadata: { name, permissions: validPermsUpdate },
     });
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[role-management] updateRole failed:', err);
+    return Err(new Error('Failed to update role. Please try again.'));
   }
 }
 
@@ -312,6 +330,7 @@ export async function deleteRole(id: string): Promise<Result<void, Error>> {
 
     return Ok(undefined);
   } catch (err) {
-    return Err(err instanceof Error ? err : new Error(String(err)));
+    console.error('[role-management] deleteRole failed:', err);
+    return Err(new Error('Failed to delete role. Please try again.'));
   }
 }

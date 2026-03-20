@@ -157,13 +157,18 @@ export function useCompositionWizard(): UseCompositionWizardResult {
         description,
       });
 
+      if (!result.ok) {
+        console.error('[CompositionWizard] Generation failed:', result.error.message);
+        return;
+      }
+
       // Convert base64 back to Blob and trigger download
-      const bytes = Uint8Array.from(atob(result.zipBase64), c => c.charCodeAt(0));
+      const bytes = Uint8Array.from(atob(result.value.zipBase64), c => c.charCodeAt(0));
       const blob = new Blob([bytes], { type: 'application/zip' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = result.fileName;
+      a.download = result.value.fileName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

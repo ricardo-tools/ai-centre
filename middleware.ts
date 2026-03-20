@@ -9,26 +9,45 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // Fail closed: if AUTH_SECRET is not configured in production, block all access
+  if (!process.env.AUTH_SECRET) {
+    console.error('[middleware] CRITICAL: AUTH_SECRET is not set in production. Blocking all requests.');
+    return new NextResponse('Service unavailable — authentication not configured', { status: 503 });
+  }
+
   if (
     pathname === '/login' ||
     pathname === '/robots.txt' ||
     pathname === '/api/health' ||
-    pathname.startsWith('/api/auth')
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon')
   ) {
     return NextResponse.next();
   }
 
   const token = request.cookies.get('auth-token')?.value;
   if (!token) {
+    console.log('[middleware] path:', pathname, 'has token: false — redirecting to /login');
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  const session = await verifySessionEdge(token);
+  let session;
+  try {
+    session = await verifySessionEdge(token);
+  } catch (err) {
+    console.error('[middleware] verifySessionEdge threw unexpectedly:', err);
+    session = null;
+  }
+
   if (!session) {
+    console.log('[middleware] path:', pathname, 'has token: true, session valid: false — redirecting to /login');
     const response = NextResponse.redirect(new URL('/login', request.url));
     response.cookies.delete('auth-token');
     return response;
   }
+
+  console.log('[middleware] path:', pathname, 'has token: true, session valid: true, role:', session.roleSlug);
 
   // Admin route protection — defense-in-depth (actions also check permissions)
   if (pathname.startsWith('/admin') && session.roleSlug !== 'admin') {
