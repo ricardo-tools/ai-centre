@@ -90,6 +90,7 @@ MAILGUN_FROM_EMAIL=        # (optional) Sender address — defaults to noreply@M
 MAILGUN_EU=                # (optional) Set to 'true' for EU endpoint
 ANTHROPIC_API_KEY=         # Showcase generation
 ADMIN_EMAIL=              # (optional) Auto-promote this email to admin on first login
+SKIP_AUTH=                # (optional) Set to 'true' ONLY in local dev — bypasses auth. NEVER set in production.
 SENTRY_DSN=               # (optional) Sentry error tracking — future
 ```
 

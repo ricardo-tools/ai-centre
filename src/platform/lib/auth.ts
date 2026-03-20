@@ -37,7 +37,7 @@ export async function createSession(userId: string, email: string, roleId: strin
 const DEV_IDENTITY_COOKIE = 'dev-identity';
 
 export async function getSession(): Promise<Session | null> {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.SKIP_AUTH === 'true') {
     const cookieStore = await cookies();
     const devIdentity = cookieStore.get(DEV_IDENTITY_COOKIE)?.value;
     if (devIdentity) {

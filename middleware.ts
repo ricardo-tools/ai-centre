@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 import { verifySessionEdge } from '@/platform/lib/auth-edge';
 
 export async function middleware(request: NextRequest) {
-  if (process.env.NODE_ENV === 'development') {
+  // Dev bypass: only when EXPLICITLY opted in via env var (never set this in production)
+  if (process.env.SKIP_AUTH === 'true') {
     return NextResponse.next();
   }
 
