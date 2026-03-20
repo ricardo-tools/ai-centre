@@ -78,7 +78,7 @@ export function SkillPicker({ available, selected, onChange }: SkillPickerProps)
   };
 
   return (
-    <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
       {/* Left panel — Available */}
       <div style={panelStyle}>
         <div style={headerStyle}>Available ({availableFiltered.length})</div>

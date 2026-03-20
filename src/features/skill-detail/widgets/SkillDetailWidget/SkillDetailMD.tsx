@@ -22,7 +22,7 @@ export function SkillDetailMD({ skill, parsed }: SkillDetailMDProps) {
   const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
 
   return (
-    <div style={{ maxWidth: 720, padding: 16 }}>
+    <div style={{ maxWidth: 'max(720px, 70vw)', padding: 16 }}>
       {/* Hero */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>

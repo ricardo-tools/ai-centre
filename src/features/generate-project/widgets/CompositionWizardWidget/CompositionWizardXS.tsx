@@ -177,7 +177,6 @@ export function CompositionWizardXS({ wizard }: CompositionWizardXSProps) {
             fontSize: 12,
             lineHeight: 1.4,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box' as const,
           }}
         />

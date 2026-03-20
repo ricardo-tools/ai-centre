@@ -1167,7 +1167,7 @@ export function DesignFoundationsShowcase() {
 
       {/* ---- Consistency ---- */}
       <Section title="Consistency Rules">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12, gridAutoRows: '1fr' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 12, gridAutoRows: '1fr' }}>
           {[
             'Same hierarchy level = same font size everywhere',
             'Same role = same weight, color, spacing, border radius',

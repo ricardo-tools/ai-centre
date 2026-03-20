@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Rocket, Books } from '@phosphor-icons/react';
 
 export function HomeHero() {
@@ -17,15 +16,21 @@ export function HomeHero() {
         background: 'var(--color-bg)',
       }}
     >
-      {/* Theme-aware logo */}
+      {/* Theme-aware logo: colour on light/legacy, white on dark/night */}
       <div style={{ marginBottom: 24 }}>
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/logos/rectangle-color.png"
-          alt="AI Centre"
-          width={180}
-          height={40}
-          style={{ height: 40, width: 'auto' }}
-          priority
+          alt="ezyCollect by Sidetrade"
+          className="logo-color"
+          style={{ height: 24 }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logos/rectangle-white.png"
+          alt="ezyCollect by Sidetrade"
+          className="logo-white"
+          style={{ height: 24 }}
         />
       </div>
 
@@ -52,14 +57,14 @@ export function HomeHero() {
         Compose a toolkit. Generate a project. Open it in VS Code with Claude Code and start building.
       </p>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link
           href="/generate"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
-            padding: '10px 24px',
+            padding: '12px 24px',
             borderRadius: 6,
             background: 'var(--color-primary)',
             color: '#FFFFFF',
@@ -77,7 +82,7 @@ export function HomeHero() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 8,
-            padding: '10px 24px',
+            padding: '12px 24px',
             borderRadius: 6,
             border: '1px solid var(--color-border)',
             background: 'var(--color-surface)',

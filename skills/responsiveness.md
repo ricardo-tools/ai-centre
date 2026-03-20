@@ -57,7 +57,19 @@ When scaling from mobile to desktop, the mistake is enlarging mobile elements to
 
 Start with a baseline that works everywhere. Layer enhancements for more capable contexts. Every user gets a complete experience; some get a richer one. This is progressive enhancement applied to design, not just code.
 
-### 6. Typography and spacing are a system
+### 6. The layout shell owns no width — content does
+
+The root layout container must never have a fixed `maxWidth`. It provides responsive padding for breathing room and lets each page's content decide its own width constraints based on what it displays.
+
+Why: A global `maxWidth: 1200` caps every page at 62% utilisation on a 1920px screen. Card grids can't expand to more columns. Forms look lost. The shell constrains without knowing the content — the opposite of content-first design.
+
+**Rules:**
+- Layout shell: full width, responsive padding only (`16px` mobile → `32px 48px` desktop → `40px 80px` ultrawide)
+- Page content: each page sets its own constraints per content type (text capped at 65ch, grids fill available width, forms use proportional widths)
+- No nested maxWidth stacking — if the layout caps width, components inside it can't expand beyond that. Each constraint layer compounds.
+- Grids use `minmax(min(280px, 100%), 1fr)` so they expand with the container, not fight it
+
+### 7. Typography and spacing are a system
 
 They scale together, proportionally. Heading-to-body ratio may compress on mobile (less contrast between sizes) and expand on desktop (more visual hierarchy). Spacing follows the same rhythm — tighter on mobile (scrolling is primary), more generous on desktop (more visible at once). The interface should feel like one coherent design at every width, not three designs stitched together.
 
@@ -210,6 +222,7 @@ Content containers should scale with the viewport:
 | **Tables** | Card layout | Table if ≤4 cols, else cards | Full table | Full table with extra columns |
 | **Detail pages** | Full width, stacked | Content + sidebar if useful | Content + sidebar | Content + sidebar, wider sidebar |
 | **Text content** | Full width (natural constraint) | Max 65ch centered | Max 65ch centered | Max 65ch + side panel |
+| **Layout shell** | Full width, 16px padding | Full width, 32px padding | Full width, 48px padding | Full width, 64-80px padding |
 
 **Anti-patterns:**
 - ❌ `maxWidth: 640px` with no responsive scaling — use `max(640px, 50vw)` or percentage-based
@@ -227,6 +240,9 @@ On screens ≥1024px, verify:
 - [ ] Whitespace is intentional (separating groups) not incidental (leftover from a narrow max-width)
 - [ ] The page uses ≥60% of the viewport width for content
 - [ ] Tables show full data — no truncation on wide screens
+- [ ] No global layout maxWidth — the shell provides padding only, pages own their width
+- [ ] No nested maxWidth stacking that compounds to <60% viewport utilisation
+- [ ] Grids expand to fill available width (4+ columns at 1440px, 5-6 at 1920px)
 
 ---
 
@@ -248,6 +264,8 @@ For performance metrics and optimization techniques, see **web-performance**.
 - ❌ Content using <50% of viewport width on desktop → fill the space with density or context
 - ❌ CTA buttons far from their related content → anchor actions near their context
 - ❌ Auditing only for CSS breakage (overflow, clipping) → audit for design intent at each breakpoint
+- ❌ Global layout container with fixed maxWidth → layout shell provides padding only; pages own their width constraints
+- ❌ Nested maxWidth stacking (layout → page → component) → each layer compounds; audit the effective content width at each nesting level
 
 ---
 

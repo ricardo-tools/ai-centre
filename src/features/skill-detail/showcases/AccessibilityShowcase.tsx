@@ -53,7 +53,7 @@ export function AccessibilityShowcase() {
       {/* Keyboard Navigation */}
       <Section title="Keyboard Navigation">
         <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16 }}>Every interactive element must be reachable and operable with a keyboard. This is non-negotiable.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 100%), 1fr))', gap: 12 }}>
           {[
             { key: 'Tab', action: 'Move to next focusable element' },
             { key: 'Shift + Tab', action: 'Move to previous element' },

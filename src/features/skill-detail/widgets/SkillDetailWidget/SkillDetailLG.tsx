@@ -23,7 +23,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
   const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
 
   return (
-    <div style={{ maxWidth: 1060 }}>
+    <div style={{ maxWidth: 1024 }}>
       {/* Back link */}
       <Link
         href="/skills"
@@ -45,7 +45,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <h1
             style={{
-              fontSize: 32,
+              fontSize: 24,
               fontWeight: 700,
               color: 'var(--color-text-heading)',
               margin: 0,
@@ -98,7 +98,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
-              padding: '8px 16px',
+              padding: '10px 20px',
               borderRadius: 6,
               background: 'var(--color-primary)',
               color: '#FFFFFF',
@@ -116,6 +116,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
               display: 'flex',
               borderRadius: 6,
               border: '1px solid var(--color-border)',
+              background: 'transparent',
               overflow: 'hidden',
             }}
           >

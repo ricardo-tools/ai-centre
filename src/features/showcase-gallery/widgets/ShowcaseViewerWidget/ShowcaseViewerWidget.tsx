@@ -338,13 +338,15 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             {copied ? <><Check size={12} /> Copied!</> : <><LinkSimple size={12} /> Share</>}
           </button>
 
-          {/* Fullscreen */}
-          <button
-            onClick={() => setIsFullscreen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-          >
-            <ArrowsOut size={12} /> Fullscreen
-          </button>
+          {/* Fullscreen (HTML only — ZIP has no meaningful fullscreen view) */}
+          {showcase.fileType !== 'zip' && (
+            <button
+              onClick={() => setIsFullscreen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <ArrowsOut size={12} /> Fullscreen
+            </button>
+          )}
 
           {/* Download */}
           <a
@@ -525,15 +527,15 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
               top: 16,
               left: 16,
               zIndex: 10000,
-              background: 'rgba(0,0,0,0.6)',
-              color: 'white',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-body)',
               borderRadius: 8,
               padding: '8px 16px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
-              border: 'none',
               fontSize: 13,
               fontWeight: 500,
               fontFamily: 'inherit',

@@ -210,7 +210,6 @@ export function ProjectGeneratorSM({ skills, archetypes }: ProjectGeneratorSMPro
             fontSize: 12,
             lineHeight: 1.4,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box',
           }}
         />

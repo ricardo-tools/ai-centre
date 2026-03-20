@@ -211,7 +211,6 @@ export function ProjectGeneratorMD({ skills, archetypes }: ProjectGeneratorMDPro
             fontSize: 13,
             lineHeight: 1.4,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box',
           }}
         />

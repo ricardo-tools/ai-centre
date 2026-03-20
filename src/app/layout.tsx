@@ -53,9 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             slots={{
               'main-content': (
                 <div className="main-content" style={{ overflowY: 'auto', height: '100%' }}>
-                  <div style={{ maxWidth: 1200, marginInline: 'auto' }}>
-                    {children}
-                  </div>
+                  {children}
                 </div>
               ),
             }}

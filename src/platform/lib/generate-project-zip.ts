@@ -16,12 +16,8 @@ function generateClaudeMd(options: GenerateZipOptions): string {
     .map((s) => `- **skills/${s.slug}.md** — ${s.description}`)
     .join('\n');
 
-  const skillRefs = options.selectedSkills
-    .map((s, i) => `${i + 1}. **\`skills/${s.slug}.md\`** — ${s.title}`)
-    .join('\n');
-
   const promptRefinementDirective = hasPromptRefinement
-    ? `\n> **On any request that changes the application:** apply the **prompt-refinement** skill (\`skills/prompt-refinement.md\`). Present a refined prompt with intent, scope, constraints, and relevant skills. **Wait for user confirmation before starting work.** Always execute, no exceptions.\n`
+    ? `\n> **On any request:** apply the **prompt-refinement** skill (\`skills/prompt-refinement.md\`). Scan the skill library for applicable skills. Suggest research if non-trivial. Suggest planning if multi-step. Present a refined prompt. **Wait for user confirmation before starting work.** Always execute, no exceptions.\n`
     : '';
 
   return `# ${options.archetypeName} Project
@@ -39,14 +35,6 @@ ${options.userDescription || '_No description provided._'}
 ## Included Skills
 
 ${skillList}
-
----
-
-## Mandatory Skills
-
-Always read and follow all included SKILL.md files before starting any work. They are the source of truth for architecture, styling, and design quality.
-
-${skillRefs}
 
 ---
 

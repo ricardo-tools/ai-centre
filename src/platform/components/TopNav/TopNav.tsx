@@ -45,29 +45,47 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: compact ? 0 : 10,
+          gap: compact ? 8 : 10,
           textDecoration: 'none',
           marginRight: compact ? 16 : 32,
           flexShrink: 0,
         }}
       >
         {/* Theme-aware logo: colour on light/legacy, white on dark/night */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/rectangle-color.png"
-          alt="ezyCollect by Sidetrade"
-          className="logo-color"
-          style={{ height: 20, display: 'block' }}
-        />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/rectangle-white.png"
-          alt="ezyCollect by Sidetrade"
-          className="logo-white"
-          style={{ height: 20, display: 'none' }}
-        />
-        {!compact && (
+        {compact ? (
           <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/square-color.png"
+              alt="ezyCollect"
+              className="logo-color"
+              style={{ height: 24 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/square-white.svg"
+              alt="ezyCollect"
+              className="logo-white"
+              style={{ height: 24 }}
+            />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)' }}>{brandName}</span>
+          </>
+        ) : (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/rectangle-color.png"
+              alt="ezyCollect by Sidetrade"
+              className="logo-color"
+              style={{ height: 20 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/rectangle-white.png"
+              alt="ezyCollect by Sidetrade"
+              className="logo-white"
+              style={{ height: 20 }}
+            />
             <span style={{ width: 1, height: 18, background: 'var(--color-border)', marginInline: 2 }} />
             <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-heading)', letterSpacing: '-0.01em' }}>{brandName}</span>
           </>
@@ -89,7 +107,7 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                paddingInline: compact ? 10 : 16,
+                paddingInline: compact ? 8 : 16,
                 height: '100%',
                 color: isActive
                   ? 'var(--color-topnav-text)'
@@ -118,7 +136,7 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                paddingLeft: compact ? 8 : 12,
+                paddingLeft: compact ? 8 : 16,
                 borderLeft: '1px solid var(--color-topnav-border)',
                 marginLeft: 4,
               }}

@@ -44,7 +44,7 @@ export function BrandDesignShowcase() {
       {/* ---- Color Palette ---- */}
       <Section title="Color Palette">
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Brand Colors</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 16, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(120px, 100%), 1fr))', gap: 16, marginBottom: 32 }}>
           <Swatch color="#FF5A28" name="Orange" hex="#FF5A28" />
           <Swatch color="#FFF2EB" name="Light Orange" hex="#FFF2EB" />
           <Swatch color="#1462D2" name="Electric Blue" hex="#1462D2" />
@@ -53,7 +53,7 @@ export function BrandDesignShowcase() {
         </div>
 
         <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Night Mode Surfaces</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(120px, 100%), 1fr))', gap: 16 }}>
           <Swatch color="#0F0F0F" name="Surface 0" hex="#0F0F0F" />
           <Swatch color="#212121" name="Surface 1" hex="#212121" />
           <Swatch color="#272727" name="Surface 2" hex="#272727" />
@@ -65,7 +65,7 @@ export function BrandDesignShowcase() {
       {/* ---- Semantic Tokens Live ---- */}
       <Section title="Semantic Tokens (Live)">
         <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16 }}>These swatches reflect your current theme. Toggle Light/Night to see them change.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 16 }}>
           <SemanticToken token="--color-primary" label="Primary" />
           <SemanticToken token="--color-primary-muted" label="Primary Muted" />
           <SemanticToken token="--color-secondary" label="Secondary" />
@@ -125,7 +125,7 @@ export function BrandDesignShowcase() {
 
       {/* ---- Phosphor Icons ---- */}
       <Section title="Phosphor Icons">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 100%), 1fr))', gap: 16, marginBottom: 24 }}>
           {[
             { Icon: Heart, label: 'Heart' },
             { Icon: Star, label: 'Star' },
@@ -202,7 +202,7 @@ export function BrandDesignShowcase() {
           Five Tailwind-sourced accent families for tags, badges, chart series, and decorative elements. Each adapts per theme. These are NOT status colors — success, warning, and danger remain the only semantic status indicators.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(160px, 100%), 1fr))', gap: 16, marginBottom: 24 }}>
           {[
             { name: 'Violet', token: '--color-comp-violet', mutedToken: '--color-comp-violet-muted' },
             { name: 'Teal', token: '--color-comp-teal', mutedToken: '--color-comp-teal-muted' },
@@ -247,7 +247,7 @@ export function BrandDesignShowcase() {
           Theme-aware gradient presets. Each adapts automatically when the theme switches. Use sparingly — hero sections, featured cards, empty states.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 16, marginBottom: 24 }}>
           {[
             { name: 'Warm', token: '--gradient-warm', desc: 'Orange \u2192 Rose \u2014 CTAs, hero sections' },
             { name: 'Cool', token: '--gradient-cool', desc: 'Blue \u2192 Teal \u2014 data headers, info panels' },

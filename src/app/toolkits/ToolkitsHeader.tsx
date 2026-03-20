@@ -6,7 +6,7 @@ import { PageHeader } from '@/platform/components/PageHeader';
 export function ToolkitsHeader() {
   const { t } = useLocale();
   return (
-    <div style={{ maxWidth: 960 }}>
+    <div>
       <PageHeader title={t('toolkits.title')} subtitle={t('toolkits.subtitle')} />
     </div>
   );

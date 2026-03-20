@@ -215,7 +215,7 @@ export function CreativeToolkitChartsReferenceShowcase() {
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, marginTop: 0 }}>
           Known limitation: Nivo accepts hex strings, not CSS variables. These values duplicate semantic tokens. When brand colours change, update both globals.css and the theme file.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <ThemePropertyTable title="text" rows={THEME_TEXT} />
           <ThemePropertyTable title="axis.ticks.text" rows={THEME_AXIS_TICKS} />
           <ThemePropertyTable title="axis.legend.text" rows={THEME_AXIS_LEGEND} />
@@ -224,7 +224,7 @@ export function CreativeToolkitChartsReferenceShowcase() {
 
       {/* Section 3: Nivo Theme — Grid, Crosshair, Labels */}
       <Section title="Nivo Theme — Grid, Crosshair & Labels">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <ThemePropertyTable title="grid.line" rows={THEME_GRID} />
           <ThemePropertyTable title="crosshair.line" rows={THEME_CROSSHAIR} />
           <ThemePropertyTable title="labels.text" rows={THEME_LABELS} />

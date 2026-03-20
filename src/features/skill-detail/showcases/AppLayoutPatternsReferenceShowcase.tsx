@@ -242,7 +242,7 @@ export function AppLayoutPatternsReferenceShowcase() {
 
       {/* Section 5: Mega Menu Panel Specs */}
       <Section title="Pattern B — Mega Menu Panel Specs">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 12 }}>
           {[
             { label: 'Position', value: 'absolute, top: 56px, flush below navbar' },
             { label: 'Full-width variant', value: 'left: 0, right: 0 — for 3+ sections' },
@@ -582,7 +582,7 @@ export function AppLayoutPatternsReferenceShowcase() {
         </div>
         <div>
           <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-heading)', marginBottom: 8 }}>Background Treatment Options</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 12 }}>
             {[
               { name: 'Solid (default)', use: 'Login, signup, forms', value: 'var(--color-bg) or var(--color-bg-alt)' },
               { name: 'Gradient', use: 'Landing, onboarding', value: 'linear-gradient(135deg, var(--color-bg), var(--color-bg-alt))' },
@@ -634,7 +634,7 @@ export function AppLayoutPatternsReferenceShowcase() {
 
       {/* Section 12: Implementation Checklists */}
       <Section title="Implementation Checklists">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           <ChecklistGroup
             title="Pattern B (TopBar + Mega Menus)"
             items={[

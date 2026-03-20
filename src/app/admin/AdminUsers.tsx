@@ -145,13 +145,15 @@ export function AdminUsers() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '10px 16px',
+                  flexWrap: 'wrap',
+                  gap: 8,
+                  padding: '8px 16px',
                   borderRadius: 8,
                   border: '1px solid var(--color-border)',
                   background: 'var(--color-surface)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-heading)' }}>
                     {inv.email}
                   </span>
@@ -241,7 +243,7 @@ function InviteForm({ roles, onSubmit, onCancel, loading, error }: InviteFormPro
         marginBottom: 16,
       }}
     >
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 300px' }}>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 4 }}>
             Email

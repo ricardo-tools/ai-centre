@@ -207,7 +207,6 @@ export function ProjectGeneratorXS({ skills, archetypes }: ProjectGeneratorXSPro
               fontSize: 12,
               lineHeight: 1.4,
               resize: 'vertical',
-              outline: 'none',
               boxSizing: 'border-box',
             }}
           />

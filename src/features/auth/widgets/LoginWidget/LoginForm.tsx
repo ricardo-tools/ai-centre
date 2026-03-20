@@ -249,6 +249,7 @@ function EmailStep({
         {t('login.emailLabel')}
       </label>
       <div
+        className="search-wrapper"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -273,7 +274,6 @@ function EmailStep({
           style={{
             flex: 1,
             border: 'none',
-            outline: 'none',
             background: 'transparent',
             fontFamily: 'inherit',
             fontSize: 15,
@@ -435,13 +435,6 @@ function VerifyStep({
               borderRadius: 8,
               background: 'var(--color-bg)',
               color: 'var(--color-text-heading)',
-              outline: 'none',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--color-primary)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'var(--color-border)';
             }}
           />
         ))}

@@ -20,7 +20,7 @@ export function HomeToolkits() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 100%), 1fr))',
           gap: 16,
         }}
       >
@@ -30,22 +30,16 @@ export function HomeToolkits() {
             <Link
               key={preset.slug}
               href={`/generate?preset=${preset.slug}`}
+              className="card-hover"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                padding: 20,
+                padding: 24,
                 borderRadius: 8,
                 border: '1px solid var(--color-border)',
                 background: 'var(--color-surface)',
                 textDecoration: 'none',
                 cursor: 'pointer',
-                transition: 'border-color 150ms',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-primary)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)';
               }}
             >
               <span style={{ fontSize: 28, marginBottom: 8 }}>{preset.icon}</span>

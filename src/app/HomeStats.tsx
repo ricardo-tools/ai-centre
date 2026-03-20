@@ -21,8 +21,6 @@ export function HomeStats() {
         alignItems: 'center',
         gap: 24,
         padding: '16px 0',
-        borderTop: '1px solid var(--color-border)',
-        borderBottom: '1px solid var(--color-border)',
         flexWrap: 'wrap',
       }}
     >

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Check } from '@phosphor-icons/react';
 import { useRoles, type RawRole } from '@/features/role-management/useRoles';
 import { getPermissionsByCategory, type Permission } from '@/platform/lib/permissions';
 import { ConfirmDialog } from '@/platform/components/ConfirmDialog';
@@ -90,7 +91,7 @@ export function AdminRoles() {
           No roles defined.
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {roles.map((role) => (
             <RoleCard
               key={role.id}
@@ -164,7 +165,7 @@ function RoleCard({ role, isEditing, onEdit, onCancelEdit, onSaveEdit, onDelete,
       {/* Card header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-heading)' }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)' }}>
             {role.name}
           </span>
           {role.isSystem && (
@@ -261,7 +262,7 @@ function RoleCard({ role, isEditing, onEdit, onCancelEdit, onSaveEdit, onDelete,
 
       {/* View-only permissions for system roles */}
       {role.isSystem && (
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: 8 }}>
             Permissions
           </div>
@@ -348,7 +349,7 @@ function RoleForm({ initial, onSave, onCancel, isSubmitting }: RoleFormProps) {
       }}
     >
       {/* Name input */}
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 16 }}>
         <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 4 }}>
           Name
         </label>
@@ -439,8 +440,13 @@ function RoleForm({ initial, onSave, onCancel, isSubmitting }: RoleFormProps) {
               {isExpanded && (
                 <div style={{ padding: '8px 12px' }}>
                   {perms.map((perm) => (
-                    <label
+                    <div
                       key={perm.key}
+                      role="checkbox"
+                      aria-checked={selectedPerms.has(perm.key)}
+                      tabIndex={0}
+                      onClick={() => togglePerm(perm.key)}
+                      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); togglePerm(perm.key); } }}
                       style={{
                         display: 'flex',
                         alignItems: 'flex-start',
@@ -449,12 +455,23 @@ function RoleForm({ initial, onSave, onCancel, isSubmitting }: RoleFormProps) {
                         cursor: 'pointer',
                       }}
                     >
-                      <input
-                        type="checkbox"
-                        checked={selectedPerms.has(perm.key)}
-                        onChange={() => togglePerm(perm.key)}
-                        style={{ marginTop: 2 }}
-                      />
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          borderRadius: 4,
+                          border: selectedPerms.has(perm.key) ? 'none' : '1px solid var(--color-border)',
+                          background: selectedPerms.has(perm.key) ? 'var(--color-primary)' : 'var(--color-surface)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: 2,
+                          transition: 'background 0.15s, border-color 0.15s',
+                        }}
+                      >
+                        {selectedPerms.has(perm.key) && <Check size={12} weight="bold" color="#fff" />}
+                      </div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-body)' }}>
                           {perm.label}
@@ -463,7 +480,7 @@ function RoleForm({ initial, onSave, onCancel, isSubmitting }: RoleFormProps) {
                           {perm.description}
                         </div>
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               )}

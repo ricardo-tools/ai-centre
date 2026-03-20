@@ -88,7 +88,7 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
   const FileIcon = file?.name.endsWith('.zip') ? FileZip : FileHtml;
 
   return (
-    <div style={{ maxWidth: 800, width: '100%', margin: '0 auto' }}>
+    <div style={{ maxWidth: 'max(640px, 50vw)', width: '100%', margin: '0 auto' }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-heading)', marginBottom: 8 }}>
         Share Your Project
       </h1>

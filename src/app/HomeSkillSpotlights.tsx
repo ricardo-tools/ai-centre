@@ -24,7 +24,7 @@ export function HomeSkillSpotlights() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
           gap: 16,
         }}
       >
@@ -32,10 +32,11 @@ export function HomeSkillSpotlights() {
           <Link
             key={skill.slug}
             href={`/skills/${skill.slug}`}
+            className="card-hover"
             style={{
               display: 'flex',
               flexDirection: 'column',
-              padding: 20,
+              padding: 24,
               borderRadius: 8,
               border: '1px solid var(--color-border)',
               background: 'var(--color-surface)',
@@ -47,7 +48,7 @@ export function HomeSkillSpotlights() {
                 fontSize: 14,
                 fontWeight: 600,
                 color: 'var(--color-text-heading)',
-                marginBottom: 6,
+                marginBottom: 8,
               }}
             >
               {skill.title}
@@ -57,7 +58,7 @@ export function HomeSkillSpotlights() {
                 fontSize: 13,
                 color: 'var(--color-text-muted)',
                 lineHeight: 1.5,
-                margin: '0 0 12px',
+                margin: '0 0 16px',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical' as const,
@@ -66,7 +67,7 @@ export function HomeSkillSpotlights() {
             >
               {skill.description}
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16 }}>
               <span
                 style={{
                   fontSize: 10,
@@ -101,7 +102,7 @@ export function HomeSkillSpotlights() {
                 alignItems: 'center',
                 gap: 4,
                 fontSize: 13,
-                color: 'var(--color-secondary)',
+                color: 'var(--color-text-body)',
                 fontWeight: 500,
                 marginTop: 'auto',
               }}

@@ -30,7 +30,7 @@ function ShowcaseCard({ showcase, fullWidth }: { showcase: RawShowcaseUpload; fu
       }}
     >
       {/* Type badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <div
           style={{
             display: 'inline-flex',
@@ -55,7 +55,7 @@ function ShowcaseCard({ showcase, fullWidth }: { showcase: RawShowcaseUpload; fu
           fontSize: fullWidth ? 18 : 16,
           fontWeight: 600,
           color: 'var(--color-text-heading)',
-          margin: '0 0 6px',
+          margin: '0 0 8px',
         }}
       >
         {showcase.title}
@@ -67,7 +67,7 @@ function ShowcaseCard({ showcase, fullWidth }: { showcase: RawShowcaseUpload; fu
           style={{
             fontSize: 14,
             color: 'var(--color-text-muted)',
-            margin: '0 0 12px',
+            margin: '0 0 16px',
             lineHeight: 1.5,
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -81,7 +81,7 @@ function ShowcaseCard({ showcase, fullWidth }: { showcase: RawShowcaseUpload; fu
 
       {/* Skills used */}
       {showcase.skillIds.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 16 }}>
           {showcase.skillIds.slice(0, 4).map((slug) => (
             <span
               key={slug}
@@ -112,7 +112,7 @@ function ShowcaseCard({ showcase, fullWidth }: { showcase: RawShowcaseUpload; fu
           alignItems: 'center',
           justifyContent: 'space-between',
           marginTop: 'auto',
-          paddingTop: 12,
+          paddingTop: 16,
           borderTop: '1px solid var(--color-border)',
         }}
       >
@@ -170,7 +170,25 @@ export function HomeShowcases() {
             Community showcases
           </h2>
         </div>
-        <div style={{ padding: 24, color: 'var(--color-text-muted)', fontSize: 14 }}>Loading...</div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
+            gap: 16,
+          }}
+        >
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              style={{
+                background: 'var(--color-bg-alt)',
+                borderRadius: 8,
+                height: 200,
+                animation: 'pulse 1.5s ease-in-out infinite',
+              }}
+            />
+          ))}
+        </div>
       </section>
     );
   }
@@ -266,7 +284,7 @@ export function HomeShowcases() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
             gap: 16,
           }}
         >

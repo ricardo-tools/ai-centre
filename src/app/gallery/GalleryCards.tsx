@@ -161,15 +161,15 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
   return (
     <Link
       href={`/gallery/${showcase.id}`}
+      className="card-hover"
       style={{
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 12,
+        borderRadius: 8,
         border: '1px solid var(--color-border)',
         background: 'var(--color-surface)',
         textDecoration: 'none',
         overflow: 'hidden',
-        transition: 'border-color 150ms',
       }}
     >
       <FeaturedPreview showcase={showcase} />
@@ -182,7 +182,7 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             fontSize: 18,
             fontWeight: 700,
             color: 'var(--color-text-heading)',
-            margin: '0 0 6px',
+            margin: '0 0 8px',
           }}
         >
           {showcase.title}
@@ -192,14 +192,14 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             style={{
               fontSize: 14,
               color: 'var(--color-text-muted)',
-              margin: '0 0 12px',
+              margin: '0 0 16px',
               lineHeight: 1.5,
             }}
           >
             {showcase.description}
           </p>
         )}
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 16 }}>
           <SkillBadges skillIds={showcase.skillIds} />
         </div>
         <div
@@ -207,7 +207,7 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: 12,
+            paddingTop: 16,
             borderTop: '1px solid var(--color-border)',
           }}
         >
@@ -231,7 +231,7 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
               alignItems: 'center',
               gap: 4,
               fontSize: 13,
-              color: 'var(--color-secondary)',
+              color: 'var(--color-text-body)',
               fontWeight: 500,
             }}
           >
@@ -247,6 +247,7 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
   return (
     <Link
       href={`/gallery/${showcase.id}`}
+      className="card-hover"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -255,11 +256,10 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
         background: 'var(--color-surface)',
         textDecoration: 'none',
         overflow: 'hidden',
-        transition: 'border-color 150ms',
       }}
     >
       <Preview showcase={showcase} />
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <TypeBadge fileType={showcase.fileType} />
         </div>
@@ -268,12 +268,12 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             fontSize: 14,
             fontWeight: 700,
             color: 'var(--color-text-heading)',
-            margin: '0 0 6px',
+            margin: '0 0 8px',
           }}
         >
           {showcase.title}
         </h3>
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 16 }}>
           <SkillBadges skillIds={showcase.skillIds} max={3} />
         </div>
         <div
@@ -282,7 +282,7 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             alignItems: 'center',
             justifyContent: 'space-between',
             marginTop: 'auto',
-            paddingTop: 12,
+            paddingTop: 16,
             borderTop: '1px solid var(--color-border)',
           }}
         >
@@ -300,6 +300,18 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>
+          <span
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              fontSize: 13,
+              color: 'var(--color-text-body)',
+              fontWeight: 500,
+            }}
+          >
+            View <ArrowRight size={14} />
+          </span>
         </div>
       </div>
     </Link>
@@ -357,7 +369,7 @@ function EmptyState() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 6,
-            padding: '10px 20px',
+            padding: '8px 24px',
             borderRadius: 6,
             background: 'var(--color-primary)',
             color: '#FFFFFF',
@@ -374,7 +386,7 @@ function EmptyState() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(160px, 100%), 1fr))',
           gap: 16,
         }}
       >
@@ -392,7 +404,7 @@ function EmptyState() {
               background: 'var(--color-surface)',
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 8,
             }}
           >
             <HintIcon
@@ -423,6 +435,7 @@ function SearchInput({
 }) {
   return (
     <div
+      className="search-wrapper"
       style={{
         position: 'relative',
         marginBottom: 24,
@@ -447,13 +460,12 @@ function SearchInput({
         placeholder="Search showcases..."
         style={{
           width: '100%',
-          padding: '10px 12px 10px 38px',
+          padding: '8px 16px 8px 40px',
           borderRadius: 8,
           border: '1px solid var(--color-border)',
           background: 'var(--color-surface)',
           color: 'var(--color-text-body)',
           fontSize: 14,
-          outline: 'none',
           boxSizing: 'border-box',
         }}
       />
@@ -587,7 +599,7 @@ export function GalleryCards() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
             gap: 16,
           }}
         >

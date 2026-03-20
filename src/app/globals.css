@@ -7,6 +7,7 @@
 
 html, body {
   height: 100%;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -300,6 +301,9 @@ html, body {
 @media (min-width: 1024px) {
   .main-content { padding: 32px 48px; }
 }
+@media (min-width: 1440px) {
+  .main-content { padding: 40px 80px; }
+}
 
 /* === Markdown Mobile Fixes === */
 .markdown-content table {
@@ -333,8 +337,33 @@ html, body {
   .home-hero-title { font-size: 28px; }
 }
 
+/* === Card Hover === */
+.card-hover {
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.card-hover:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* === Input Focus States === */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary) !important;
+  outline: none;
+}
+.search-wrapper:focus-within {
+  border-color: var(--color-primary) !important;
+}
+
 /* === Utility Animations === */
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }

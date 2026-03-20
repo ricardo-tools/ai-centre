@@ -19,7 +19,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('users');
 
   return (
-    <div style={{ maxWidth: 1200 }}>
+    <div>
       <PageHeader title="Admin" subtitle="Manage users, roles, and permissions." />
       <div style={{ marginBottom: 24 }}>
         <Tabs items={TABS} activeKey={activeTab} onChange={setActiveTab} />

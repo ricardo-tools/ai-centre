@@ -300,7 +300,7 @@ export function PptxExportShowcase() {
         {/* Self-check */}
         <div style={{ padding: 16, borderRadius: 6, background: 'var(--color-bg-alt)', border: '1px solid var(--color-border)' }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-heading)', marginBottom: 8 }}>Brand Self-Check</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(250px, 100%), 1fr))', gap: 6 }}>
             {[
               'fontFace: \'Jost\' on every addText call?',
               'All colors reference palette object?',
@@ -689,7 +689,7 @@ export function PptxExportShowcase() {
         {/* Split layout balance */}
         <div style={{ padding: 16, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
           <h4 style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)', marginBottom: 8 }}>Split Layout Balance</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(200px, 100%), 1fr))', gap: 8 }}>
             {[
               'Add supporting detail text on lighter side',
               'Add secondary visual (stat, badge, accent)',
@@ -803,7 +803,7 @@ export function PptxExportShowcase() {
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
           Run this 12-category checklist after completing the PPTX export function, before delivering.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {CHECKLIST_CATEGORIES.map((cat) => (
             <div
               key={cat.category}

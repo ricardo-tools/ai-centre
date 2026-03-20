@@ -57,6 +57,7 @@ export function AdminPermissions() {
                 {category}
               </h3>
             </div>
+            <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
@@ -88,6 +89,7 @@ export function AdminPermissions() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ))}
       </div>

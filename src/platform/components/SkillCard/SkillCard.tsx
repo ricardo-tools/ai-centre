@@ -20,6 +20,7 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
   return (
     <Link
       href={`/skills/${slug}`}
+      className="card-hover"
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -28,7 +29,6 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
         border: '1px solid var(--color-border)',
         background: 'var(--color-surface)',
         textDecoration: 'none',
-        transition: 'border-color 150ms, box-shadow 150ms',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -50,11 +50,11 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
           </span>
         )}
       </div>
-      <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0, flex: 1, lineHeight: 1.5 }}>
+      <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0, flex: 1, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>
         {description}
       </p>
       {tags && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 12 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 16 }}>
           <span style={{
             fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 3,
             background: tags.type === 'principle' ? 'var(--color-primary-muted)' : tags.type === 'implementation' ? 'var(--color-success-muted)' : 'var(--color-bg-alt)',
@@ -83,7 +83,7 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
         {version && (
           <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>v{version}</span>
         )}
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-secondary)', fontWeight: 500 }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-body)', fontWeight: 500 }}>
           {viewLabel} <ArrowRight size={14} />
         </span>
       </div>

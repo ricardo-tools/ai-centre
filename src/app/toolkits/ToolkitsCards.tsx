@@ -19,8 +19,8 @@ function getAddonNames(addonSlugs: readonly string[]): string[] {
 
 export function ToolkitsCards() {
   return (
-    <div style={{ maxWidth: 960 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(360px, 100%), 1fr))', gap: 24 }}>
         {TOOLKIT_PRESETS.map((preset) => (
           <ToolkitCard
             key={preset.slug}

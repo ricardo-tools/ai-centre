@@ -20,7 +20,9 @@ export function ToolkitCard({
   skillCount,
 }: ToolkitCardProps) {
   return (
-    <div
+    <Link
+      href={`/generate?preset=${slug}`}
+      className="card-hover"
       style={{
         padding: 24,
         borderRadius: 8,
@@ -28,10 +30,11 @@ export function ToolkitCard({
         background: 'var(--color-surface)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 16,
+        textDecoration: 'none',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <span style={{ fontSize: 32 }}>{icon}</span>
         <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>{title}</h2>
       </div>
@@ -80,8 +83,7 @@ export function ToolkitCard({
       </p>
 
       <div style={{ marginTop: 'auto', paddingTop: 8 }}>
-        <Link
-          href={`/generate?preset=${slug}`}
+        <span
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -92,12 +94,11 @@ export function ToolkitCard({
             color: '#fff',
             fontSize: 13,
             fontWeight: 600,
-            textDecoration: 'none',
           }}
         >
           Use this toolkit →
-        </Link>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }

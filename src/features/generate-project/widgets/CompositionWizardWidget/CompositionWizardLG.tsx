@@ -47,7 +47,7 @@ const cardBase: React.CSSProperties = {
 
 function selectedCardBorder(isSelected: boolean): React.CSSProperties {
   return {
-    border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+    border: isSelected ? '2px solid var(--color-primary)' : '2px solid var(--color-border)',
     background: isSelected ? 'var(--color-primary-muted)' : 'var(--color-surface)',
   };
 }
@@ -140,7 +140,7 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
   const canGenerate = selectedDomain !== null && description.trim().length > 0;
 
   return (
-    <div style={{ maxWidth: 900, width: '100%' }}>
+    <div style={{ maxWidth: 1200, width: '100%' }}>
       {/* Page title */}
       <h1
         style={{
@@ -167,7 +167,7 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
             gap: 16,
           }}
         >
@@ -239,7 +239,7 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px, 100%), 1fr))',
               gap: 12,
             }}
           >
@@ -436,7 +436,6 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
                       color: 'var(--color-text-body)',
                       fontSize: 13,
                       fontFamily: 'inherit',
-                      outline: 'none',
                     }}
                   />
                   <button
@@ -532,7 +531,6 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
             fontSize: 14,
             lineHeight: 1.5,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box' as const,
             marginBottom: 16,
           }}
@@ -548,13 +546,13 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
               padding: '12px 32px',
               borderRadius: 6,
               border: 'none',
-              background: !canGenerate ? 'var(--color-border)' : 'var(--color-primary)',
+              background: !canGenerate ? 'var(--color-bg-alt)' : 'var(--color-primary)',
               color: !canGenerate ? 'var(--color-text-muted)' : '#fff',
               fontSize: 14,
               fontWeight: 600,
-              cursor: !canGenerate ? 'default' : 'pointer',
+              cursor: !canGenerate ? 'not-allowed' : 'pointer',
               fontFamily: 'inherit',
-              opacity: isGenerating ? 0.7 : 1,
+              opacity: !canGenerate ? 0.5 : isGenerating ? 0.7 : 1,
             }}
           >
             <Rocket size={18} weight="fill" />
@@ -584,7 +582,7 @@ function ImplementationGroup({
     <div>
       <h3
         style={{
-          fontSize: 15,
+          fontSize: 16,
           fontWeight: 600,
           color: 'var(--color-text-heading)',
           marginBottom: 12,
@@ -596,7 +594,7 @@ function ImplementationGroup({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))',
           gap: 12,
         }}
       >
@@ -611,7 +609,7 @@ function ImplementationGroup({
                 borderRadius: 8,
                 border: isSelected
                   ? '2px solid var(--color-primary)'
-                  : '1px solid var(--color-border)',
+                  : '2px solid var(--color-border)',
                 background: isSelected ? 'var(--color-primary-muted)' : 'var(--color-surface)',
                 cursor: 'pointer',
                 textAlign: 'left' as const,

@@ -1,34 +1,33 @@
 ---
 name: prompt-refinement
 description: >
-  Translates unstructured user requests into clear, AI-effective prompts before
-  execution. Triggers on any application change request. Clarifies intent,
-  identifies affected areas, selects relevant skills, and suggests a refined
-  prompt proportional to the original request. The user approves or adjusts
-  before work begins.
+  Triggers on every user request. Translates unstructured requests into clear,
+  AI-effective prompts before execution. Scans the skill library to find
+  applicable skills, suggests research when non-trivial, suggests planning when
+  multi-phase. The user approves or adjusts before work begins.
 ---
 
 # Prompt Refinement
 
-A vague request produces vague work. This skill sits between the user's natural-language request and execution. It translates intent into structure — not by inflating the prompt, but by making the implicit explicit. The refined prompt should be the smallest clear statement that eliminates ambiguity.
-
-This is not a creativity exercise. It is a compression exercise: extract what the user actually means, name the things they're assuming, and surface the decisions they haven't made yet.
+Every request gets refined before execution. This skill sits between the user's natural-language request and any action. It translates intent into structure — not by inflating the prompt, but by making the implicit explicit.
 
 ---
 
 ## When to Use
 
-**Trigger:** Any user request that changes the application — feature work, bug fixes, refactors, UI changes, data model changes, new pages, new components, configuration changes.
+**Trigger:** Every user request. No exceptions.
 
-**This includes bug fixes.** A user reporting "it's stuck on uploading" needs a refined prompt that identifies the root cause, the scope of the fix, and the skills involved — before you touch code. Bug fixes are changes.
+**The test:** Is the user asking you to do something? If yes, refine. It does not matter whether the request is:
+- A fresh topic or a follow-up to an ongoing conversation
+- A new feature or feedback on previous work ("this needs a better audit")
+- A one-line fix or a multi-day initiative
+- Phrased as a question ("can you audit this?") or a statement ("the design needs work")
 
-**Do NOT trigger for:**
-- Questions about how the code works (just answer)
-- Requests to read, search, or explain code (just do it)
-- Git operations, dependency installs, or running commands (just do it)
-- Skill file creation/editing when the user has already described the skill in detail
+**Conversation continuations are NOT exempt.** A user saying "still need a better audit, skip the margins" after a previous audit is a new request — it triggers refinement with research and planning evaluation. The fact that you were already discussing audits does not make this a continuation. It is a new action request.
 
-**There is no "skip" escape hatch.** Do not skip refinement because a fix looks obvious. Even a one-line fix gets a 2-line refinement. The discipline is the value — it prevents you from solving the wrong problem or missing adjacent issues.
+This includes: feature work, bug fixes, refactors, UI changes, questions about the project, skill creation, audits, deployments, configuration changes, discussions about architecture, feedback on previous work that implies further action.
+
+**There is no "skip" escape hatch.** A one-line fix gets a 2-line refinement. A question about architecture gets skill references that inform the answer. The discipline prevents solving the wrong problem.
 
 ---
 
@@ -61,18 +60,23 @@ When the request is ambiguous, surface the ambiguity as a question rather than m
 - Architecture decisions (the skills define these)
 - Things where there's one obvious right answer
 
-### 3. Name the skills, don't repeat them
+### 3. Scan the skill library to find applicable skills
 
-Reference the relevant skills by name so the executor knows which to read. Don't copy skill content into the refined prompt — that defeats the purpose of having skills.
+Don't rely on memory or the lookup table alone. For every request, scan the skill files' "When to Use" sections to find which skills apply. The skill library has 60+ skills — the lookup table is a shortcut, not the source of truth.
+
+**Process:**
+1. Identify the type of work the request involves
+2. Check the "When to Use" triggers of candidate skills
+3. Check the "Do NOT use" boundaries to avoid false matches
+4. Name the applicable skills in the refinement — don't copy their content
 
 ```
-# Good — references skills
+# Good — references skills by name
 "Follow frontend-architecture for the widget pattern and brand-design-system for tokens."
 
-# Bad — copies skill content
+# Bad — copies skill content into the prompt
 "Create a widget with 4 size variants (XS/SM/MD/LG), each implementing
-RenderableWidget, using inline styles with var(--color-*) semantic tokens,
-following the 8px spacing system..."
+RenderableWidget, using inline styles with var(--color-*) semantic tokens..."
 ```
 
 ### 4. Structure the refinement as: intent → scope → constraints → skills
@@ -107,45 +111,64 @@ The only exception: if the user says "go" as part of their original request (e.g
 
 Present the refined prompt as a suggestion. The user approves, adjusts, or rejects. Format it clearly so they can scan it in 5 seconds.
 
-### 8. Research before refining when the request is non-trivial
+### 8. Suggest research when the request is non-trivial
 
-Before presenting the refined prompt, evaluate whether research is needed. If the request involves any of the following, do the research first, then incorporate findings into the refinement:
+Evaluate whether research should happen before or during refinement. Research and planning are independent — either can trigger without the other.
 
-- **A bug with unclear cause** — search for known issues in GitHub, check changelogs for the relevant dependency versions, reproduce systematically before proposing a fix direction.
-- **A technology decision** — evaluate alternatives, check community health (stars, last commit, open issues), review trade-offs. Don't refine a prompt around a library you haven't vetted.
-- **A pattern you haven't used in this codebase** — find established implementations, check for known gotchas, verify it works with the project's framework versions.
-- **A feature with multiple valid approaches** — research how others solved it, compare trade-offs on axes that matter for this project (performance, complexity, maintainability).
+**Suggest research when:**
+- A bug with unclear root cause — search for known issues, check changelogs, reproduce systematically
+- A technology decision — evaluate alternatives, check community health, review trade-offs
+- An unfamiliar pattern — find established implementations, check gotchas
+- Multiple valid approaches — research how others solved it, compare trade-offs
 
-When research is triggered, do it first, then fold findings into the refined prompt. The refinement should reference what the research found — not just name the skill, but state the relevant conclusion. For example:
+**How it works:** Suggest research in the refinement. Do the research. Fold findings into the refined prompt before presenting it. The refinement should state what the research found, not just "research needed."
 
 ```
 # Good — research finding informs the refinement
 "Research shows this is a known Next.js issue fixed in v16.2 (vercel/next.js#58432).
-The fix is to update next and use the new `unstable_cache` API instead of `fetch` cache.
-Scope: update package.json, refactor src/features/skill-library/action.ts."
+The fix is to update next and use the new `unstable_cache` API."
 
 # Bad — no research, just vibes
 "Fix the caching issue. Skills: nextjs-app-router-turbopack."
 ```
 
-If research reveals the user's proposed approach won't work, say so in the refinement — with evidence. "This approach has a known issue with [X] (source). Alternative: [Y]."
+If research reveals the user's proposed approach won't work, say so with evidence.
 
-See the **research** skill for methodology: source hierarchy, CRAAP testing, scientific debugging, and calibrating research depth to decision impact.
+See **research** skill for methodology.
 
-### 9. Plan before executing when work spans multiple phases
+### 9. Suggest planning when work spans multiple steps
 
-After research (if triggered) and before presenting the refined prompt, evaluate whether the work needs a plan:
+Planning is independent of research — a simple multi-file refactor needs a plan but no research. A technology decision needs research but maybe not a plan.
 
-- **Work touches 4+ files** — plan with phases
-- **Work has dependencies between steps** — plan with ordering (`[parallel]` / `[sequential]` markers)
-- **Work has irreversible steps** (migrations, deployments, schema changes) — plan with gates
-- **Work can be parallelised** — plan with parallel markers to avoid unnecessary sequential execution
+**Suggest planning when:**
+- Work touches 4+ files — plan with phases
+- Work has dependencies between steps — plan with ordering
+- Work has irreversible steps (migrations, schema changes) — plan with gates
+- Work can be parallelised — plan with parallel markers
 
-When a plan is needed, present it as part of the refined prompt — after intent/scope/constraints, before the skills list. Small tasks (1-3 files) can have an inline 2-3 line plan within the refinement. Medium+ tasks (4+ files) get a separate structured plan with phases, steps, completion criteria, and gates, following the format in the **planning** skill.
+**How it works:** After research (if it happened), build the plan. Present it as part of the refined prompt. The user approves the refinement including the plan — one confirmation, not two.
 
-The plan is part of the refinement, not a separate step. The user approves the refined prompt (including the plan) before work begins — one confirmation, not two.
+Small tasks (1-3 files): inline 2-3 line plan within the refinement.
+Medium+ tasks (4+ files): structured plan with phases, steps, completion criteria, gates.
 
-See the **planning** skill for the full framework: BLUF, commander's intent, three levels of detail, progressive elaboration, gates, failure classification, and the plan template.
+See **planning** skill for the full framework.
+
+### The orchestration flow
+
+```
+User request
+  → Refine (always)
+    → Scan skill library for applicable skills
+    → Suggest research? (if non-trivial — independent decision)
+    → Do research if suggested
+    → Suggest plan? (if multi-step — independent decision)
+    → Build plan if suggested (informed by research findings if available)
+  → Present refined prompt (with research findings + plan if applicable)
+  → Wait for confirmation
+  → Execute
+```
+
+Research and planning are tools this skill invokes — they don't self-trigger.
 
 ---
 
@@ -223,30 +246,40 @@ Constraints: Dev mode writes to `public/uploads/`. Production uses Vercel Blob. 
 
 ## Skill Selection Guide
 
-Match the request to the relevant skills. Not every request needs every skill. Select the minimum set that covers the work.
+This table is a **shortcut**, not the source of truth. Always scan the actual skill files' "When to Use" sections for the definitive match. The library has 60+ skills — this table covers the most common mappings.
 
 | Request involves... | Skills to activate |
 |---|---|
-| Any UI work | frontend-architecture, brand-design-system, design-foundations |
+| Any UI work | frontend-architecture, brand-design-system, design-foundations, responsiveness |
 | New page or route | nextjs-app-router-turbopack, app-layout |
 | New widget | frontend-architecture (widget pattern section) |
 | Server-side logic | backend-patterns, coding-standards |
-| Database changes | backend-patterns, clean-architecture |
-| Auth/security changes | security-review |
+| Database changes | database-design, clean-architecture |
+| Auth/security changes | security-review, authentication, authorization |
 | Animation/motion | interaction-motion, creative-toolkit |
-| Form/input work | accessibility, content-design |
+| Form/input work | accessibility, content-design, user-experience |
 | Error messages/copy | content-design |
 | Test writing | testing-strategy, playwright-e2e |
 | Responsive layout | responsiveness, app-layout |
 | Print output | print-design |
 | Presentation output | presentation, presentation-html-implementation |
 | Code quality/refactor | coding-standards, clean-architecture |
-| New skill file | skill-creation, skill-review |
-| Unknown root cause, technology choice, unfamiliar pattern | research |
-| Multi-file changes, phased work, irreversible steps | planning |
-| AI integration | ai-claude, ai-capabilities |
+| New skill file | skill-creation |
+| Skill library review | skill-review |
+| AI integration | ai-capabilities + implementation skill (ai-claude, ai-openrouter, ai-fal) |
+| Email | email-sending + implementation skill (email-mailgun) |
+| File storage | file-storage + implementation skill (storage-vercel-blob) |
+| Database implementation | database-design + implementation skill (db-neon-drizzle, db-supabase, db-redis) |
+| Auth implementation | authentication + implementation skill (auth-custom-otp, auth-clerk) |
 | Monitoring/logging | observability |
 | Performance work | web-performance |
+| Documentation | project-documentation |
+| Project knowledge | project-reference |
+| Non-trivial decision | research (suggested by this skill, not self-triggered) |
+| Multi-step work | planning (suggested by this skill, not self-triggered) |
+| Quality review | quality-assurance, verification-loop |
+| Context management | strategic-context |
+| MCP servers | mcp-server-patterns |
 
 ---
 
@@ -260,6 +293,7 @@ Match the request to the relevant skills. Not every request needs every skill. S
 - ❌ Adding scope the user didn't ask for ("while we're at it, let's also...") — scope creep
 - ❌ Prescribing implementation details in the refinement ("use useState for X, useEffect for Y") — that's the executor's job
 - ❌ Using generic filler ("ensure best practices", "follow conventions") — either name the specific skill or don't mention it
+- ❌ Treating follow-up requests as "continuation" that doesn't need refinement — if the user is asking you to do something, refine it. "Still need a better audit" is a new request, not a conversation.
 
 ---
 
@@ -270,8 +304,10 @@ Before presenting a refined prompt, verify:
 - [ ] Intent is stated in one sentence
 - [ ] Scope identifies affected files or areas
 - [ ] Constraints include non-obvious decisions and edge cases
+- [ ] Skill library was scanned — applicable skills found by checking "When to Use" sections, not just the lookup table
 - [ ] Relevant skills are named (not copied)
 - [ ] Refinement length is proportional to the original request
-- [ ] Research was done if the request involves unknown root cause, technology choice, or unfamiliar pattern
-- [ ] A plan is included if work spans 4+ files or has dependencies
+- [ ] Research was suggested and done if the request is non-trivial (bug with unclear cause, technology decision, unfamiliar pattern, multiple valid approaches)
+- [ ] Planning was suggested and included if work is multi-step (4+ files, dependencies, irreversible steps, parallelisable)
+- [ ] Research and planning were evaluated independently (either can trigger without the other)
 - [ ] No work has started — waiting for user confirmation

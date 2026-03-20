@@ -342,7 +342,7 @@ export function BrandTokensReferenceShowcase() {
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, marginTop: 0 }}>
           Five Tailwind-sourced accent families for tags, badges, chart series, and categorisation. NOT status colours.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 16 }}>
           {COMPLEMENTARY.map((c) => (
             <div key={c.family} style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-surface)' }}>
               <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)', marginBottom: 12 }}>{c.family}</h4>
@@ -359,7 +359,7 @@ export function BrandTokensReferenceShowcase() {
 
       {/* Section 7: Gradients */}
       <Section title="Gradient Tokens">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {GRADIENTS.map((g) => (
             <div key={g.token} style={{ border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden', background: 'var(--color-surface)' }}>
               <div style={{ display: 'flex', height: 48 }}>
@@ -458,7 +458,7 @@ export function BrandTokensReferenceShowcase() {
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, marginTop: 0 }}>
           Pixel-perfect recreation of the original ezyCollect app. Uses hardcoded hex values, not :root palette tokens.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 12 }}>
           {[
             { token: '--color-primary', hex: '#FF6600' },
             { token: '--color-primary-hover', hex: '#cc5200' },
@@ -489,7 +489,7 @@ export function BrandTokensReferenceShowcase() {
 
       {/* Section 11: Theme Selection Guide */}
       <Section title="When to Use Each Theme">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 12 }}>
           {[
             { theme: 'Light', desc: 'Default. Clean, professional, brand-forward.', status: 'Always present' },
             { theme: 'Night', desc: 'YouTube/Google neutral greys. Content-first. Best for low-light and OLED/AMOLED.', status: 'Always present' },

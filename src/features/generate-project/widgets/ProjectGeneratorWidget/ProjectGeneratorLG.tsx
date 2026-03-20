@@ -79,7 +79,7 @@ export function ProjectGeneratorLG({ skills, archetypes }: ProjectGeneratorLGPro
   };
 
   return (
-    <div style={{ maxWidth: 900, width: '100%' }}>
+    <div style={{ maxWidth: 1200, width: '100%' }}>
       <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-heading)', marginBottom: 8 }}>
         {t('generate.title')}
       </h1>
@@ -92,7 +92,7 @@ export function ProjectGeneratorLG({ skills, archetypes }: ProjectGeneratorLGPro
         <h2 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {t('generate.step1')}
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 12 }}>
           {archetypes.map((a) => {
             const isSelected = selectedArchetype === a.slug;
             return (
@@ -208,7 +208,6 @@ export function ProjectGeneratorLG({ skills, archetypes }: ProjectGeneratorLGPro
             fontSize: 14,
             lineHeight: 1.5,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box',
           }}
         />

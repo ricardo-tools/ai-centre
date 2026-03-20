@@ -28,16 +28,16 @@ export function ArchetypeCard({
         background: 'var(--color-surface)',
         display: 'flex',
         flexDirection: 'column',
-        gap: 12,
+        gap: 16,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <span style={{ fontSize: 32 }}>{icon}</span>
         <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>{title}</h2>
       </div>
       <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.5 }}>{description}</p>
       <div>
-        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {suggestedSkillsLabel}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

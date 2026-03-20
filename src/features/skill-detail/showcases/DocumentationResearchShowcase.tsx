@@ -214,7 +214,7 @@ export function DocumentationResearchShowcase() {
         <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
           Libraries change. The version matters. Always check compatibility before suggesting patterns.
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 12 }}>
           {[
             { check: 'User mentions version? Target that version specifically.', icon: 'V' },
             { check: 'No version mentioned? Check their package.json.', icon: 'P' },

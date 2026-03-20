@@ -10,6 +10,7 @@ import {
   type FeatureAddonDefinition,
 } from '@/platform/lib/toolkit-composition';
 import { TOOLKIT_PRESETS } from '@/platform/lib/archetypes';
+import { generateProject } from '@/features/generate-project/action';
 
 export interface UseCompositionWizardResult {
   // Domain
@@ -145,24 +146,34 @@ export function useCompositionWizard(): UseCompositionWizardResult {
     });
   }, [selectedDomain, selectedAddons, implementationChoices]);
 
-  const generate = useCallback(() => {
+  const generate = useCallback(async () => {
     if (!selectedDomain || !description.trim()) return;
     setIsGenerating(true);
 
-    // Log the composition for now — generation action integration comes later
-    console.log('[CompositionWizard] Generate:', {
-      domain: selectedDomain,
-      addons: Array.from(selectedAddons),
-      implementations: implementationChoices,
-      skills: resolvedSkills,
-      description,
-    });
+    try {
+      const result = await generateProject({
+        domainSlug: selectedDomain,
+        resolvedSkills,
+        description,
+      });
 
-    // Simulate async to show loading state
-    setTimeout(() => {
+      // Convert base64 back to Blob and trigger download
+      const bytes = Uint8Array.from(atob(result.zipBase64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: 'application/zip' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('[CompositionWizard] Generation failed:', err);
+    } finally {
       setIsGenerating(false);
-    }, 1500);
-  }, [selectedDomain, selectedAddons, implementationChoices, resolvedSkills, description]);
+    }
+  }, [selectedDomain, resolvedSkills, description]);
 
   return {
     domains: DOMAINS,

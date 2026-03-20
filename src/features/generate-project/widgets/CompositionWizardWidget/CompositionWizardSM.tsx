@@ -58,7 +58,7 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))',
             gap: 10,
           }}
         >
@@ -120,7 +120,7 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))',
               gap: 8,
             }}
           >
@@ -208,7 +208,6 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
             fontSize: 13,
             lineHeight: 1.4,
             resize: 'vertical',
-            outline: 'none',
             boxSizing: 'border-box' as const,
           }}
         />

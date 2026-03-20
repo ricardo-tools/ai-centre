@@ -3,10 +3,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@neondatabase/serverless'],
   outputFileTracingIncludes: {
-    '/api/**': ['./src/platform/db/migrations/**', './skills/**'],
-    '/skills/**': ['./skills/**'],
-    '/generate/**': ['./skills/**'],
-    '/toolkits/**': ['./skills/**'],
+    '/**': ['./src/platform/db/migrations/**', './skills/**'],
   },
   async headers() {
     return [

@@ -165,7 +165,7 @@ description: >
 
       {/* ---- Core Rules Visual ---- */}
       <Section title="The 7 Core Rules">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
           {[
             { num: 1, title: 'One skill, one concern', desc: 'Governs one domain. If two unrelated rule sets exist, split into two skills. Composability over monoliths.' },
             { num: 2, title: 'Every instruction must be verifiable', desc: 'If you cannot look at output and determine whether the instruction was followed, it is too vague.' },
@@ -343,7 +343,7 @@ Apply this skill when:
 
       {/* ---- Anti-Patterns ---- */}
       <Section title="Skill Writing Anti-Patterns">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: 12 }}>
           {[
             { pattern: 'Vague aspirational language', example: '"Write high-quality code" teaches nothing', fix: 'Every sentence should change the output' },
             { pattern: 'Duplicating framework docs', example: 'Explaining how React hooks work', fix: 'Explain how YOUR hooks should be structured' },
@@ -378,7 +378,7 @@ Apply this skill when:
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))',
             gap: 8,
           }}
         >

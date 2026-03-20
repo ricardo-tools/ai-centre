@@ -12,7 +12,7 @@ export function ToggleButton({ active, onClick, icon, label }: ToggleButtonProps
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 5,
+        gap: 4,
         padding: '6px 12px',
         fontSize: 13,
         fontWeight: active ? 600 : 400,

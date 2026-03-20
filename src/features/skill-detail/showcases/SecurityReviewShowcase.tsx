@@ -408,7 +408,7 @@ const db = connectToDb(process.env.DB_URL);
 
       {/* ---- Supply Chain Security ---- */}
       <Section title="Supply Chain Security">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 12 }}>
           {[
             { rule: 'npm audit regularly', desc: 'Fix critical and high vulnerabilities. Don\'t ignore audit output.' },
             { rule: 'Commit lock files', desc: 'Always commit package-lock.json. Use npm ci in CI/CD.' },

@@ -35,7 +35,7 @@ function SectionCard({ section }: { section: SkillSection }) {
         background: 'var(--color-surface)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
         <h3
           style={{
             fontSize: 16,
@@ -111,8 +111,8 @@ function KeyFeatureItem({ feature }: { feature: string }) {
       style={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: 10,
-        padding: '10px 0',
+        gap: 8,
+        padding: '8px 0',
       }}
     >
       <ArrowRight
@@ -120,7 +120,7 @@ function KeyFeatureItem({ feature }: { feature: string }) {
         weight="bold"
         style={{
           color: 'var(--color-primary)',
-          marginTop: 3,
+          marginTop: 4,
           flexShrink: 0,
         }}
       />
@@ -147,7 +147,7 @@ export function SkillShowcaseFallback({ parsed }: SkillShowcaseFallbackProps) {
             marginBottom: 32,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <BookOpen size={18} weight="regular" style={{ color: 'var(--color-primary)' }} />
             <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>
               Overview
@@ -195,7 +195,7 @@ export function SkillShowcaseFallback({ parsed }: SkillShowcaseFallbackProps) {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
               gap: 16,
             }}
           >

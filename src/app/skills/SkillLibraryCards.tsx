@@ -94,7 +94,7 @@ function FilterPill({
     <button
       onClick={onClick}
       style={{
-        padding: '6px 14px',
+        padding: '6px 16px',
         borderRadius: 16,
         border: '1px solid var(--color-border)',
         background: isActive ? 'var(--color-primary)' : 'var(--color-surface)',
@@ -230,7 +230,7 @@ export function SkillLibraryCards() {
       )}
 
       {/* Search input */}
-      <div style={{ position: 'relative' }}>
+      <div className="search-wrapper" style={{ position: 'relative' }}>
         <MagnifyingGlass
           size={18}
           style={{
@@ -256,7 +256,6 @@ export function SkillLibraryCards() {
             border: '1px solid var(--color-border)',
             background: 'var(--color-surface)',
             color: 'var(--color-text)',
-            outline: 'none',
           }}
         />
       </div>
@@ -268,14 +267,37 @@ export function SkillLibraryCards() {
 
       {/* Skill cards grid */}
       {filtered.length === 0 ? (
-        <div style={{ padding: 32, textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 14 }}>
-          No skills found
+        <div style={{ padding: 48, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <MagnifyingGlass size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 8 }} />
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>
+            No skills match your search
+          </h3>
+          <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0 }}>
+            Try a different search term or clear the filter
+          </p>
+          <button
+            onClick={() => { handleSearchChange(''); setActiveTab('all'); }}
+            style={{
+              marginTop: 8,
+              padding: '8px 16px',
+              borderRadius: 6,
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-text-body)',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+            }}
+          >
+            Clear search
+          </button>
         </div>
       ) : (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))',
             gap: 16,
           }}
         >

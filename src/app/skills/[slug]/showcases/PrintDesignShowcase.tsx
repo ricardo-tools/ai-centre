@@ -71,7 +71,7 @@ export function PrintDesignShowcase() {
 
       {/* ---- Export Formats ---- */}
       <Section title="Export Requirements">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 12 }}>
           {[
             { format: 'PDF', use: 'Universal standard', desc: 'Vectors stay scalable, rasters meet DPI. Always export as PDF.' },
             { format: '300+ DPI', use: 'Resolution', desc: '4× screen scale at 5px/mm ≈ 508 DPI. Photos: min 300 DPI at print size.' },
