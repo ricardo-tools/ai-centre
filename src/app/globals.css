@@ -12,6 +12,19 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* === Global Focus States === */
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-primary) !important;
+  outline: none;
+}
+.search-wrapper:focus-within {
+  border-color: var(--color-primary) !important;
+}
+.otp-digit:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-muted) !important;
+}
+
 /* === Raw Palette Tokens === */
 :root {
   /* Light Mode */

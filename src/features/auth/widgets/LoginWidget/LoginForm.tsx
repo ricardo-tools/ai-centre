@@ -52,7 +52,7 @@ export function LoginForm({
   const { t } = useLocale();
   const [resendCooldown, setResendCooldown] = useState(0);
   const digitRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const digits = code.padEnd(6, '').split('').slice(0, 6);
+  const digits = Array.from({ length: 6 }, (_, i) => code[i] ?? '');
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
