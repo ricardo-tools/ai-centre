@@ -3,12 +3,16 @@ import type { NextRequest } from 'next/server';
 import { verifySessionEdge } from '@/platform/lib/auth-edge';
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // DEBUG: Log every middleware invocation — remove after auth is confirmed working
+  console.log('[middleware] ENTERED. path:', pathname, 'NODE_ENV:', process.env.NODE_ENV, 'SKIP_AUTH:', process.env.SKIP_AUTH, 'AUTH_SECRET set:', !!process.env.AUTH_SECRET);
+
   // Dev bypass: only when EXPLICITLY opted in via env var (never set this in production)
   if (process.env.SKIP_AUTH === 'true') {
+    console.log('[middleware] SKIP_AUTH is true — bypassing auth');
     return NextResponse.next();
   }
-
-  const { pathname } = request.nextUrl;
 
   // Fail closed: if AUTH_SECRET is not configured in production, block all access
   if (!process.env.AUTH_SECRET) {
@@ -20,6 +24,7 @@ export async function middleware(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/robots.txt' ||
     pathname === '/api/health' ||
+    pathname === '/api/debug' ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon')
