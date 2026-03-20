@@ -1,5 +1,5 @@
-import { ScreenRenderer } from '@/screen-renderer/ScreenRenderer';
-import { archetypesConfig } from '@/screens/Archetypes/Archetypes.screen';
+import { ScreenRenderer } from '@/platform/screen-renderer/ScreenRenderer';
+import { archetypesConfig } from '@/platform/screens/Archetypes/Archetypes.screen';
 import { ArchetypesHeader } from './ArchetypesHeader';
 import { ArchetypesCards } from './ArchetypesCards';
 

@@ -1,16 +1,56 @@
-import { ScreenRenderer } from '@/screen-renderer/ScreenRenderer';
-import { homeConfig } from '@/screens/Home/Home.screen';
+import Link from 'next/link';
 import { HomeHero } from './HomeHero';
-import { HomeSkillList } from './HomeSkillList';
+import { HomeToolkits } from './HomeToolkits';
+import { HomeStats } from './HomeStats';
+import { HomeSkillSpotlights } from './HomeSkillSpotlights';
+import { HomeShowcases } from './HomeShowcases';
 
 export default function HomePage() {
   return (
-    <ScreenRenderer
-      config={homeConfig}
-      slots={{
-        hero: <HomeHero />,
-        skills: <HomeSkillList />,
-      }}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+      <HomeHero />
+      <HomeToolkits />
+      <HomeStats />
+      <HomeSkillSpotlights />
+      <HomeShowcases />
+
+      {/* CTA footer */}
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '48px 24px',
+          background: 'var(--color-primary-muted)',
+          borderRadius: 8,
+        }}
+      >
+        <p
+          style={{
+            fontSize: 16,
+            fontWeight: 500,
+            color: 'var(--color-text-heading)',
+            margin: '0 0 16px',
+          }}
+        >
+          Built something with AI skills? Share it with the team.
+        </p>
+        <Link
+          href="/gallery/upload"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 24px',
+            background: 'var(--color-primary)',
+            color: 'white',
+            borderRadius: 6,
+            textDecoration: 'none',
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          Upload showcase
+        </Link>
+      </div>
+    </div>
   );
 }

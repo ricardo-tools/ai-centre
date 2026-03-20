@@ -1,0 +1,59 @@
+import { getAllSkills } from '@/platform/lib/skills';
+import { TOOLKIT_PRESETS } from '@/platform/lib/archetypes';
+import { DOMAINS } from '@/platform/lib/toolkit-composition';
+
+export function HomeStats() {
+  const skillCount = getAllSkills().length;
+  const toolkitCount = TOOLKIT_PRESETS.length;
+  const domainCount = DOMAINS.length;
+
+  const stats = [
+    { value: skillCount, label: 'skills' },
+    { value: toolkitCount, label: 'toolkits' },
+    { value: domainCount, label: 'domains' },
+  ];
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 24,
+        padding: '16px 0',
+        borderTop: '1px solid var(--color-border)',
+        borderBottom: '1px solid var(--color-border)',
+        flexWrap: 'wrap',
+      }}
+    >
+      {stats.map((stat) => (
+        <div
+          key={stat.label}
+          style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: 'var(--color-primary)',
+            }}
+          >
+            {stat.value}
+          </span>
+          <span
+            style={{
+              fontSize: 12,
+              color: 'var(--color-text-muted)',
+            }}
+          >
+            {stat.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}

@@ -72,6 +72,26 @@ html, body {
   --color-topnav-badge-bg: var(--lm-light-blue);
   --color-topnav-badge-text: var(--lm-neutral-text);
   --color-table-stripe: rgba(0, 0, 0, 0.025);
+
+  /* Complementary Colors (Tailwind) */
+  --color-comp-violet: #7C3AED;
+  --color-comp-violet-muted: #EDE9FE;
+  --color-comp-teal: #0D9488;
+  --color-comp-teal-muted: #CCFBF1;
+  --color-comp-rose: #E11D48;
+  --color-comp-rose-muted: #FFE4E6;
+  --color-comp-sky: #0284C7;
+  --color-comp-sky-muted: #E0F2FE;
+  --color-comp-fuchsia: #C026D3;
+  --color-comp-fuchsia-muted: #FAE8FF;
+
+  /* Gradients */
+  --gradient-warm: linear-gradient(135deg, #FF5A28, #E11D48);
+  --gradient-cool: linear-gradient(135deg, #1462D2, #0D9488);
+  --gradient-brand: linear-gradient(135deg, #FF5A28, #1462D2);
+  --gradient-neutral: linear-gradient(180deg, #FFFFFF, #EBEBF3);
+  --gradient-vivid: linear-gradient(135deg, #7C3AED, #C026D3, #E11D48);
+  --gradient-ocean: linear-gradient(135deg, #0284C7, #0D9488);
 }
 
 /* === Night Theme Semantic Tokens === */
@@ -108,6 +128,26 @@ html, body {
   --color-topnav-badge-bg: var(--nm-surface-2);
   --color-topnav-badge-text: var(--nm-text-secondary);
   --color-table-stripe: var(--nm-surface-2);
+
+  /* Complementary Colors (Tailwind) */
+  --color-comp-violet: #A78BFA;
+  --color-comp-violet-muted: #2E1065;
+  --color-comp-teal: #2DD4BF;
+  --color-comp-teal-muted: #042F2E;
+  --color-comp-rose: #FB7185;
+  --color-comp-rose-muted: #4C0519;
+  --color-comp-sky: #38BDF8;
+  --color-comp-sky-muted: #082F49;
+  --color-comp-fuchsia: #E879F9;
+  --color-comp-fuchsia-muted: #4A044E;
+
+  /* Gradients */
+  --gradient-warm: linear-gradient(135deg, #FF5A28, #FB7185);
+  --gradient-cool: linear-gradient(135deg, #3EA6FF, #2DD4BF);
+  --gradient-brand: linear-gradient(135deg, #FF5A28, #3EA6FF);
+  --gradient-neutral: linear-gradient(180deg, #212121, #0F0F0F);
+  --gradient-vivid: linear-gradient(135deg, #A78BFA, #E879F9, #FB7185);
+  --gradient-ocean: linear-gradient(135deg, #38BDF8, #2DD4BF);
 }
 
 /* === Markdown Content Styles === */
@@ -221,4 +261,80 @@ html, body {
 
 .markdown-content strong {
   color: var(--color-text-heading);
+}
+
+/* === Logo Theme Swap === */
+.logo-color { display: block; }
+.logo-white { display: none; }
+[data-theme="dark"] .logo-color, [data-theme="night"] .logo-color { display: none; }
+[data-theme="dark"] .logo-white, [data-theme="night"] .logo-white { display: block; }
+
+/* === Shiki Syntax Highlighting (dual theme) === */
+.shiki-wrapper pre {
+  margin: 0;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, monospace;
+}
+
+[data-theme="light"] .shiki-wrapper .shiki,
+[data-theme="light"] .shiki-wrapper .shiki span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+[data-theme="night"] .shiki-wrapper .shiki,
+[data-theme="night"] .shiki-wrapper .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* === Responsive Main Content Padding === */
+.main-content {
+  padding: 16px;
+}
+@media (min-width: 640px) {
+  .main-content { padding: 24px 32px; }
+}
+@media (min-width: 1024px) {
+  .main-content { padding: 32px 48px; }
+}
+
+/* === Markdown Mobile Fixes === */
+.markdown-content table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.markdown-content pre {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* === Tabs Scrollable on Mobile === */
+.tabs-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* === Home Hero Responsive Title === */
+.home-hero-title {
+  font-size: 22px;
+}
+@media (min-width: 640px) {
+  .home-hero-title { font-size: 26px; }
+}
+@media (min-width: 1024px) {
+  .home-hero-title { font-size: 28px; }
+}
+
+/* === Utility Animations === */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

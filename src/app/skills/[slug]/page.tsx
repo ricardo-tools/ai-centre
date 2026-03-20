@@ -1,6 +1,6 @@
-import { getAllSkills } from '@/lib/skills';
-import { ScreenRenderer } from '@/screen-renderer/ScreenRenderer';
-import { skillDetailConfig } from '@/screens/SkillDetail/SkillDetail.screen';
+import { getAllSkills } from '@/platform/lib/skills';
+import { ScreenRenderer } from '@/platform/screen-renderer/ScreenRenderer';
+import { skillDetailConfig } from '@/platform/screens/SkillDetail/SkillDetail.screen';
 import { SkillDetailSlot } from './SkillDetailSlot';
 
 interface PageProps {

@@ -1,7 +1,7 @@
 'use client';
 
-import { ProjectGeneratorWidget } from '@/widgets/ProjectGeneratorWidget/ProjectGeneratorWidget';
+import { CompositionWizardWidget } from '@/features/generate-project/widgets/CompositionWizardWidget/CompositionWizardWidget';
 
 export function GenerateSlot() {
-  return <ProjectGeneratorWidget size="lg" />;
+  return <CompositionWizardWidget size="lg" />;
 }

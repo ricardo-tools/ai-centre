@@ -39,3 +39,6 @@ yarn-error.log*
 
 # Coverage
 coverage/
+
+# Dev-mode showcase uploads
+public/uploads/

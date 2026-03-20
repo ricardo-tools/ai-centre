@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchAllArchetypes } from '@/server/actions/archetypes';
-import { toArchetypes } from '@/acl/archetype.mapper';
-import type { Archetype } from '@/domain/Archetype';
-import { ArchetypeCard } from '@/components/ArchetypeCard';
-import { useLocale } from '@/screen-renderer/LocaleContext';
+import { fetchAllArchetypes } from '@/features/archetypes/action';
+import { toArchetypes } from '@/platform/acl/archetype.mapper';
+import type { Archetype } from '@/platform/domain/Archetype';
+import { ArchetypeCard } from '@/platform/components/ArchetypeCard';
+import { useLocale } from '@/platform/screen-renderer/LocaleContext';
 
 export function ArchetypesCards() {
   const { t } = useLocale();
@@ -13,8 +13,8 @@ export function ArchetypesCards() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllArchetypes().then((raw) => {
-      setArchetypes(toArchetypes(raw));
+    fetchAllArchetypes().then((result) => {
+      if (result.ok) setArchetypes(toArchetypes(result.value));
       setLoading(false);
     });
   }, []);

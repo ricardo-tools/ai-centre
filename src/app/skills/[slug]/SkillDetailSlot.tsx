@@ -1,6 +1,6 @@
 'use client';
 
-import { SkillDetailWidget } from '@/widgets/SkillDetailWidget/SkillDetailWidget';
+import { SkillDetailWidget } from '@/features/skill-detail/widgets/SkillDetailWidget/SkillDetailWidget';
 
 interface Props {
   slug: string;

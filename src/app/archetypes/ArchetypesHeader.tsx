@@ -1,7 +1,7 @@
 'use client';
 
-import { useLocale } from '@/screen-renderer/LocaleContext';
-import { PageHeader } from '@/components/PageHeader';
+import { useLocale } from '@/platform/screen-renderer/LocaleContext';
+import { PageHeader } from '@/platform/components/PageHeader';
 
 export function ArchetypesHeader() {
   const { t } = useLocale();
