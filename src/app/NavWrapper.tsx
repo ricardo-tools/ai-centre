@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { ScreenRenderer } from '@/platform/screen-renderer/ScreenRenderer';
 import { appShellConfig } from '@/platform/screens/AppShell/AppShell.screen';
+import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
 
 const SHELL_EXCLUDED_PATHS = ['/login'];
 
@@ -12,7 +13,10 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
 
   if (isExcluded) {
     return (
-      <div style={{ height: '100vh', overflow: 'auto' }}>
+      <div style={{ height: '100vh', overflow: 'auto', position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+          <ThemeSwitcher showLabel={false} />
+        </div>
         {children}
       </div>
     );
