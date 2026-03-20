@@ -1,5 +1,12 @@
 import { jwtVerify } from 'jose';
-import type { Session } from './auth';
+
+// Inline Session type to avoid importing from auth.ts (which uses next/headers, not Edge-compatible)
+export interface EdgeSession {
+  userId: string;
+  email: string;
+  roleId: string;
+  roleSlug: string;
+}
 
 function getSecret(): Uint8Array {
   const secret = process.env.AUTH_SECRET;
@@ -7,7 +14,7 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function verifySessionEdge(token: string): Promise<Session | null> {
+export async function verifySessionEdge(token: string): Promise<EdgeSession | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
     return {
