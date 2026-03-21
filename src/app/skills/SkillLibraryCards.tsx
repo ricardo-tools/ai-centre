@@ -312,6 +312,7 @@ export function SkillLibraryCards() {
               tags={skill.tags}
               officialLabel={t('skills.official')}
               viewLabel={t('skills.view')}
+              author={skill.isOfficial ? 'Official' : undefined}
             />
           ))}
         </div>

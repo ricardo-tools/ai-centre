@@ -41,7 +41,7 @@ export const LAYER_LABELS: Record<SkillLayer, string> = { frontend: 'Frontend', 
 type SkillDefinition = Omit<SkillData, 'content'>;
 
 const SKILL_DEFINITIONS: SkillDefinition[] = [
-  // ── Behavioural skills (56) ────────────────────────────────────────
+  // ── Behavioural skills (59) ────────────────────────────────────────
   {
     slug: 'accessibility',
     title: 'Accessibility',
@@ -502,7 +502,34 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['product-development', 'engineering'], layer: 'fullstack' },
   },
 
-  // ── Reference companions (4) ──────────────────────────────────────
+  {
+    slug: 'social-features',
+    title: 'Social Features',
+    description: 'Defines when and how to add social features (comments, reactions, mentions, notifications, activity feeds) to enterprise applications. Apply when adding any user-to-user interaction, feedback mechanism, or awareness feature. Enterprise-focused — productivity over engagement loops.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'principle', domain: ['product-development'], layer: 'fullstack' },
+  },
+  {
+    slug: 'comments-reactions',
+    title: 'Comments & Reactions',
+    description: 'Implementation patterns for polymorphic comments (threaded), emoji reactions, and @mentions in enterprise applications. Covers database schemas, server actions, mention parsing, and UI components. Apply when building any comment/feedback system. Implementation skill for social-features.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'implementation', domain: ['product-development'], layer: 'fullstack' },
+    companionTo: 'social-features',
+  },
+  {
+    slug: 'activity-notifications',
+    title: 'Activity & Notifications',
+    description: 'Implementation patterns for activity event logging, notification delivery (in-app + email), preference management, and batched email digests. Covers database schemas, server actions, SSE/polling, and Vercel Cron integration. Apply when building awareness features. Implementation skill for social-features.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'implementation', domain: ['product-development'], layer: 'fullstack' },
+    companionTo: 'social-features',
+  },
+
+  // ── Reference companions (5) ──────────────────────────────────────
   {
     slug: 'app-layout-patterns-reference',
     title: 'App Layout Patterns Reference',
@@ -538,6 +565,15 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     version: '1.0.0',
     tags: { type: 'reference', domain: ['design'], layer: 'design' },
     companionTo: 'creative-toolkit',
+  },
+  {
+    slug: 'social-features-reference',
+    title: 'Social Features Reference',
+    description: 'Schema templates, reaction emoji registry, notification type registry, and UI patterns for social features. Reference companion — for rules see social-features, comments-reactions, and activity-notifications.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'reference', domain: ['product-development'], layer: 'fullstack' },
+    companionTo: 'social-features',
   },
 ];
 

@@ -11,6 +11,7 @@ export function HomeStats() {
     { value: skillCount, label: 'skills' },
     { value: toolkitCount, label: 'toolkits' },
     { value: domainCount, label: 'domains' },
+    { value: 0, label: 'projects generated' },
   ];
 
   return (

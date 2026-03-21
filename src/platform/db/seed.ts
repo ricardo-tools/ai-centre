@@ -354,7 +354,26 @@ const SKILLS = [
     file: 'skills/web-performance.md',
   },
 
-  // ── Reference companions (4) ──────────────────────────────────────
+  {
+    slug: 'social-features',
+    title: 'Social Features',
+    description: 'Defines when and how to add social features (comments, reactions, mentions, notifications, activity feeds) to enterprise applications.',
+    file: 'skills/social-features.md',
+  },
+  {
+    slug: 'comments-reactions',
+    title: 'Comments & Reactions',
+    description: 'Implementation patterns for polymorphic comments (threaded), emoji reactions, and @mentions in enterprise applications.',
+    file: 'skills/comments-reactions.md',
+  },
+  {
+    slug: 'activity-notifications',
+    title: 'Activity & Notifications',
+    description: 'Implementation patterns for activity event logging, notification delivery (in-app + email), preference management, and batched email digests.',
+    file: 'skills/activity-notifications.md',
+  },
+
+  // ── Reference companions (5) ──────────────────────────────────────
   {
     slug: 'app-layout-patterns-reference',
     title: 'App Layout Patterns Reference',
@@ -378,6 +397,12 @@ const SKILLS = [
     title: 'Creative Toolkit Charts Reference',
     description: 'Nivo chart theme configuration and chart-specific styling patterns. Reference companion to creative-toolkit.',
     file: 'skills/creative-toolkit-charts-reference.md',
+  },
+  {
+    slug: 'social-features-reference',
+    title: 'Social Features Reference',
+    description: 'Schema templates, reaction emoji registry, notification type registry, and UI patterns for social features. Reference companion to social-features.',
+    file: 'skills/social-features-reference.md',
   },
 ];
 

@@ -14,6 +14,7 @@ interface TopNavSizeProps {
   items: NavItem[];
   activePath: string;
   userEmail: string | null;
+  userId: string | null;
   onSignOut: () => void;
 }
 
@@ -27,8 +28,8 @@ const SIZE_MAP: Record<SizeVariant, React.ComponentType<TopNavSizeProps>> = {
 export const widgetName = 'TopNavWidget';
 
 export function TopNavWidget({ size }: TopNavWidgetProps) {
-  const { items, activePath, userEmail, onSignOut } = useTopNav();
+  const { items, activePath, userEmail, userId, onSignOut } = useTopNav();
 
   const SizeComponent = SIZE_MAP[size] ?? SIZE_MAP.lg;
-  return <SizeComponent items={items} activePath={activePath} userEmail={userEmail} onSignOut={onSignOut} />;
+  return <SizeComponent items={items} activePath={activePath} userEmail={userEmail} userId={userId} onSignOut={onSignOut} />;
 }

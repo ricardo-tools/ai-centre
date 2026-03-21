@@ -159,3 +159,94 @@ export const generatedProjects = pgTable('generated_projects', {
   blobUrl: text('blob_url').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// ── Social: Downloads & Views ───────────────────────────────────────
+
+export const skillDownloads = pgTable('skill_downloads', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  skillSlug: text('skill_slug').notNull(),
+  userId: uuid('user_id').references(() => users.id),
+  context: text('context').notNull(), // 'detail_download' | 'project_generation'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const showcaseViews = pgTable('showcase_views', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  showcaseId: uuid('showcase_id').notNull().references(() => showcaseUploads.id),
+  userId: uuid('user_id').references(() => users.id),
+  viewedAt: timestamp('viewed_at').notNull().defaultNow(),
+});
+
+// ── Social: Reactions & Bookmarks ───────────────────────────────────
+
+export const reactions = pgTable('reactions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  entityType: text('entity_type').notNull(), // 'showcase' | 'skill' | 'comment'
+  entityId: uuid('entity_id').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  emoji: text('emoji').notNull(), // 'thumbsup' | 'heart' | 'rocket' | 'eyes' | 'tada'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  unique('reaction_unique').on(table.entityType, table.entityId, table.userId, table.emoji),
+]);
+
+export const bookmarks = pgTable('bookmarks', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  entityType: text('entity_type').notNull(), // 'skill' | 'toolkit' | 'showcase'
+  entityId: uuid('entity_id').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  unique('bookmark_unique').on(table.userId, table.entityType, table.entityId),
+]);
+
+// ── Social: Comments ────────────────────────────────────────────────
+
+export const comments = pgTable('comments', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  entityType: text('entity_type').notNull(), // 'skill' | 'showcase'
+  entityId: uuid('entity_id').notNull(),
+  parentId: uuid('parent_id'), // null = top-level, non-null = reply (unlimited depth)
+  authorId: uuid('author_id').notNull().references(() => users.id),
+  body: text('body').notNull(),
+  mentions: jsonb('mentions').$type<{ userId: string; offset: number; length: number }[]>().default([]),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at'),
+});
+
+// ── Social: Activity & Notifications ────────────────────────────────
+
+export const activityEvents = pgTable('activity_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  entityType: text('entity_type').notNull(),
+  entityId: uuid('entity_id').notNull(),
+  actorId: uuid('actor_id').notNull().references(() => users.id),
+  action: text('action').notNull(), // 'commented' | 'reacted' | 'published' | 'downloaded' | 'uploaded' | 'mentioned'
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: text('type').notNull(), // 'mention' | 'comment_on_owned' | 'reply_to_comment' | 'skill_published' | 'bookmarked_updated'
+  entityType: text('entity_type').notNull(),
+  entityId: uuid('entity_id').notNull(),
+  actorId: uuid('actor_id').notNull().references(() => users.id),
+  title: text('title').notNull(),
+  body: text('body'),
+  readAt: timestamp('read_at'),
+  emailedAt: timestamp('emailed_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const notificationPreferences = pgTable('notification_preferences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: text('type').notNull(),
+  channel: text('channel').notNull(), // 'in_app' | 'email'
+  enabled: boolean('enabled').notNull().default(true),
+}, (table) => [
+  unique('notif_pref_unique').on(table.userId, table.type, table.channel),
+]);

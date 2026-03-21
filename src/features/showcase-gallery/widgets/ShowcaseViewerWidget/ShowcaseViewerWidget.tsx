@@ -8,8 +8,13 @@ import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip
 import sdk from '@stackblitz/sdk';
 import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
 import { deleteShowcase, updateShowcase } from '@/features/showcase-gallery/action';
+import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
+import { trackShowcaseView, getShowcaseViewCount } from '@/features/social/action';
 import { useSession } from '@/platform/lib/SessionContext';
 import { SkillPicker } from '@/platform/components/SkillPicker';
+import { ReactionBar } from '@/platform/components/ReactionBar';
+import { CommentThread } from '@/platform/components/CommentThread';
+import { Eye, ChatCircle } from '@phosphor-icons/react';
 
 interface ShowcaseViewerWidgetProps {
   showcase: RawShowcaseUpload;
@@ -53,6 +58,34 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
   const [updating, setUpdating] = useState(false);
   const editFileRef = useRef<HTMLInputElement>(null);
   const [availableSkills, setAvailableSkills] = useState<{ slug: string; title: string }[]>([]);
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
+  const [userReactions, setUserReactions] = useState<string[]>([]);
+  const [viewCount, setViewCount] = useState<number>(0);
+  const [showComments, setShowComments] = useState(false);
+
+  // Track view and fetch view count on mount
+  useEffect(() => {
+    trackShowcaseView(showcase.id);
+    getShowcaseViewCount(showcase.id).then(setViewCount);
+  }, [showcase.id]);
+
+  // Fetch reaction counts on mount
+  useEffect(() => {
+    getReactionCounts('showcase', showcase.id, session?.userId).then(({ counts, userReactions: ur }) => {
+      setReactionCounts(counts);
+      setUserReactions(ur);
+    });
+  }, [showcase.id, session?.userId]);
+
+  const handleToggleReaction = useCallback(
+    async (emoji: string): Promise<{ added: boolean } | null> => {
+      if (!session) return null;
+      const result = await toggleReaction('showcase', showcase.id, emoji, session.userId);
+      if (result.ok) return result.value;
+      return null;
+    },
+    [session, showcase.id],
+  );
 
   // Fetch available skills when editing starts
   useEffect(() => {
@@ -264,10 +297,15 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
           {showcase.title}
         </span>
 
-        <span style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        <Link href={`/profile/${showcase.userId}`} style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, textDecoration: 'none' }}>
           <User size={12} /> {showcase.userName}
-        </span>
+        </Link>
         <span style={{ color: 'var(--color-text-muted)', flexShrink: 0 }}>{date}</span>
+        {viewCount > 0 && (
+          <span style={{ color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0, fontSize: 12 }}>
+            <Eye size={12} /> {viewCount}
+          </span>
+        )}
 
         {showcase.skillIds.length > 0 && (
           <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
@@ -330,6 +368,14 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             </button>
           )}
 
+          {/* Comments toggle */}
+          <button
+            onClick={() => setShowComments((v) => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: showComments ? 'var(--color-primary-muted)' : 'var(--color-surface)', color: showComments ? 'var(--color-primary)' : 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            <ChatCircle size={12} weight={showComments ? 'fill' : 'regular'} /> Comments
+          </button>
+
           {/* Share link */}
           <button
             onClick={handleShare}
@@ -357,6 +403,23 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             <DownloadSimple size={12} /> Download
           </a>
         </div>
+      </div>
+
+      {/* ── Reaction bar ── */}
+      <div
+        style={{
+          padding: '6px 16px',
+          borderBottom: '1px solid var(--color-border)',
+          background: 'var(--color-surface)',
+        }}
+      >
+        <ReactionBar
+          entityType="showcase"
+          entityId={showcase.id}
+          initialCounts={reactionCounts}
+          initialUserReactions={userReactions}
+          onToggle={handleToggleReaction}
+        />
       </div>
 
       {/* ── Edit form panel (slides down when editing) ── */}
@@ -443,6 +506,31 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
       )}
 
       {/* ── Full preview area ── */}
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', display: 'flex' }}>
+        {/* Comments slide-out panel */}
+        {showComments && (
+          <div
+            style={{
+              width: 380,
+              maxWidth: '100%',
+              borderRight: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+              overflowY: 'auto',
+              padding: '20px 16px',
+              flexShrink: 0,
+            }}
+          >
+            <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)', marginTop: 0, marginBottom: 16 }}>
+              Comments
+            </h3>
+            <CommentThread
+              entityType="showcase"
+              entityId={showcase.id}
+              currentUserId={session?.userId}
+              isAdmin={session?.roleSlug === 'admin'}
+            />
+          </div>
+        )}
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         {showcase.fileType === 'html' ? (
           <iframe
@@ -496,6 +584,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             )}
           </>
         )}
+      </div>
       </div>
 
       {/* ── Fullscreen overlay (portaled to body to escape overflow context) ── */}

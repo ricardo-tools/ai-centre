@@ -7,9 +7,10 @@ interface TopNavMDProps {
   items: NavItem[];
   activePath: string;
   userEmail: string | null;
+  userId: string | null;
   onSignOut: () => void;
 }
 
-export function TopNavMD({ items, userEmail, onSignOut }: TopNavMDProps) {
-  return <TopNav items={items} showLabels={false} showThemeSwitcher={true} userEmail={userEmail} onSignOut={onSignOut} />;
+export function TopNavMD({ items, userEmail, userId, onSignOut }: TopNavMDProps) {
+  return <TopNav items={items} showLabels={false} showThemeSwitcher={true} userEmail={userEmail} userId={userId} onSignOut={onSignOut} />;
 }

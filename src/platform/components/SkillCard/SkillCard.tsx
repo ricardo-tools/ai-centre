@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, DownloadSimple } from '@phosphor-icons/react/dist/ssr';
 
 const TYPE_LABELS: Record<string, string> = { principle: 'Principle', implementation: 'Implementation', reference: 'Reference' };
 const LAYER_LABELS: Record<string, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infra', design: 'Design', process: 'Process' };
@@ -14,9 +14,12 @@ interface SkillCardProps {
   tags?: { type: 'principle' | 'implementation' | 'reference'; domain: string[]; layer: string; };
   officialLabel?: string;
   viewLabel?: string;
+  author?: string;
+  downloadCount?: number;
 }
 
-export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View' }: SkillCardProps) {
+export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount }: SkillCardProps) {
+  const showNewBadge = downloadCount === undefined || downloadCount === 0;
   return (
     <Link
       href={`/skills/${slug}`}
@@ -80,12 +83,42 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
           borderTop: '1px solid var(--color-border)',
         }}
       >
-        {version && (
-          <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>v{version}</span>
-        )}
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-body)', fontWeight: 500 }}>
-          {viewLabel} <ArrowRight size={14} />
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {author && (
+            <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+              By {author}
+            </span>
+          )}
+          {author && version && (
+            <span style={{ fontSize: 12, color: 'var(--color-text-muted)', opacity: 0.5 }}>&middot;</span>
+          )}
+          {version && (
+            <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>v{version}</span>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {downloadCount !== undefined && downloadCount > 0 ? (
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <DownloadSimple size={12} /> {downloadCount}
+            </span>
+          ) : showNewBadge ? (
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                padding: '2px 6px',
+                borderRadius: 4,
+                background: 'var(--color-success-muted)',
+                color: 'var(--color-success)',
+              }}
+            >
+              New
+            </span>
+          ) : null}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-body)', fontWeight: 500 }}>
+            {viewLabel} <ArrowRight size={14} />
+          </span>
+        </div>
       </div>
     </Link>
   );

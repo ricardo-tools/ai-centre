@@ -21,6 +21,7 @@ interface UseTopNavResult {
   items: NavItem[];
   activePath: string;
   userEmail: string | null;
+  userId: string | null;
   onSignOut: () => void;
 }
 
@@ -48,6 +49,7 @@ export function useTopNav({ mock }: UseTopNavOptions = {}): UseTopNavResult {
     items,
     activePath: pathname,
     userEmail: session?.email ?? null,
+    userId: session?.userId ?? null,
     onSignOut: handleSignOut,
   };
 }

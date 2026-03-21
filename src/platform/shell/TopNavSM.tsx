@@ -10,10 +10,11 @@ interface TopNavSMProps {
   items: NavItem[];
   activePath: string;
   userEmail: string | null;
+  userId: string | null;
   onSignOut: () => void;
 }
 
-export function TopNavSM({ items, activePath, userEmail, onSignOut }: TopNavSMProps) {
+export function TopNavSM({ items, activePath, userEmail, userId, onSignOut }: TopNavSMProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -132,29 +133,48 @@ export function TopNavSM({ items, activePath, userEmail, onSignOut }: TopNavSMPr
           <div style={{ padding: '16px 24px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <ThemeSwitcher />
             {userEmail && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <UserCircle size={20} weight="regular" style={{ color: 'var(--color-text-muted)' }} />
                   <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>{userEmail}</span>
                 </div>
-                <button
-                  onClick={onSignOut}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--color-text-muted)',
-                    fontSize: 13,
-                    fontFamily: 'inherit',
-                    cursor: 'pointer',
-                    padding: 4,
-                  }}
-                >
-                  <SignOut size={16} weight="regular" />
-                  Sign out
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  {userId && (
+                    <Link
+                      href={`/profile/${userId}`}
+                      onClick={() => setOpen(false)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        color: 'var(--color-text-muted)',
+                        fontSize: 13,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <UserCircle size={16} weight="regular" />
+                      Profile
+                    </Link>
+                  )}
+                  <button
+                    onClick={onSignOut}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--color-text-muted)',
+                      fontSize: 13,
+                      fontFamily: 'inherit',
+                      cursor: 'pointer',
+                      padding: 4,
+                    }}
+                  >
+                    <SignOut size={16} weight="regular" />
+                    Sign out
+                  </button>
+                </div>
               </div>
             )}
           </div>

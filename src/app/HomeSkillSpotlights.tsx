@@ -48,11 +48,16 @@ export function HomeSkillSpotlights() {
                 fontSize: 14,
                 fontWeight: 600,
                 color: 'var(--color-text-heading)',
-                marginBottom: 8,
+                marginBottom: 4,
               }}
             >
               {skill.title}
             </span>
+            {skill.isOfficial && (
+              <span style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8 }}>
+                By Official
+              </span>
+            )}
             <p
               style={{
                 fontSize: 13,

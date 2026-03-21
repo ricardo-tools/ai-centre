@@ -11,6 +11,7 @@ import {
   Code,
   User,
   ArrowRight,
+  Eye,
 } from '@phosphor-icons/react';
 import { fetchAllShowcases, type RawShowcaseUpload } from '@/features/showcase-gallery/action';
 
@@ -221,7 +222,7 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             }}
           >
             <User size={14} />
-            <span>{showcase.userName}</span>
+            <Link href={`/profile/${showcase.userId}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>{showcase.userName}</Link>
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>
@@ -296,7 +297,7 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             }}
           >
             <User size={14} />
-            <span>{showcase.userName}</span>
+            <Link href={`/profile/${showcase.userId}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>{showcase.userName}</Link>
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>

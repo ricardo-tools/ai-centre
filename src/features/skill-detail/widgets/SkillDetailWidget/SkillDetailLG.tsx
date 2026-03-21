@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
-import { DownloadSimple, FileText, Lightning, ArrowLeft, Code, Table, ListBullets } from '@phosphor-icons/react';
+import { DownloadSimple, FileText, Lightning, ArrowLeft, ArrowRight, Code, Table, ListBullets } from '@phosphor-icons/react';
 import { useLocale } from '@/platform/screen-renderer/LocaleContext';
+import { useSession } from '@/platform/lib/SessionContext';
 import { Stat } from '@/platform/components/Stat';
 import { ToggleButton } from '@/platform/components/ToggleButton';
 import { SkillShowcase } from '@/platform/components/SkillShowcase';
+import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { SkillInPractice } from './SkillInPractice';
+import { CommentThread } from '@/platform/components/CommentThread';
+import { isBookmarked as checkBookmarked, toggleBookmark } from '@/features/social/bookmarks-action';
+import { trackSkillDownload, getSkillDownloadCount, getRelatedSkills } from '@/features/social/action';
 import type { Skill } from '@/platform/domain/Skill';
 import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
+
+// Related skills fetched via server action (skills.ts uses fs, can't import in client)
 
 interface SkillDetailLGProps {
   skill: Skill;
@@ -18,7 +25,41 @@ interface SkillDetailLGProps {
 
 export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
   const { t } = useLocale();
+  const session = useSession();
   const [view, setView] = useState<'practice' | 'markdown'>('practice');
+  const [bookmarked, setBookmarked] = useState(false);
+  const [downloadCount, setDownloadCount] = useState<number>(0);
+
+  // Check bookmark status on mount
+  useEffect(() => {
+    if (session?.userId) {
+      checkBookmarked(session.userId, 'skill', skill.slug).then(setBookmarked);
+    }
+  }, [session?.userId, skill.slug]);
+
+  // Fetch download count on mount
+  useEffect(() => {
+    getSkillDownloadCount(skill.slug).then(setDownloadCount);
+  }, [skill.slug]);
+
+  const [relatedSkills, setRelatedSkills] = useState<Array<{ slug: string; title: string; description: string; isOfficial: boolean; version: string; tags: { type: string; domain: string[]; layer: string } }>>([]);
+  useEffect(() => {
+    if (skill.tags) {
+      getRelatedSkills(skill.slug, skill.tags.domain, skill.tags.layer, skill.tags.type).then(setRelatedSkills);
+    }
+  }, [skill.slug, skill.tags]);
+
+  const handleDownload = useCallback(() => {
+    trackSkillDownload(skill.slug, 'detail_download');
+    setDownloadCount((c) => c + 1);
+  }, [skill.slug]);
+
+  const handleToggleBookmark = useCallback(async (): Promise<{ bookmarked: boolean } | null> => {
+    if (!session) return null;
+    const result = await toggleBookmark('skill', skill.slug, session.userId);
+    if (result.ok) return result.value;
+    return null;
+  }, [session, skill.slug]);
 
   const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
 
@@ -87,6 +128,9 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
           <Stat icon={<Code size={16} />} label={t('skillDetail.codeExamples')} value={parsed.codeExampleCount} />
           <Stat icon={<Table size={16} />} label={t('skillDetail.referenceTables')} value={parsed.referenceTableCount} />
           <Stat icon={<FileText size={16} />} label={t('skillDetail.version')} value={skill.formatVersion('')} />
+          {downloadCount > 0 && (
+            <Stat icon={<DownloadSimple size={16} />} label="Downloads" value={downloadCount} />
+          )}
         </div>
 
         {/* Actions row */}
@@ -94,6 +138,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
           <a
             href={downloadUrl}
             download={skill.downloadFilename}
+            onClick={handleDownload}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -109,6 +154,14 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
           >
             <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
           </a>
+
+          {session && (
+            <BookmarkButton
+              isBookmarked={bookmarked}
+              onToggle={handleToggleBookmark}
+              size={20}
+            />
+          )}
 
           {/* View toggle */}
           <div
@@ -154,6 +207,103 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
           </div>
         </div>
       </div>
+      {/* Related skills */}
+      {relatedSkills.length > 0 && (
+        <section style={{ marginTop: 48 }}>
+          <h2
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: 'var(--color-text-heading)',
+              margin: '0 0 16px',
+            }}
+          >
+            Related skills
+          </h2>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))',
+              gap: 16,
+            }}
+          >
+            {relatedSkills.map((rs) => (
+              <Link
+                key={rs.slug}
+                href={`/skills/${rs.slug}`}
+                className="card-hover"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: 20,
+                  borderRadius: 8,
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-surface)',
+                  textDecoration: 'none',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: 'var(--color-text-heading)',
+                    marginBottom: 6,
+                  }}
+                >
+                  {rs.title}
+                </span>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--color-text-muted)',
+                    lineHeight: 1.5,
+                    margin: '0 0 12px',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical' as const,
+                    overflow: 'hidden',
+                    flex: 1,
+                  }}
+                >
+                  {rs.description}
+                </p>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 12,
+                    color: 'var(--color-text-body)',
+                    fontWeight: 500,
+                  }}
+                >
+                  View <ArrowRight size={12} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Discussion */}
+      <section style={{ marginTop: 48 }}>
+        <h2
+          style={{
+            fontSize: 20,
+            fontWeight: 600,
+            color: 'var(--color-text-heading)',
+            marginBottom: 24,
+          }}
+        >
+          Discussion
+        </h2>
+        <CommentThread
+          entityType="skill"
+          entityId={skill.slug}
+          currentUserId={session?.userId}
+          isAdmin={session?.roleSlug === 'admin'}
+        />
+      </section>
     </div>
   );
 }

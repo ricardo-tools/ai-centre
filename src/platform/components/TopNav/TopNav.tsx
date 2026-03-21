@@ -6,6 +6,7 @@ import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { SignOut, UserCircle } from '@phosphor-icons/react';
 import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
 import { DevIdentitySwitcher } from '@/platform/components/DevIdentitySwitcher';
+import { NotificationBell } from '@/platform/components/NotificationBell';
 
 export interface NavItem {
   href: string;
@@ -19,10 +20,11 @@ interface TopNavProps {
   showLabels?: boolean;
   showThemeSwitcher?: boolean;
   userEmail?: string | null;
+  userId?: string | null;
   onSignOut?: () => void;
 }
 
-export function TopNav({ items, brandName = 'AI Centre', showLabels = true, showThemeSwitcher = true, userEmail, onSignOut }: TopNavProps) {
+export function TopNav({ items, brandName = 'AI Centre', showLabels = true, showThemeSwitcher = true, userEmail, userId, onSignOut }: TopNavProps) {
   const pathname = usePathname();
   const compact = !showLabels;
 
@@ -128,6 +130,7 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
 
       <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 4 : 8, flexShrink: 0 }}>
         {showLabels && <DevIdentitySwitcher />}
+        {userId && <NotificationBell userId={userId} />}
         {showThemeSwitcher && <ThemeSwitcher />}
         {userEmail && (
           <>
@@ -155,6 +158,26 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
                 >
                   {userEmail}
                 </span>
+              )}
+              {userId && (
+                <Link
+                  href={`/profile/${userId}`}
+                  title="Profile"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'none',
+                    padding: 4,
+                    borderRadius: 4,
+                    color: 'var(--color-topnav-text-muted)',
+                    minHeight: 44,
+                    minWidth: 44,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <UserCircle size={18} weight="regular" />
+                </Link>
               )}
               {onSignOut && (
                 <button

@@ -4,15 +4,15 @@ import { getAllSkills, getSkillBySlug, getBehaviouralSkills, getCompanionsFor } 
 describe('skills registry', () => {
   it('returns all registered skills', () => {
     const skills = getAllSkills();
-    expect(skills.length).toBe(60);
+    expect(skills.length).toBe(64);
   });
 
   it('includes both behavioural and reference skills', () => {
     const all = getAllSkills();
     const references = all.filter((s) => s.tags.type === 'reference');
     const behavioural = all.filter((s) => s.tags.type !== 'reference');
-    expect(references.length).toBe(4);
-    expect(behavioural.length).toBe(56);
+    expect(references.length).toBe(5);
+    expect(behavioural.length).toBe(59);
   });
 
   it('finds a skill by slug', () => {
@@ -28,7 +28,7 @@ describe('skills registry', () => {
 
   it('returns only behavioural skills', () => {
     const skills = getBehaviouralSkills();
-    expect(skills.length).toBe(56);
+    expect(skills.length).toBe(59);
     expect(skills.every((s) => s.tags.type !== 'reference')).toBe(true);
   });
 
