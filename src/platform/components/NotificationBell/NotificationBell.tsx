@@ -146,7 +146,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             border: '1px solid var(--color-border)',
             background: 'var(--color-surface)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            zIndex: 300,
+            zIndex: 10000,
           }}
         >
           {/* Header */}
