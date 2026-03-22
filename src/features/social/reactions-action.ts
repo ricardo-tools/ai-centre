@@ -6,16 +6,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { reactions } from '@/platform/db/schema';
 import { type Result, Ok, Err } from '@/platform/lib/result';
 
-const ALLOWED_EMOJIS = ['thumbsup', 'heart', 'rocket', 'eyes', 'tada'] as const;
-type Emoji = (typeof ALLOWED_EMOJIS)[number];
-
-const EMOJI_DISPLAY: Record<Emoji, string> = {
-  thumbsup: '\u{1F44D}',
-  heart: '\u2764\uFE0F',
-  rocket: '\u{1F680}',
-  eyes: '\u{1F440}',
-  tada: '\u{1F389}',
-};
+import { ALLOWED_EMOJIS, type Emoji } from './reaction-constants';
 
 function getDb() {
   if (!process.env.DATABASE_URL) return null;
@@ -93,4 +84,4 @@ export async function getReactionCounts(
   }
 }
 
-export { EMOJI_DISPLAY, ALLOWED_EMOJIS };
+// EMOJI_DISPLAY and ALLOWED_EMOJIS moved to reaction-constants.ts (non-server-action file)
