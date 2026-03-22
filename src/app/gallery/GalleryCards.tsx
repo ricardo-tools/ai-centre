@@ -12,6 +12,8 @@ import {
   User,
   ArrowRight,
   Eye,
+  ThumbsUp,
+  ChatCircle,
 } from '@phosphor-icons/react';
 import { fetchAllShowcases, type RawShowcaseUpload } from '@/features/showcase-gallery/action';
 
@@ -226,6 +228,17 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <ThumbsUp size={12} /> 0
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <ChatCircle size={12} /> 0
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <Eye size={12} /> 0
+            </span>
+          </div>
           <span
             style={{
               display: 'flex',
@@ -300,6 +313,17 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             <Link href={`/profile/${showcase.userId}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }} onClick={(e) => e.stopPropagation()}>{showcase.userName}</Link>
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <ThumbsUp size={12} /> 0
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <ChatCircle size={12} /> 0
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <Eye size={12} /> 0
+            </span>
           </div>
           <span
             style={{

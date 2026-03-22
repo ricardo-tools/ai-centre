@@ -311,6 +311,23 @@ The renderer resolves the current breakpoint and passes `size: SizeVariant` to e
 
 Theme token definitions and the semantic variable reference live in the **brand-design-system** skill.
 
+### Z-Index Scale
+
+All z-index values must follow the project scale. Never use arbitrary values.
+
+| Level | Value | Use for |
+|---|---|---|
+| dropdown | 100 | Select menus, autocomplete |
+| sticky | 200 | TopNav, sticky headers |
+| fixed | 300 | Fixed position elements |
+| drawer | 500 | Side panels, notification drawer |
+| modal | 700 | Confirm dialogs, modal overlays |
+| overlay | 900 | Backdrop behind modals |
+| toast | 1000 | Toast notifications |
+| fullscreen | 9999 | Fullscreen viewer |
+
+CSS custom properties are defined in `globals.css` as `--z-dropdown` through `--z-fullscreen`. Use the CSS var in stylesheets; in inline styles use the numeric value with a comment referencing the scale level (e.g. `zIndex: 500, /* --z-drawer */`).
+
 ---
 
 ## Localisation
@@ -348,6 +365,7 @@ Theme token definitions and the semantic variable reference live in the **brand-
 - ❌ `any` type → use proper typing
 - ❌ Error/empty states that break the grid → all states must fit within the widget's grid cell
 - ❌ Conditional rendering (`{active && <Panel />}`) for tab panels → causes layout shift. Use CSS grid-stack: render all panels in the same grid cell (`gridArea: '1 / 1'`), toggle `visibility: 'visible' / 'hidden'`. Height = tallest panel, no jump.
+- ❌ Arbitrary z-index values (300, 10000, 99999) → use the z-index scale (dropdown/sticky/fixed/drawer/modal/overlay/toast/fullscreen)
 
 ---
 

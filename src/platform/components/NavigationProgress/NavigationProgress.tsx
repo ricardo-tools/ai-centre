@@ -77,7 +77,7 @@ export function NavigationProgress() {
         left: 0,
         right: 0,
         height: 3,
-        zIndex: 9999,
+        zIndex: 1000, /* --z-toast (above all UI except fullscreen) */
         pointerEvents: 'none',
       }}
     >

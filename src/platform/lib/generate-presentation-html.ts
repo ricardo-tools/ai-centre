@@ -92,7 +92,7 @@ function generateCSS(accent: string): string {
 
   /* ─ Nav bar ─ */
   .nav-bar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 300; /* --z-fixed */
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 32px; background: rgba(12,16,48,0.85);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);

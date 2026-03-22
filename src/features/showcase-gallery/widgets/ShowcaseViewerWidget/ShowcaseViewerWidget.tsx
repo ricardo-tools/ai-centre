@@ -10,9 +10,11 @@ import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
 import { deleteShowcase, updateShowcase } from '@/features/showcase-gallery/action';
 import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
 import { trackShowcaseView, getShowcaseViewCount } from '@/features/social/action';
+import { toggleBookmark, isBookmarked as checkIsBookmarked } from '@/features/social/bookmarks-action';
 import { useSession } from '@/platform/lib/SessionContext';
 import { SkillPicker } from '@/platform/components/SkillPicker';
 import { ReactionBar } from '@/platform/components/ReactionBar';
+import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { CommentThread } from '@/platform/components/CommentThread';
 import { Eye, ChatCircle } from '@phosphor-icons/react';
 
@@ -62,6 +64,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
   const [userReactions, setUserReactions] = useState<string[]>([]);
   const [viewCount, setViewCount] = useState<number>(0);
   const [showComments, setShowComments] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
   // Track view and fetch view count on mount
   useEffect(() => {
@@ -86,6 +89,23 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
     },
     [session, showcase.id],
   );
+
+  // Fetch bookmark state on mount
+  useEffect(() => {
+    if (session?.userId) {
+      checkIsBookmarked(session.userId, 'showcase', showcase.id).then(setBookmarked);
+    }
+  }, [showcase.id, session?.userId]);
+
+  const handleToggleBookmark = useCallback(async (): Promise<{ bookmarked: boolean } | null> => {
+    if (!session) return null;
+    const result = await toggleBookmark('showcase', showcase.id, session.userId);
+    if (result.ok) {
+      setBookmarked(result.value.bookmarked);
+      return result.value;
+    }
+    return null;
+  }, [session, showcase.id]);
 
   // Fetch available skills when editing starts
   useEffect(() => {
@@ -247,7 +267,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 50,
+        zIndex: 300, /* --z-fixed */
         display: 'flex',
         flexDirection: 'column',
         background: 'var(--color-bg)',
@@ -375,6 +395,15 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
           >
             <ChatCircle size={12} weight={showComments ? 'fill' : 'regular'} /> Comments
           </button>
+
+          {/* Bookmark */}
+          {session && (
+            <BookmarkButton
+              isBookmarked={bookmarked}
+              onToggle={handleToggleBookmark}
+              size={14}
+            />
+          )}
 
           {/* Share link */}
           <button
@@ -552,7 +581,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   background: 'var(--color-bg)',
-                  zIndex: 10,
+                  zIndex: 10, /* local stacking within fixed container */
                 }}
               >
                 {phase === 'error' ? (
@@ -593,7 +622,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 99999,
+            zIndex: 9999, /* --z-fullscreen */
             background: 'var(--color-bg)',
           }}
         >
@@ -615,7 +644,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
               position: 'absolute',
               top: 16,
               left: 16,
-              zIndex: 10000,
+              zIndex: 10000, /* --z-fullscreen + 1 (exit button above fullscreen) */
               background: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
               color: 'var(--color-text-body)',

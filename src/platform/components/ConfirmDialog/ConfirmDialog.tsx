@@ -30,7 +30,7 @@ export function ConfirmDialog({
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 9999,
+        zIndex: 900, /* --z-overlay (backdrop behind modal) */
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

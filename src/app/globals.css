@@ -25,6 +25,18 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 0 0 3px var(--color-primary-muted) !important;
 }
 
+/* === Z-Index Scale === */
+:root {
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-drawer: 500;
+  --z-modal: 700;
+  --z-overlay: 900;
+  --z-toast: 1000;
+  --z-fullscreen: 9999;
+}
+
 /* === Raw Palette Tokens === */
 :root {
   /* Light Mode */

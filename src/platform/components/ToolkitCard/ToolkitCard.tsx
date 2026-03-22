@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ThumbsUp, ChatCircle } from '@phosphor-icons/react/dist/ssr';
 
 interface ToolkitCardProps {
   slug: string;
@@ -8,6 +9,10 @@ interface ToolkitCardProps {
   domainName: string;
   addonNames: string[];
   skillCount: number;
+  likeCount?: number;
+  commentCount?: number;
+  onToggleLike?: () => void;
+  onCommentClick?: () => void;
 }
 
 export function ToolkitCard({
@@ -18,6 +23,10 @@ export function ToolkitCard({
   domainName,
   addonNames,
   skillCount,
+  likeCount,
+  commentCount,
+  onToggleLike,
+  onCommentClick,
 }: ToolkitCardProps) {
   return (
     <Link
@@ -82,7 +91,7 @@ export function ToolkitCard({
         {skillCount} skill{skillCount !== 1 ? 's' : ''} included
       </p>
 
-      <div style={{ marginTop: 'auto', paddingTop: 8 }}>
+      <div style={{ marginTop: 'auto', paddingTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span
           style={{
             display: 'inline-flex',
@@ -98,6 +107,22 @@ export function ToolkitCard({
         >
           Use this toolkit →
         </span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleLike?.(); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
+          >
+            <ThumbsUp size={14} /> {likeCount ?? 0}
+          </button>
+
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCommentClick?.(); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
+          >
+            <ChatCircle size={14} /> {commentCount ?? 0}
+          </button>
+        </div>
       </div>
     </Link>
   );

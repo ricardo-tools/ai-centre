@@ -3,10 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
-import { SignOut, UserCircle } from '@phosphor-icons/react';
 import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
-import { DevIdentitySwitcher } from '@/platform/components/DevIdentitySwitcher';
 import { NotificationBell } from '@/platform/components/NotificationBell';
+import { UserMenu } from '@/platform/components/UserMenu';
 
 export interface NavItem {
   href: string;
@@ -39,7 +38,7 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
         borderBottom: '1px solid var(--color-topnav-border)',
         gap: 0,
         position: 'relative',
-        zIndex: 200,
+        zIndex: 200, /* --z-sticky */
       }}
     >
       <Link
@@ -128,80 +127,25 @@ export function TopNav({ items, brandName = 'AI Centre', showLabels = true, show
         })}
       </nav>
 
+      {/* Right-side controls: Notification bell, Theme switcher, User avatar menu */}
       <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 4 : 8, flexShrink: 0 }}>
-        {showLabels && <DevIdentitySwitcher />}
         {userId && <NotificationBell userId={userId} />}
         {showThemeSwitcher && <ThemeSwitcher />}
         {userEmail && (
-          <>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                paddingLeft: compact ? 8 : 16,
-                borderLeft: '1px solid var(--color-topnav-border)',
-                marginLeft: 4,
-              }}
-            >
-              <UserCircle size={20} weight="regular" style={{ color: 'var(--color-topnav-text-muted)' }} />
-              {showLabels && (
-                <span
-                  style={{
-                    fontSize: 13,
-                    color: 'var(--color-topnav-text-muted)',
-                    maxWidth: 160,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {userEmail}
-                </span>
-              )}
-              {userId && (
-                <Link
-                  href={`/profile/${userId}`}
-                  title="Profile"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'none',
-                    padding: 4,
-                    borderRadius: 4,
-                    color: 'var(--color-topnav-text-muted)',
-                    minHeight: 44,
-                    minWidth: 44,
-                    textDecoration: 'none',
-                  }}
-                >
-                  <UserCircle size={18} weight="regular" />
-                </Link>
-              )}
-              {onSignOut && (
-                <button
-                  onClick={onSignOut}
-                  title="Sign out"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 4,
-                    borderRadius: 4,
-                    color: 'var(--color-topnav-text-muted)',
-                    minHeight: 44,
-                    minWidth: 44,
-                  }}
-                >
-                  <SignOut size={18} weight="regular" />
-                </button>
-              )}
-            </div>
-          </>
+          <div
+            style={{
+              paddingLeft: compact ? 4 : 8,
+              borderLeft: '1px solid var(--color-topnav-border)',
+              marginLeft: 4,
+            }}
+          >
+            <UserMenu
+              userEmail={userEmail}
+              userId={userId ?? null}
+              showLabels={showLabels}
+              onSignOut={onSignOut}
+            />
+          </div>
         )}
       </div>
     </header>

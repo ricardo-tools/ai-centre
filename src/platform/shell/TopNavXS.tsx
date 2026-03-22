@@ -57,7 +57,7 @@ export function TopNavXS({ items, activePath, userEmail, userId, onSignOut }: To
             right: 0,
             bottom: 0,
             background: 'var(--color-bg)',
-            zIndex: 100,
+            zIndex: 500, /* --z-drawer */
             display: 'flex',
             flexDirection: 'column',
           }}

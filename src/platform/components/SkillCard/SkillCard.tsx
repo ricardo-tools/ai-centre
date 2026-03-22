@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, DownloadSimple } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, DownloadSimple, ThumbsUp, ChatCircle, BookmarkSimple } from '@phosphor-icons/react/dist/ssr';
 
 const TYPE_LABELS: Record<string, string> = { principle: 'Principle', implementation: 'Implementation', reference: 'Reference' };
 const LAYER_LABELS: Record<string, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infra', design: 'Design', process: 'Process' };
@@ -16,9 +16,14 @@ interface SkillCardProps {
   viewLabel?: string;
   author?: string;
   downloadCount?: number;
+  likeCount?: number;
+  commentCount?: number;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
+  onToggleLike?: () => void;
 }
 
-export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount }: SkillCardProps) {
+export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount, likeCount, commentCount, isBookmarked, onToggleBookmark, onToggleLike }: SkillCardProps) {
   const showNewBadge = downloadCount === undefined || downloadCount === 0;
   return (
     <Link
@@ -119,6 +124,30 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
             {viewLabel} <ArrowRight size={14} />
           </span>
         </div>
+      </div>
+      {/* Social signals */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--color-border)' }}>
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleLike?.(); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
+        >
+          <ThumbsUp size={14} /> {likeCount ?? 0}
+        </button>
+
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-muted)', fontSize: 12 }}>
+          <ChatCircle size={14} /> {commentCount ?? 0}
+        </span>
+
+        <span style={{ flex: 1 }} />
+
+        {onToggleBookmark && (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleBookmark(); }}
+            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: isBookmarked ? 'var(--color-primary)' : 'var(--color-text-muted)', padding: 0 }}
+          >
+            <BookmarkSimple size={16} weight={isBookmarked ? 'fill' : 'regular'} />
+          </button>
+        )}
       </div>
     </Link>
   );

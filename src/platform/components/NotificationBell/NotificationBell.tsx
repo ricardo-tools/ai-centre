@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Bell, CheckCircle } from '@phosphor-icons/react';
+import { createPortal } from 'react-dom';
+import { Bell, CheckCircle, X } from '@phosphor-icons/react';
 import {
   getNotifications,
   markNotificationRead,
@@ -36,7 +37,13 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   const [items, setItems] = useState<NotificationData[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Track mount for createPortal (needs document.body)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
     const result = await getNotifications(userId, 20);
@@ -57,17 +64,26 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // Close dropdown on click outside
+  // Close on Escape key
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
     };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
+
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
     if (open) {
-      document.addEventListener('mousedown', handleClick);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-    return () => document.removeEventListener('mousedown', handleClick);
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   const handleMarkRead = useCallback(async (id: string) => {
@@ -84,8 +100,185 @@ export function NotificationBell({ userId }: NotificationBellProps) {
     setUnreadCount(0);
   }, [userId]);
 
+  const drawer = open && mounted
+    ? createPortal(
+        <>
+          {/* Backdrop overlay */}
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.2)',
+              zIndex: 499, /* --z-drawer - 1 (backdrop behind drawer) */
+            }}
+          />
+          {/* Drawer panel */}
+          <div
+            ref={drawerRef}
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              height: '100vh',
+              width: 380,
+              maxWidth: '100vw',
+              background: 'var(--color-surface)',
+              borderLeft: '1px solid var(--color-border)',
+              boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
+              zIndex: 500, /* --z-drawer */
+              display: 'flex',
+              flexDirection: 'column',
+              transform: 'translateX(0)',
+              transition: 'transform 200ms ease-out',
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                borderBottom: '1px solid var(--color-border)',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)' }}>
+                Notifications
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={handleMarkAllRead}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      fontSize: 12,
+                      color: 'var(--color-primary)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                      borderRadius: 4,
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    <CheckCircle size={13} /> Mark all read
+                  </button>
+                )}
+                <button
+                  onClick={() => setOpen(false)}
+                  aria-label="Close notifications"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: 4,
+                    borderRadius: 4,
+                    color: 'var(--color-text-muted)',
+                    minHeight: 32,
+                    minWidth: 32,
+                  }}
+                >
+                  <X size={18} weight="regular" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable notification list */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {items.length === 0 ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    minHeight: 200,
+                  }}
+                >
+                  <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>
+                    No notifications yet.
+                  </p>
+                </div>
+              ) : (
+                items.map((n) => {
+                  const isUnread = n.readAt === null;
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => {
+                        if (isUnread) handleMarkRead(n.id);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 2,
+                        width: '100%',
+                        padding: '12px 20px',
+                        background: isUnread ? 'var(--color-primary-muted)' : 'transparent',
+                        border: 'none',
+                        borderBlockEnd: '1px solid var(--color-border)',
+                        cursor: isUnread ? 'pointer' : 'default',
+                        textAlign: 'left',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)' }}>
+                          {n.actorName}
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                          {relativeTime(n.createdAt)}
+                        </span>
+                        {isUnread && (
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: '50%',
+                              background: 'var(--color-primary)',
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                      </div>
+                      <span style={{ fontSize: 13, color: 'var(--color-text-body)', lineHeight: 1.4 }}>
+                        {n.title}
+                      </span>
+                      {n.body && (
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: 'var(--color-text-muted)',
+                            lineHeight: 1.4,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical' as const,
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {n.body}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </>,
+        document.body,
+      )
+    : null;
+
   return (
-    <div ref={dropdownRef} style={{ position: 'relative' }}>
+    <>
       {/* Bell button */}
       <button
         onClick={() => setOpen((v) => !v)}
@@ -130,133 +323,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           </span>
         )}
       </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '100%',
-            right: 0,
-            marginTop: 4,
-            width: 360,
-            maxHeight: 480,
-            overflowY: 'auto',
-            borderRadius: 8,
-            border: '1px solid var(--color-border)',
-            background: 'var(--color-surface)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            zIndex: 10000,
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid var(--color-border)',
-            }}
-          >
-            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-heading)' }}>
-              Notifications
-            </span>
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 12,
-                  color: 'var(--color-primary)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 0,
-                  fontFamily: 'inherit',
-                }}
-              >
-                <CheckCircle size={13} /> Mark all as read
-              </button>
-            )}
-          </div>
-
-          {/* Items */}
-          {items.length === 0 ? (
-            <div style={{ padding: '32px 16px', textAlign: 'center' }}>
-              <p style={{ fontSize: 13, color: 'var(--color-text-muted)', margin: 0 }}>
-                No notifications yet.
-              </p>
-            </div>
-          ) : (
-            items.map((n) => {
-              const isUnread = n.readAt === null;
-              return (
-                <button
-                  key={n.id}
-                  onClick={() => {
-                    if (isUnread) handleMarkRead(n.id);
-                  }}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderBottom: '1px solid var(--color-border)',
-                    background: isUnread ? 'var(--color-primary-muted)' : 'transparent',
-                    border: 'none',
-                    borderBlockEnd: '1px solid var(--color-border)',
-                    cursor: isUnread ? 'pointer' : 'default',
-                    textAlign: 'left',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)' }}>
-                      {n.actorName}
-                    </span>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-                      {relativeTime(n.createdAt)}
-                    </span>
-                    {isUnread && (
-                      <span
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: '50%',
-                          background: 'var(--color-primary)',
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                  </div>
-                  <span style={{ fontSize: 13, color: 'var(--color-text-body)', lineHeight: 1.4 }}>
-                    {n.title}
-                  </span>
-                  {n.body && (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--color-text-muted)',
-                        lineHeight: 1.4,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical' as const,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {n.body}
-                    </span>
-                  )}
-                </button>
-              );
-            })
-          )}
-        </div>
-      )}
-    </div>
+      {drawer}
+    </>
   );
 }

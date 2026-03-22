@@ -72,7 +72,7 @@ export function DevIdentitySwitcher() {
             border: '1px solid var(--color-border)',
             borderRadius: 8,
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            zIndex: 100,
+            zIndex: 500, /* --z-drawer */
             minWidth: 200,
             overflow: 'hidden',
           }}
