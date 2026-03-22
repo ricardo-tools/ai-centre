@@ -5,12 +5,8 @@ import { verifySessionEdge } from '@/platform/lib/auth-edge';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // DEBUG: Log every middleware invocation — remove after auth is confirmed working
-  console.log('[middleware] ENTERED. path:', pathname, 'NODE_ENV:', process.env.NODE_ENV, 'SKIP_AUTH:', process.env.SKIP_AUTH, 'AUTH_SECRET set:', !!process.env.AUTH_SECRET);
-
   // Dev bypass: only when EXPLICITLY opted in via env var (never set this in production)
   if (process.env.SKIP_AUTH === 'true') {
-    console.log('[middleware] SKIP_AUTH is true — bypassing auth');
     return NextResponse.next();
   }
 
@@ -53,8 +49,6 @@ export async function middleware(request: NextRequest) {
     response.cookies.delete('auth-token');
     return response;
   }
-
-  console.log('[middleware] path:', pathname, 'has token: true, session valid: true, role:', session.roleSlug);
 
   // Admin route protection — defense-in-depth (actions also check permissions)
   if (pathname.startsWith('/admin') && session.roleSlug !== 'admin') {
