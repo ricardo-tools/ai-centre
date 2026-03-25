@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const EMOJIS = [
   { key: 'thumbsup', display: '\u{1F44D}' },
@@ -25,6 +25,10 @@ export function ReactionBar({
 }: ReactionBarProps) {
   const [counts, setCounts] = useState(initialCounts);
   const [userReactions, setUserReactions] = useState(new Set(initialUserReactions));
+
+  // Sync when async-loaded props arrive (useState only reads initial value on mount)
+  useEffect(() => { setCounts(initialCounts); }, [initialCounts]);
+  useEffect(() => { setUserReactions(new Set(initialUserReactions)); }, [initialUserReactions]);
 
   const handleToggle = useCallback(
     async (emoji: string) => {

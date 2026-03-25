@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { List, X, SignOut, UserCircle } from '@phosphor-icons/react';
 import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
 import type { NavItem } from './useTopNav';
@@ -23,13 +24,18 @@ export function TopNavXS({ items, activePath, userEmail, userId, onSignOut }: To
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           height: 48,
           paddingInline: 16,
           background: 'var(--color-topnav-bg)',
           borderBottom: '1px solid var(--color-topnav-border)',
         }}
       >
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
+          <Image src="/logos/square-color.png" alt="AI Centre" width={24} height={24} className="logo-color" />
+          <Image src="/logos/square-white.svg" alt="AI Centre" width={24} height={24} className="logo-white" />
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-heading)' }}>AI Centre</span>
+        </Link>
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"

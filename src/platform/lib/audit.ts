@@ -22,12 +22,10 @@ export async function writeAuditEntry(entry: AuditEntry): Promise<void> {
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
+    const { getDb } = await import('@/platform/db/client');
     const { auditLog } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     await db.insert(auditLog).values({
       entityType: entry.entityType,

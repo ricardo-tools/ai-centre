@@ -1,12 +1,16 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // 0. Install dev log capture (only when SKIP_AUTH=true)
+    const { installLogCapture } = await import('@/platform/lib/server-logs');
+    installLogCapture();
+
     // 1. Run pending database migrations (blocking — tables must exist before anything else)
     try {
       const { runMigrations } = await import('@/platform/lib/migrate');
       await runMigrations();
     } catch (err) {
       console.error('[instrumentation] Migration failed — skill sync will be skipped:', err);
-      return; // Don't sync skills if migrations failed
+      return;
     }
 
     // 2. Sync official skills (non-blocking — uploads to Blob, updates DB)

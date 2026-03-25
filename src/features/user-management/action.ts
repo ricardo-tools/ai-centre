@@ -4,6 +4,7 @@ import { requirePermission, requireNotSelf } from '@/platform/lib/guards';
 import { writeAuditEntry } from '@/platform/lib/audit';
 import { type Result, Ok, Err } from '@/platform/lib/result';
 import type { RawUserProfile } from '@/platform/acl/user-profile.mapper';
+import { getDb } from '@/platform/db/client';
 
 const MOCK_USERS: RawUserProfile[] = [
   { id: 'dev-1', email: 'admin@ezycollect.com.au', name: 'Admin User', roleId: 'mock-admin-role', roleName: 'Admin', roleSlug: 'admin', isActive: true, createdAt: '2025-01-01T00:00:00Z' },
@@ -20,13 +21,10 @@ export async function fetchAllUsers(): Promise<Result<RawUserProfile[], Error>> 
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { users, roles } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     const rows = await db
       .select({
@@ -76,13 +74,10 @@ export async function updateUserRole(
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     await db.update(users).set({ roleId, updatedAt: new Date() }).where(eq(users.id, userId));
 
@@ -114,13 +109,10 @@ export async function deactivateUser(userId: string): Promise<Result<void, Error
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     await db.update(users).set({ isActive: false, updatedAt: new Date() }).where(eq(users.id, userId));
 
@@ -152,13 +144,10 @@ export async function reactivateUser(userId: string): Promise<Result<void, Error
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     await db.update(users).set({ isActive: true, updatedAt: new Date() }).where(eq(users.id, userId));
 

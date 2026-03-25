@@ -1,8 +1,6 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { users, verificationTokens, invitations, roles } from '@/platform/db/schema';
 import { generateOtp, hashOtp, isAllowedDomain, OTP_EXPIRY_MS, MAX_ATTEMPTS } from '@/platform/lib/otp';
 import { sendOtpEmail } from '@/platform/lib/email';
@@ -10,14 +8,7 @@ import { createSession, clearSession } from '@/platform/lib/auth';
 import { redirect } from 'next/navigation';
 import { type Result, Ok, Err, ValidationError, AuthError } from '@/platform/lib/result';
 import { checkRateLimit } from '@/platform/lib/rate-limit';
-
-function getDb() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is not configured');
-  }
-  const sql = neon(process.env.DATABASE_URL);
-  return drizzle(sql);
-}
+import { getDb } from '@/platform/db/client';
 
 export async function requestOtp(email: string): Promise<Result<void, ValidationError>> {
   const normalizedEmail = email.trim().toLowerCase();

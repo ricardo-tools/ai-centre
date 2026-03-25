@@ -15,6 +15,13 @@
       "when": 1774051933497,
       "tag": "0001_blue_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774412843154,
+      "tag": "0002_faithful_sway",
+      "breakpoints": true
     }
   ]
 }

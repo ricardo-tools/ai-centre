@@ -3,16 +3,9 @@
 import { requirePermission } from '@/platform/lib/guards';
 import { type Result, Ok, Err, ForbiddenError } from '@/platform/lib/result';
 
-const hasDb = !!process.env.DATABASE_URL;
+import { getDb, hasDatabase } from '@/platform/db/client';
 
-function getDb() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { neon } = require('@neondatabase/serverless');
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { drizzle } = require('drizzle-orm/neon-http');
-  const sql = neon(process.env.DATABASE_URL!);
-  return drizzle(sql);
-}
+const hasDb = hasDatabase();
 
 export interface CommunityAnalytics {
   topSkills: Array<{ slug: string; downloads: number }>;

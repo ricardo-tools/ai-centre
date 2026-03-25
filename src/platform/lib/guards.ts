@@ -27,13 +27,11 @@ async function getPermissionsForRole(roleId: string): Promise<Set<string>> {
     return cached.permissions;
   }
 
-  const { neon } = require('@neondatabase/serverless');
-  const { drizzle } = require('drizzle-orm/neon-http');
+  const { getDb } = await import('@/platform/db/client');
   const { eq } = require('drizzle-orm');
   const { rolePermissions } = await import('@/platform/db/schema');
 
-  const sql = neon(process.env.DATABASE_URL!);
-  const db = drizzle(sql);
+  const db = getDb();
 
   const rows = await db
     .select({ permission: rolePermissions.permission })

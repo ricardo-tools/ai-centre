@@ -4,6 +4,7 @@ import { requirePermission } from '@/platform/lib/guards';
 import { writeAuditEntry } from '@/platform/lib/audit';
 import { type Result, Ok, Err } from '@/platform/lib/result';
 import { SYSTEM_ROLE_SEEDS, ALL_PERMISSIONS, PERMISSION_REGISTRY } from '@/platform/lib/permissions';
+import { getDb } from '@/platform/db/client';
 
 export interface RawRole {
   id: string;
@@ -48,13 +49,10 @@ export async function fetchAllRoles(): Promise<Result<RawRole[], Error>> {
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { sql: sqlFn } = require('drizzle-orm');
     const { roles, rolePermissions, users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     // Fetch all roles
     const roleRows = await db.select().from(roles);
@@ -108,13 +106,10 @@ export async function fetchRoleById(id: string): Promise<Result<RawRole, Error>>
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq, sql: sqlFn } = require('drizzle-orm');
     const { roles, rolePermissions, users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     const [role] = await db.select().from(roles).where(eq(roles.id, id)).limit(1);
     if (!role) return Err(new Error('Role not found'));
@@ -178,12 +173,9 @@ export async function createRole(
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { roles, rolePermissions } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     const slug = name.toLowerCase().replace(/\s+/g, '-');
 
@@ -246,13 +238,10 @@ export async function updateRole(
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { roles, rolePermissions } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     // Check if system role
     const [role] = await db.select().from(roles).where(eq(roles.id, id)).limit(1);
@@ -295,13 +284,10 @@ export async function deleteRole(id: string): Promise<Result<void, Error>> {
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq, sql: sqlFn } = require('drizzle-orm');
     const { roles, users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     // Check if system role
     const [role] = await db.select().from(roles).where(eq(roles.id, id)).limit(1);

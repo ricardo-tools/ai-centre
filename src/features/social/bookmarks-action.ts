@@ -1,15 +1,13 @@
 'use server';
 
 import { eq, and } from 'drizzle-orm';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { bookmarks } from '@/platform/db/schema';
 import { type Result, Ok, Err } from '@/platform/lib/result';
+import { getDb as getDatabase, hasDatabase } from '@/platform/db/client';
 
 function getDb() {
-  if (!process.env.DATABASE_URL) return null;
-  const s = neon(process.env.DATABASE_URL);
-  return drizzle(s);
+  if (!hasDatabase()) return null;
+  return getDatabase();
 }
 
 export async function toggleBookmark(

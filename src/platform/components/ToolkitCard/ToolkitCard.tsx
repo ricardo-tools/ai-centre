@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { ThumbsUp, ChatCircle } from '@phosphor-icons/react/dist/ssr';
+import { ArrowFatUp, ChatCircle, BookmarkSimple } from '@phosphor-icons/react';
 
 interface ToolkitCardProps {
   slug: string;
@@ -9,9 +11,12 @@ interface ToolkitCardProps {
   domainName: string;
   addonNames: string[];
   skillCount: number;
-  likeCount?: number;
+  upvoteCount?: number;
   commentCount?: number;
-  onToggleLike?: () => void;
+  isUpvoted?: boolean;
+  isBookmarked?: boolean;
+  onToggleUpvote?: () => void;
+  onToggleBookmark?: () => void;
   onCommentClick?: () => void;
 }
 
@@ -23,15 +28,20 @@ export function ToolkitCard({
   domainName,
   addonNames,
   skillCount,
-  likeCount,
+  upvoteCount,
   commentCount,
-  onToggleLike,
+  isUpvoted,
+  isBookmarked,
+  onToggleUpvote,
+  onToggleBookmark,
   onCommentClick,
 }: ToolkitCardProps) {
   return (
     <Link
       href={`/generate?preset=${slug}`}
       className="card-hover"
+      data-entity-id={slug}
+      data-entity-type="toolkit"
       style={{
         padding: 24,
         borderRadius: 8,
@@ -110,10 +120,11 @@ export function ToolkitCard({
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleLike?.(); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
+            data-testid="upvote-button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleUpvote?.(); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: isUpvoted ? 'var(--color-primary)' : 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', fontWeight: isUpvoted ? 600 : 400, padding: 0, transition: 'color 150ms' }}
           >
-            <ThumbsUp size={14} /> {likeCount ?? 0}
+            <ArrowFatUp size={14} weight={isUpvoted ? 'fill' : 'regular'} /> {upvoteCount ?? 0}
           </button>
 
           <button

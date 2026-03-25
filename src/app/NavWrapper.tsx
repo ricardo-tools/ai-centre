@@ -6,6 +6,8 @@ import { appShellConfig } from '@/platform/screens/AppShell/AppShell.screen';
 import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
 
 const SHELL_EXCLUDED_PATHS = ['/login'];
+/** Pages that render inside the shell but need edge-to-edge layout (no content padding) */
+const FLUSH_LAYOUT_PATHS = ['/chat'];
 
 export function ShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -22,13 +24,15 @@ export function ShellLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
+  const isFlush = FLUSH_LAYOUT_PATHS.includes(pathname);
+
   return (
     <ScreenRenderer
       config={appShellConfig}
       containerStyle={{ height: '100vh', overflow: 'hidden' }}
       slots={{
         'main-content': (
-          <div className="main-content" style={{ overflowY: 'auto', height: '100%' }}>
+          <div className={isFlush ? undefined : 'main-content'} style={{ overflowY: 'auto', height: '100%' }}>
             {children}
           </div>
         ),

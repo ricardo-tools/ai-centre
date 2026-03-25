@@ -2,8 +2,9 @@
 
 import { type Result, Ok, Err, ValidationError, NotFoundError, ForbiddenError } from '@/platform/lib/result';
 import { requireAuth, requirePermission, requireOwnerOrAdmin } from '@/platform/lib/guards';
+import { getDb, hasDatabase } from '@/platform/db/client';
 
-const hasDb = !!process.env.DATABASE_URL;
+const hasDb = hasDatabase();
 
 // ── Dev-mode local manifest (replaces DB when DATABASE_URL is not set) ──
 
@@ -28,13 +29,6 @@ async function writeManifest(entries: RawShowcaseUpload[]): Promise<void> {
   const dir = path.resolve(process.cwd(), 'public', 'uploads');
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(await getManifestPath(), JSON.stringify(entries, null, 2));
-}
-
-function getDb() {
-  const { neon } = require('@neondatabase/serverless');
-  const { drizzle } = require('drizzle-orm/neon-http');
-  const sql = neon(process.env.DATABASE_URL!);
-  return drizzle(sql);
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -247,9 +241,9 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       blobUrl,
       fileName: file.name,
       fileSizeBytes: file.size,
-    }).returning({ id: showcaseUploads.id });
+    }).returning();
 
-    return Ok({ id: inserted.id });
+    return Ok({ id: (inserted as Record<string, unknown>).id as string });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Database insert failed';
     console.error('[showcase-gallery] DB insert failed:', err);

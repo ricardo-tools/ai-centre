@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { SignJWT, jwtVerify } from 'jose';
+import { hasDatabase } from '@/platform/db/client';
 
 export interface Session {
   userId: string;
@@ -36,6 +37,25 @@ export async function createSession(userId: string, email: string, roleId: strin
 
 const DEV_IDENTITY_COOKIE = 'dev-identity';
 
+// Cached role slug→UUID map — looked up once from DB, reused for all dev sessions
+const cachedRoleIds: Record<string, string> = {};
+
+async function getRoleId(slug: string): Promise<string> {
+  if (cachedRoleIds[slug]) return cachedRoleIds[slug];
+  if (!hasDatabase()) return '00000000-0000-0000-0000-000000000001';
+  try {
+    const { getDb } = await import('@/platform/db/client');
+    const { roles } = await import('@/platform/db/schema');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+    const [row] = await db.select({ id: roles.id }).from(roles).where(eq(roles.slug, slug)).limit(1);
+    cachedRoleIds[slug] = row?.id ?? '00000000-0000-0000-0000-000000000001';
+  } catch {
+    cachedRoleIds[slug] = '00000000-0000-0000-0000-000000000001';
+  }
+  return cachedRoleIds[slug];
+}
+
 export async function getSession(): Promise<Session | null> {
   if (process.env.SKIP_AUTH === 'true') {
     const cookieStore = await cookies();
@@ -43,15 +63,18 @@ export async function getSession(): Promise<Session | null> {
     if (devIdentity) {
       try {
         const parsed = JSON.parse(decodeURIComponent(devIdentity));
+        const roleSlug = parsed.roleSlug ?? 'admin';
+        const roleId = await getRoleId(roleSlug);
         return {
-          userId: parsed.userId ?? 'dev',
+          userId: parsed.userId ?? '00000000-0000-0000-0000-000000000000',
           email: parsed.email ?? 'dev@local',
-          roleId: parsed.roleId ?? 'dev-admin-role',
-          roleSlug: parsed.roleSlug ?? 'admin',
+          roleId,
+          roleSlug,
         };
       } catch { /* fall through */ }
     }
-    return { userId: 'dev', email: 'dev@local', roleId: 'dev-admin-role', roleSlug: 'admin' };
+    const roleId = await getRoleId('admin');
+    return { userId: '00000000-0000-0000-0000-000000000000', email: 'dev@local', roleId, roleSlug: 'admin' };
   }
 
   const cookieStore = await cookies();

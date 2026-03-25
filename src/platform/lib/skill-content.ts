@@ -17,7 +17,8 @@ export async function getSkillContent(slug: string): Promise<string | null> {
   }
 
   // In production, fetch from DB (which has the blob URL)
-  const { db } = await import('@/platform/db/index');
+  const { getDb } = await import('@/platform/db/client');
+  const db = getDb();
 
   const skillRows = await db
     .select()
@@ -67,7 +68,8 @@ export async function getAllSkillContent(): Promise<Map<string, string>> {
     return contentMap;
   }
 
-  const { db } = await import('@/platform/db/index');
+  const { getDb } = await import('@/platform/db/client');
+  const db = getDb();
 
   const allSkills = await db
     .select({

@@ -40,5 +40,10 @@ yarn-error.log*
 # Coverage
 coverage/
 
+# Playwright
+playwright-report/
+test-results/
+tests/e2e/.global-mark*
+
 # Dev-mode showcase uploads
 public/uploads/

@@ -590,6 +590,11 @@ export function getAllSkills(): SkillData[] {
   });
 }
 
+/** Lightweight catalog — slug, title, description only. No file I/O. */
+export function getSkillCatalog(): Array<{ slug: string; title: string; description: string }> {
+  return SKILL_DEFINITIONS.map(({ slug, title, description }) => ({ slug, title, description }));
+}
+
 export function getSkillBySlug(slug: string): SkillData | null {
   const root = getProjectRoot();
   const definition = SKILL_DEFINITIONS.find((s) => s.slug === slug);

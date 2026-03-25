@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChatCircle, PencilSimple, Trash, ArrowBendDownRight } from '@phosphor-icons/react';
+import { ChatCircle, PencilSimple, Trash, ArrowBendDownRight, ArrowFatUp } from '@phosphor-icons/react';
 import {
   addComment,
   getComments,
@@ -33,6 +33,29 @@ function relativeTime(iso: string): string {
   if (days < 30) return `${days}d ago`;
   const months = Math.floor(days / 30);
   return `${months}mo ago`;
+}
+
+/* ── Comment upvote localStorage helpers ──────────────────── */
+
+const COMMENT_VOTES_KEY = 'ai-centre-comment-votes';
+
+function getCommentVotes(): Record<string, { count: number; voted: boolean }> {
+  try { return JSON.parse(localStorage.getItem(COMMENT_VOTES_KEY) ?? '{}'); }
+  catch { return {}; }
+}
+
+function setCommentVotes(votes: Record<string, { count: number; voted: boolean }>) {
+  try { localStorage.setItem(COMMENT_VOTES_KEY, JSON.stringify(votes)); }
+  catch { /* ignore */ }
+}
+
+function sortTreeByUpvotes(nodes: CommentData[], votes: Record<string, { count: number; voted: boolean }>): CommentData[] {
+  return [...nodes]
+    .sort((a, b) => (votes[b.id]?.count ?? 0) - (votes[a.id]?.count ?? 0))
+    .map(node => ({
+      ...node,
+      replies: sortTreeByUpvotes(node.replies, votes),
+    }));
 }
 
 /** Max nesting depth before collapsing (desktop) */
@@ -165,6 +188,8 @@ function CommentNode({
   onSubmitEdit,
   onCancelReply,
   onCancelEdit,
+  commentVotes,
+  onCommentUpvote,
 }: {
   comment: CommentData;
   depth: number;
@@ -180,6 +205,8 @@ function CommentNode({
   onSubmitEdit: (commentId: string, body: string) => Promise<void>;
   onCancelReply: () => void;
   onCancelEdit: () => void;
+  commentVotes: Record<string, { count: number; voted: boolean }>;
+  onCommentUpvote: (commentId: string) => void;
 }) {
   const isDeleted = comment.deletedAt !== null;
   const isOwner = currentUserId === comment.authorId;
@@ -264,9 +291,23 @@ function CommentNode({
                 </p>
               )}
 
-              {/* Action buttons */}
+              {/* Action buttons — upvote is first, then Reply/Edit/Delete */}
               {!isEditing && (
-                <div style={{ display: 'flex', gap: 12 }}>
+                <div data-testid="comment-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <button
+                    data-testid="comment-upvote"
+                    onClick={() => onCommentUpvote(comment.id)}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: commentVotes[comment.id]?.voted ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                      fontSize: 12, fontFamily: 'inherit', fontWeight: commentVotes[comment.id]?.voted ? 600 : 400,
+                      padding: 0,
+                    }}
+                  >
+                    <ArrowFatUp size={13} weight={commentVotes[comment.id]?.voted ? 'fill' : 'regular'} />
+                    <span>{commentVotes[comment.id]?.count ?? 0}</span>
+                  </button>
                   {currentUserId && (
                     <button
                       onClick={() => onReply(comment.id)}
@@ -361,6 +402,8 @@ function CommentNode({
               onSubmitEdit={onSubmitEdit}
               onCancelReply={onCancelReply}
               onCancelEdit={onCancelEdit}
+              commentVotes={commentVotes}
+              onCommentUpvote={onCommentUpvote}
             />
           ))
         ) : comment.replies.length > 0 ? (
@@ -403,6 +446,7 @@ export function CommentThread({
   const [loading, setLoading] = useState(true);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [commentVotes, setCommentVotesState] = useState<Record<string, { count: number; voted: boolean }>>({});
 
   // Determine max depth based on viewport
   const [maxDepth, setMaxDepth] = useState(MAX_DEPTH_LG);
@@ -413,6 +457,26 @@ export function CommentThread({
     updateMaxDepth();
     window.addEventListener('resize', updateMaxDepth);
     return () => window.removeEventListener('resize', updateMaxDepth);
+  }, []);
+
+  // Load comment upvotes from localStorage
+  useEffect(() => {
+    setCommentVotesState(getCommentVotes());
+  }, []);
+
+  const handleCommentUpvote = useCallback((commentId: string) => {
+    setCommentVotesState(prev => {
+      const current = prev[commentId] ?? { count: 0, voted: false };
+      const next = {
+        ...prev,
+        [commentId]: {
+          count: current.voted ? current.count - 1 : current.count + 1,
+          voted: !current.voted,
+        },
+      };
+      setCommentVotes(next);
+      return next;
+    });
   }, []);
 
   // Fetch comments on mount
@@ -426,7 +490,7 @@ export function CommentThread({
     });
   }, [entityType, entityId]);
 
-  const tree = buildCommentTree(flatComments);
+  const tree = sortTreeByUpvotes(buildCommentTree(flatComments), commentVotes);
 
   const handleAddTopLevel = useCallback(
     async (body: string) => {
@@ -524,6 +588,8 @@ export function CommentThread({
               onSubmitEdit={handleEdit}
               onCancelReply={() => setReplyingTo(null)}
               onCancelEdit={() => setEditingId(null)}
+              commentVotes={commentVotes}
+              onCommentUpvote={handleCommentUpvote}
             />
           ))}
         </div>

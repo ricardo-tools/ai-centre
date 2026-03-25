@@ -1,6 +1,3 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { migrate } from 'drizzle-orm/neon-http/migrator';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
@@ -10,30 +7,39 @@ export async function runMigrations(): Promise<void> {
     return;
   }
 
+  const dbUrl = process.env.DATABASE_URL;
+  const isLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+
+  // Local Postgres: schema is pushed by drizzle-kit push in dev script — skip migrations
+  if (isLocal) {
+    console.log('[migrate] Local Postgres detected — schema managed by drizzle-kit push');
+    return;
+  }
+
+  // Remote (Neon): run migrations using the Neon HTTP driver
   const started = Date.now();
   console.log('[migrate] Running pending migrations...');
 
-  // Try multiple possible paths — Vercel's cwd may differ from local
   const candidates = [
     join(process.cwd(), 'src/platform/db/migrations'),
     join(process.cwd(), '.next/server/src/platform/db/migrations'),
-    join(__dirname, '../../db/migrations'),
-    join(__dirname, '../../../platform/db/migrations'),
   ];
 
   const migrationsFolder = candidates.find(p => existsSync(p));
 
   if (!migrationsFolder) {
-    console.error('[migrate] Migrations folder not found. Tried:', candidates);
-    console.log('[migrate] Falling back to drizzle-kit push approach...');
-    // If migrations folder isn't available, skip — tables may already exist
+    console.log('[migrate] Migrations folder not found — skipping');
     return;
   }
 
   console.log(`[migrate] Using migrations from: ${migrationsFolder}`);
 
   try {
-    const sql = neon(process.env.DATABASE_URL);
+    const { neon } = await import('@neondatabase/serverless');
+    const { drizzle } = await import('drizzle-orm/neon-http');
+    const { migrate } = await import('drizzle-orm/neon-http/migrator');
+
+    const sql = neon(dbUrl);
     const db = drizzle(sql);
 
     await migrate(db, { migrationsFolder });
@@ -41,12 +47,10 @@ export async function runMigrations(): Promise<void> {
     console.log(`[migrate] Migrations complete (${Date.now() - started}ms)`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    // If tables already exist, that's fine — migration is idempotent via tracking table
     if (msg.includes('already exists')) {
       console.log('[migrate] Tables already exist — skipping');
       return;
     }
     console.error('[migrate] Migration failed:', msg);
-    throw err;
   }
 }

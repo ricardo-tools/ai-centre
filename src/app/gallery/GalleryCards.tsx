@@ -12,10 +12,14 @@ import {
   User,
   ArrowRight,
   Eye,
-  ThumbsUp,
+  ArrowFatUp,
   ChatCircle,
+  BookmarkSimple,
 } from '@phosphor-icons/react';
 import { fetchAllShowcases, type RawShowcaseUpload } from '@/features/showcase-gallery/action';
+import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
+import { toggleBookmark, isBookmarked } from '@/features/social/bookmarks-action';
+import { useSession } from '@/platform/lib/SessionContext';
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
@@ -74,6 +78,87 @@ function SkillBadges({ skillIds, max = 3 }: { skillIds: string[]; max?: number }
           +{skillIds.length - max} more
         </span>
       )}
+    </div>
+  );
+}
+
+/** Interactive upvote, bookmark + comment/view counts for gallery cards. */
+function ShowcaseStats({ showcaseId }: { showcaseId: string }) {
+  const session = useSession();
+  const [upvoteCount, setUpvoteCount] = useState(0);
+  const [hasUpvoted, setHasUpvoted] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [commentCount] = useState(0); // TODO: wire up comment count
+  const [viewCount] = useState(0); // TODO: wire up view count
+
+  useEffect(() => {
+    getReactionCounts('showcase', showcaseId, session?.userId).then(({ counts, userReactions }) => {
+      setUpvoteCount(counts['thumbsup'] ?? 0);
+      setHasUpvoted(userReactions.includes('thumbsup'));
+    });
+    if (session?.userId) {
+      isBookmarked(session.userId, 'showcase', showcaseId).then(setBookmarked);
+    }
+  }, [showcaseId, session?.userId]);
+
+  const handleUpvote = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session?.userId) return;
+    const wasUpvoted = hasUpvoted;
+    setHasUpvoted(!wasUpvoted);
+    setUpvoteCount((prev) => prev + (wasUpvoted ? -1 : 1));
+    const result = await toggleReaction('showcase', showcaseId, 'thumbsup', session.userId);
+    if (!result.ok) {
+      setHasUpvoted(wasUpvoted);
+      setUpvoteCount((prev) => prev + (wasUpvoted ? 1 : -1));
+    }
+  };
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!session?.userId) return;
+    const wasBookmarked = bookmarked;
+    setBookmarked(!wasBookmarked);
+    const result = await toggleBookmark('showcase', showcaseId, session.userId);
+    if (!result.ok) {
+      setBookmarked(wasBookmarked);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <button
+        data-testid="upvote-button"
+        onClick={handleUpvote}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 3, fontSize: 12,
+          color: hasUpvoted ? 'var(--color-primary)' : 'var(--color-text-muted)',
+          background: 'none', border: 'none', cursor: session?.userId ? 'pointer' : 'default',
+          padding: 0, fontFamily: 'inherit',
+        }}
+      >
+        <ArrowFatUp size={12} weight={hasUpvoted ? 'fill' : 'regular'} /> {upvoteCount}
+      </button>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+        <ChatCircle size={12} /> {commentCount}
+      </span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
+        <Eye size={12} /> {viewCount}
+      </span>
+      <button
+        data-testid="bookmark-button"
+        onClick={handleBookmark}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 3, fontSize: 12,
+          color: bookmarked ? 'var(--color-primary)' : 'var(--color-text-muted)',
+          background: 'none', border: 'none', cursor: session?.userId ? 'pointer' : 'default',
+          padding: 0, fontFamily: 'inherit',
+        }}
+      >
+        <BookmarkSimple size={12} weight={bookmarked ? 'fill' : 'regular'} />
+      </button>
     </div>
   );
 }
@@ -228,17 +313,7 @@ function FeaturedCard({ showcase }: { showcase: RawShowcaseUpload }) {
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <ThumbsUp size={12} /> 0
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <ChatCircle size={12} /> 0
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <Eye size={12} /> 0
-            </span>
-          </div>
+          <ShowcaseStats showcaseId={showcase.id} />
           <span
             style={{
               display: 'flex',
@@ -314,17 +389,7 @@ function StandardCard({ showcase }: { showcase: RawShowcaseUpload }) {
             <span style={{ opacity: 0.5 }}>&middot;</span>
             <span>{formatDate(showcase.createdAt)}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <ThumbsUp size={12} /> 0
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <ChatCircle size={12} /> 0
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 12, color: 'var(--color-text-muted)' }}>
-              <Eye size={12} /> 0
-            </span>
-          </div>
+          <ShowcaseStats showcaseId={showcase.id} />
           <span
             style={{
               display: 'flex',

@@ -1,5 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import { ArrowRight, DownloadSimple, ThumbsUp, ChatCircle, BookmarkSimple } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, DownloadSimple, ArrowFatUp, ChatCircle, BookmarkSimple } from '@phosphor-icons/react';
 
 const TYPE_LABELS: Record<string, string> = { principle: 'Principle', implementation: 'Implementation', reference: 'Reference' };
 const LAYER_LABELS: Record<string, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infra', design: 'Design', process: 'Process' };
@@ -16,27 +18,39 @@ interface SkillCardProps {
   viewLabel?: string;
   author?: string;
   downloadCount?: number;
-  likeCount?: number;
+  upvoteCount?: number;
   commentCount?: number;
+  isUpvoted?: boolean;
   isBookmarked?: boolean;
   onToggleBookmark?: () => void;
-  onToggleLike?: () => void;
+  onToggleUpvote?: () => void;
+  onCommentClick?: () => void;
 }
 
-export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount, likeCount, commentCount, isBookmarked, onToggleBookmark, onToggleLike }: SkillCardProps) {
+export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount, upvoteCount, commentCount, isUpvoted, isBookmarked, onToggleBookmark, onToggleUpvote, onCommentClick }: SkillCardProps) {
   const showNewBadge = downloadCount === undefined || downloadCount === 0;
   return (
+    <div
+      className="card-hover"
+      data-entity-id={slug}
+      data-entity-type="skill"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: 8,
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-surface)',
+      }}
+    >
     <Link
       href={`/skills/${slug}`}
-      className="card-hover"
       style={{
         display: 'flex',
         flexDirection: 'column',
         padding: 24,
-        borderRadius: 8,
-        border: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
+        paddingBottom: 0,
         textDecoration: 'none',
+        flex: 1,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -125,30 +139,53 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
           </span>
         </div>
       </div>
-      {/* Social signals */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--color-border)' }}>
+      </Link>
+      {/* Social signals — OUTSIDE Link to prevent navigation on click */}
+      <div data-testid="social-row" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 24px 16px', borderTop: '1px solid var(--color-border)', marginTop: 8 }}>
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleLike?.(); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'inherit', padding: 0 }}
+          data-testid="upvote-button"
+          onClick={() => onToggleUpvote?.()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: isUpvoted ? 'var(--color-primary)' : 'var(--color-text-muted)',
+            fontSize: 12, fontFamily: 'inherit', fontWeight: isUpvoted ? 600 : 400, padding: 0,
+            transition: 'color 150ms',
+          }}
         >
-          <ThumbsUp size={14} /> {likeCount ?? 0}
+          <ArrowFatUp size={14} weight={isUpvoted ? 'fill' : 'regular'} /> {upvoteCount ?? 0}
         </button>
 
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-text-muted)', fontSize: 12 }}>
+        <button
+          data-testid="comment-button"
+          onClick={() => onCommentClick?.()}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--color-text-muted)',
+            fontSize: 12, fontFamily: 'inherit', padding: 0,
+          }}
+        >
           <ChatCircle size={14} /> {commentCount ?? 0}
-        </span>
+        </button>
 
         <span style={{ flex: 1 }} />
 
         {onToggleBookmark && (
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleBookmark(); }}
-            style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', color: isBookmarked ? 'var(--color-primary)' : 'var(--color-text-muted)', padding: 0 }}
+            data-testid="bookmark-button"
+            onClick={() => onToggleBookmark()}
+            style={{
+              display: 'flex', alignItems: 'center',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: isBookmarked ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              padding: 0, transition: 'color 150ms',
+            }}
           >
             <BookmarkSimple size={16} weight={isBookmarked ? 'fill' : 'regular'} />
           </button>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

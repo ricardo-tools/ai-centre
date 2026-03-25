@@ -14,9 +14,7 @@ import { createHash } from 'crypto';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { eq } from 'drizzle-orm';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import { getDb, hasDatabase } from '@/platform/db/client';
 import {
   skills,
   skillVersions,
@@ -58,7 +56,7 @@ interface SyncResult {
   errors: string[];
 }
 
-type DrizzleClient = NeonHttpDatabase;
+type DrizzleClient = ReturnType<typeof getDb>;
 
 // ── Blob upload ──────────────────────────────────────────────────────
 
@@ -313,14 +311,13 @@ export async function syncOfficialSkills(): Promise<SyncResult> {
   const result: SyncResult = { created: [], updated: [], unchanged: [], errors: [] };
 
   // Only run if DATABASE_URL is set (skip in dev without DB)
-  if (!process.env.DATABASE_URL) {
+  if (!hasDatabase()) {
     console.log('[skill-sync] No DATABASE_URL — skipping sync');
     return result;
   }
 
   try {
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     // Ensure roles exist before looking up / creating users
     await ensureSystemRoles(db);

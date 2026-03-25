@@ -23,13 +23,11 @@ export async function fetchAuditLog(): Promise<Result<RawAuditEntry[], Error>> {
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
+    const { getDb: getDatabase } = await import('@/platform/db/client');
     const { desc, eq } = require('drizzle-orm');
     const { auditLog, users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDatabase();
 
     const rows = await db
       .select({

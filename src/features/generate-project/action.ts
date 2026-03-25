@@ -1,6 +1,6 @@
 'use server';
 
-import { getAllSkills } from '@/platform/lib/skills';
+import { getAllSkills, getCompanionsFor } from '@/platform/lib/skills';
 import { generateProjectZip } from '@/platform/lib/generate-project-zip';
 import { Skill } from '@/platform/domain/Skill';
 import { DOMAINS } from '@/platform/lib/toolkit-composition';
@@ -20,7 +20,18 @@ export async function generateProject(input: GenerateProjectInput): Promise<Resu
   try {
     const allSkills = getAllSkills();
 
-    const selectedSkillObjects: Skill[] = input.resolvedSkills
+    // Resolve selected skills + their reference companions
+    const selectedSlugs = new Set(input.resolvedSkills);
+
+    // Add companions for each selected skill
+    for (const slug of input.resolvedSkills) {
+      const companions = getCompanionsFor(slug);
+      for (const comp of companions) {
+        selectedSlugs.add(comp.slug);
+      }
+    }
+
+    const selectedSkillObjects: Skill[] = Array.from(selectedSlugs)
       .map(slug => {
         const data = allSkills.find(s => s.slug === slug);
         if (!data) return null;

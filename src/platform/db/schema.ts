@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp, pgEnum, jsonb, integer, unique } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, timestamp, pgEnum, jsonb, integer, unique, index } from 'drizzle-orm/pg-core';
 
 export const versionStatusEnum = pgEnum('version_status', ['draft', 'published', 'archived']);
 export const entityTypeEnum = pgEnum('entity_type', ['skill', 'archetype', 'showcase', 'user', 'role', 'invitation']);
@@ -113,7 +113,7 @@ export const archetypeVersions = pgTable('archetype_versions', {
 export const auditLog = pgTable('audit_log', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: entityTypeEnum('entity_type').notNull(),
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   action: auditActionEnum('action').notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
@@ -182,22 +182,24 @@ export const showcaseViews = pgTable('showcase_views', {
 export const reactions = pgTable('reactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: text('entity_type').notNull(), // 'showcase' | 'skill' | 'comment'
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   userId: uuid('user_id').notNull().references(() => users.id),
   emoji: text('emoji').notNull(), // 'thumbsup' | 'heart' | 'rocket' | 'eyes' | 'tada'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   unique('reaction_unique').on(table.entityType, table.entityId, table.userId, table.emoji),
+  index('idx_reactions_created_at').on(table.createdAt),
 ]);
 
 export const bookmarks = pgTable('bookmarks', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id),
   entityType: text('entity_type').notNull(), // 'skill' | 'toolkit' | 'showcase'
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   unique('bookmark_unique').on(table.userId, table.entityType, table.entityId),
+  index('idx_bookmarks_created_at').on(table.createdAt),
 ]);
 
 // ── Social: Comments ────────────────────────────────────────────────
@@ -205,7 +207,7 @@ export const bookmarks = pgTable('bookmarks', {
 export const comments = pgTable('comments', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: text('entity_type').notNull(), // 'skill' | 'showcase'
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   parentId: uuid('parent_id'), // null = top-level, non-null = reply (unlimited depth)
   authorId: uuid('author_id').notNull().references(() => users.id),
   body: text('body').notNull(),
@@ -213,33 +215,39 @@ export const comments = pgTable('comments', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   deletedAt: timestamp('deleted_at'),
-});
+}, (table) => [
+  index('idx_comments_created_at').on(table.createdAt),
+]);
 
 // ── Social: Activity & Notifications ────────────────────────────────
 
 export const activityEvents = pgTable('activity_events', {
   id: uuid('id').primaryKey().defaultRandom(),
   entityType: text('entity_type').notNull(),
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   actorId: uuid('actor_id').notNull().references(() => users.id),
   action: text('action').notNull(), // 'commented' | 'reacted' | 'published' | 'downloaded' | 'uploaded' | 'mentioned'
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('idx_activity_events_created_at').on(table.createdAt),
+]);
 
 export const notifications = pgTable('notifications', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id),
   type: text('type').notNull(), // 'mention' | 'comment_on_owned' | 'reply_to_comment' | 'skill_published' | 'bookmarked_updated'
   entityType: text('entity_type').notNull(),
-  entityId: uuid('entity_id').notNull(),
+  entityId: text('entity_id').notNull(),
   actorId: uuid('actor_id').notNull().references(() => users.id),
   title: text('title').notNull(),
   body: text('body'),
   readAt: timestamp('read_at'),
   emailedAt: timestamp('emailed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('idx_notifications_created_at').on(table.createdAt),
+]);
 
 export const notificationPreferences = pgTable('notification_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -249,4 +257,32 @@ export const notificationPreferences = pgTable('notification_preferences', {
   enabled: boolean('enabled').notNull().default(true),
 }, (table) => [
   unique('notif_pref_unique').on(table.userId, table.type, table.channel),
+]);
+
+// ── Chat ────────────────────────────────────────────────────────────
+
+export const chatConversations = pgTable('chat_conversations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  title: text('title'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_chat_conversations_user').on(table.userId),
+  index('idx_chat_conversations_created_at').on(table.createdAt),
+]);
+
+export const chatMessages = pgTable('chat_messages', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  conversationId: uuid('conversation_id').notNull().references(() => chatConversations.id, { onDelete: 'cascade' }),
+  role: text('role').notNull(), // 'user' | 'assistant' | 'tool'
+  content: text('content').notNull(),
+  thinking: text('thinking'),
+  toolCalls: jsonb('tool_calls').$type<{ id: string; name: string; arguments: string }[]>(),
+  toolResults: jsonb('tool_results').$type<{ toolCallId: string; content: string }[]>(),
+  tokenUsage: jsonb('token_usage').$type<{ promptTokens: number; completionTokens: number; totalTokens: number }>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('idx_chat_messages_conversation').on(table.conversationId),
+  index('idx_chat_messages_created_at').on(table.createdAt),
 ]);

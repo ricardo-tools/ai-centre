@@ -5,6 +5,7 @@ import { writeAuditEntry } from '@/platform/lib/audit';
 import { isAllowedDomain } from '@/platform/lib/otp';
 import { sendInviteEmail } from '@/platform/lib/email';
 import { type Result, Ok, Err, ValidationError } from '@/platform/lib/result';
+import { getDb } from '@/platform/db/client';
 
 export interface RawInvitation {
   id: string;
@@ -49,13 +50,10 @@ export async function inviteUser(
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { users, invitations, roles } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     // Check user doesn't already exist
     const [existingUser] = await db
@@ -131,13 +129,10 @@ export async function cancelInvitation(id: string): Promise<Result<void, Error>>
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { invitations } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     await db.delete(invitations).where(eq(invitations.id, id));
 
@@ -166,13 +161,10 @@ export async function resendInvitation(id: string): Promise<Result<void, Error>>
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { invitations, users } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     const [invitation] = await db.select().from(invitations).where(eq(invitations.id, id)).limit(1);
     if (!invitation) return Err(new Error('Invitation not found'));
@@ -210,13 +202,10 @@ export async function fetchInvitations(): Promise<Result<RawInvitation[], Error>
   }
 
   try {
-    const { neon } = require('@neondatabase/serverless');
-    const { drizzle } = require('drizzle-orm/neon-http');
     const { eq } = require('drizzle-orm');
     const { invitations, users, roles } = await import('@/platform/db/schema');
 
-    const sql = neon(process.env.DATABASE_URL);
-    const db = drizzle(sql);
+    const db = getDb();
 
     const rows = await db
       .select({

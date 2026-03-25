@@ -98,6 +98,35 @@ SENTRY_DSN=               # (optional) Sentry error tracking — future
 - **Server Actions** for all internal mutations.
 - **API routes** only for external programmatic access.
 
+### Debugging (local dev only)
+When `SKIP_AUTH=true`, all server-side console output (`debug`, `info`, `log`, `warn`, `error`) is captured in a 1000-entry ring buffer and exposed via API:
+
+```bash
+# All recent logs (most recent first, limit 100)
+curl http://localhost:3000/api/logs
+
+# Filter by level: debug | info | log | warn | error
+curl http://localhost:3000/api/logs?level=error
+curl http://localhost:3000/api/logs?level=debug
+
+# Search by keyword
+curl http://localhost:3000/api/logs?search=admin&level=error
+
+# Logs since a timestamp
+curl http://localhost:3000/api/logs?since=2026-03-24T10:00:00Z
+
+# Clear buffer
+curl -X POST http://localhost:3000/api/logs
+```
+
+Use this to diagnose 500 errors, failed server actions, or DB issues without needing terminal access to the server process. For deeper tracing, use `console.debug()` in code — it's captured in dev/test but silent in production.
+
+### Testing
+- E2E tests run against a **separate database** (`aicentre_test`) — dev DB is never touched.
+- `tests/e2e/base-data.ts` is the **single source of truth** for test seed data. Global setup seeds the DB from it; tests import it for assertions. If you change seed data, update ONLY `base-data.ts` — everything else follows.
+- Tests use a **high-water mark** pattern: each test records a timestamp before running, and only its own mutations are rolled back after. Global seed data always survives.
+- See [`docs/TESTING.md`](docs/TESTING.md) for the full testing guide.
+
 ---
 
 ## Detailed Reference

@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ['@phosphor-icons/react'],
+  },
   serverExternalPackages: ['@neondatabase/serverless'],
   outputFileTracingIncludes: {
     '/**': ['./src/platform/db/migrations/**', './skills/**'],

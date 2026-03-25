@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BookmarkSimple } from '@phosphor-icons/react';
 
 interface BookmarkButtonProps {
@@ -15,6 +15,9 @@ export function BookmarkButton({
   size = 18,
 }: BookmarkButtonProps) {
   const [bookmarked, setBookmarked] = useState(initialState);
+
+  // Sync when async-loaded prop arrives
+  useEffect(() => { setBookmarked(initialState); }, [initialState]);
 
   const handleClick = useCallback(async () => {
     const result = await onToggle();

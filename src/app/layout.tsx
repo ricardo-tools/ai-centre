@@ -5,6 +5,7 @@ import { getSession } from '@/platform/lib/auth';
 import { SessionProvider } from '@/platform/lib/SessionContext';
 import { NavigationProgress } from '@/platform/components/NavigationProgress';
 import { ShellLayout } from './NavWrapper';
+import { ChatDrawerLazy } from './ChatDrawerLazy';
 
 const jost = Jost({
   subsets: ['latin'],
@@ -15,7 +16,12 @@ const jost = Jost({
 export const metadata: Metadata = {
   title: 'AI Centre',
   description: 'AI-assisted project generation and skill marketplace',
-  icons: { icon: '/logos/square-color.png' },
+  icons: {
+    icon: [
+      { url: '/logos/square-color.png', media: '(prefers-color-scheme: light)' },
+      { url: '/logos/square-dark-favicon.svg', media: '(prefers-color-scheme: dark)' },
+    ],
+  },
   robots: {
     index: false,
     follow: false,
@@ -49,6 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ShellLayout>
             {children}
           </ShellLayout>
+          <ChatDrawerLazy />
         </SessionProvider>
       </body>
     </html>

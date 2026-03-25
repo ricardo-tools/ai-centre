@@ -8,11 +8,64 @@ import { toSkills } from '@/platform/acl/skill.mapper';
 import type { Skill } from '@/platform/domain/Skill';
 import { SkillCard } from '@/platform/components/SkillCard';
 import { useLocale } from '@/platform/screen-renderer/LocaleContext';
+import { useSession } from '@/platform/lib/SessionContext';
+import { useSocialSignals } from '@/features/social/useSocialSignals';
+import { getBulkSocialSignals, type BulkSocialSignal } from '@/features/social/action';
+import { useBookmarkOrder } from '@/features/social/useBookmarkOrder';
+import { CommentDrawer } from '@/platform/components/CommentDrawer';
 import {
   FOUNDATION_SKILLS,
   DOMAINS,
   FEATURE_ADDONS,
 } from '@/platform/lib/toolkit-composition';
+
+// ─── Primary tabs ─────────────────────────────────────────────────────────────
+
+// ─── Social wrapper per card ─────────────────────────────────────────────────
+
+function SocialSkillCard({ skill, officialLabel, viewLabel, initialData }: { skill: Skill; officialLabel: string; viewLabel: string; initialData?: BulkSocialSignal }) {
+  const session = useSession();
+  const [showComments, setShowComments] = useState(false);
+  const social = useSocialSignals({
+    entityType: 'skill',
+    entityId: skill.slug,
+    userId: session?.userId,
+    initialData,
+  });
+
+  return (
+    <>
+      <SkillCard
+        slug={skill.slug}
+        title={skill.title}
+        description={skill.description}
+        isOfficial={skill.isOfficial}
+        version={skill.version}
+        tags={skill.tags}
+        officialLabel={officialLabel}
+        viewLabel={viewLabel}
+        author={skill.isOfficial ? 'Official' : undefined}
+        upvoteCount={social.upvoteCount}
+        commentCount={initialData?.commentCount ?? 0}
+        isUpvoted={social.isUpvoted}
+        isBookmarked={social.isBookmarked}
+        onToggleUpvote={social.toggleUpvote}
+        onToggleBookmark={social.toggleBookmark}
+        onCommentClick={() => setShowComments(true)}
+      />
+      {showComments && (
+        <CommentDrawer
+          entityType="skill"
+          entityId={skill.slug}
+          entityTitle={skill.title}
+          currentUserId={session?.userId}
+          isAdmin={session?.roleSlug === 'admin'}
+          onClose={() => setShowComments(false)}
+        />
+      )}
+    </>
+  );
+}
 
 // ─── Primary tabs ─────────────────────────────────────────────────────────────
 
@@ -119,20 +172,31 @@ function FilterPill({
 
 export function SkillLibraryCards() {
   const { t } = useLocale();
+  const session = useSession();
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [socialData, setSocialData] = useState<Record<string, BulkSocialSignal>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [subFilter, setSubFilter] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const bookmarkedSlugs = useBookmarkOrder('skill');
 
   useEffect(() => {
     fetchAllSkills().then((result) => {
-      if (result.ok) setSkills(toSkills(result.value));
+      if (result.ok) {
+        const loaded = toSkills(result.value);
+        setSkills(loaded);
+        // Bulk fetch social signals for all skills in a single request
+        const slugs = loaded.map((s) => s.slug);
+        getBulkSocialSignals('skill', slugs, session?.userId ?? undefined).then((data) => {
+          setSocialData(data);
+        });
+      }
       setLoading(false);
     });
-  }, []);
+  }, [session?.userId]);
 
   // Reset sub-filter when primary tab changes
   function handleTabChange(key: string) {
@@ -184,6 +248,15 @@ export function SkillLibraryCards() {
 
     return result;
   }, [skills, activeTab, subFilter, searchQuery]);
+
+  // Sort bookmarked skills to the top
+  const sortedSkills = useMemo(() => {
+    const bookmarked = filtered.filter((s) => bookmarkedSlugs.has(s.slug));
+    const rest = filtered
+      .filter((s) => !bookmarkedSlugs.has(s.slug))
+      .sort((a, b) => (socialData[b.slug]?.upvoteCount ?? 0) - (socialData[a.slug]?.upvoteCount ?? 0));
+    return [...bookmarked, ...rest];
+  }, [filtered, bookmarkedSlugs, socialData]);
 
   if (loading) {
     return (
@@ -266,7 +339,7 @@ export function SkillLibraryCards() {
       </div>
 
       {/* Skill cards grid */}
-      {filtered.length === 0 ? (
+      {sortedSkills.length === 0 ? (
         <div style={{ padding: 48, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
           <MagnifyingGlass size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 8 }} />
           <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>
@@ -301,20 +374,13 @@ export function SkillLibraryCards() {
             gap: 16,
           }}
         >
-          {filtered.map((skill) => (
-            <SkillCard
+          {sortedSkills.map((skill) => (
+            <SocialSkillCard
               key={skill.slug}
-              slug={skill.slug}
-              title={skill.title}
-              description={skill.description}
-              isOfficial={skill.isOfficial}
-              version={skill.version}
-              tags={skill.tags}
+              skill={skill}
               officialLabel={t('skills.official')}
               viewLabel={t('skills.view')}
-              author={skill.isOfficial ? 'Official' : undefined}
-              likeCount={0}
-              commentCount={0}
+              initialData={socialData[skill.slug]}
             />
           ))}
         </div>

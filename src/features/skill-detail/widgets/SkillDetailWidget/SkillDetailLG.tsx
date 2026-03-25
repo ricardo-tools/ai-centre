@@ -12,7 +12,7 @@ import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { SkillInPractice } from './SkillInPractice';
 import { CommentThread } from '@/platform/components/CommentThread';
 import { isBookmarked as checkBookmarked, toggleBookmark } from '@/features/social/bookmarks-action';
-import { trackSkillDownload, getSkillDownloadCount, getRelatedSkills } from '@/features/social/action';
+import { trackSkillDownload, getSkillDownloadCount, getRelatedSkills, downloadSkillWithCompanions } from '@/features/social/action';
 import type { Skill } from '@/platform/domain/Skill';
 import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
 
@@ -49,11 +49,6 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
     }
   }, [skill.slug, skill.tags]);
 
-  const handleDownload = useCallback(() => {
-    trackSkillDownload(skill.slug, 'detail_download');
-    setDownloadCount((c) => c + 1);
-  }, [skill.slug]);
-
   const handleToggleBookmark = useCallback(async (): Promise<{ bookmarked: boolean } | null> => {
     if (!session) return null;
     const result = await toggleBookmark('skill', skill.slug, session.userId);
@@ -61,7 +56,24 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
     return null;
   }, [session, skill.slug]);
 
-  const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
+  const handleDownloadWithCompanions = useCallback(async () => {
+    trackSkillDownload(skill.slug, 'detail_download');
+    const result = await downloadSkillWithCompanions(skill.slug);
+    if (!result.ok) return;
+
+    const { zipBase64, fileName, isSingle } = result.value;
+    const bytes = Uint8Array.from(atob(zipBase64), c => c.charCodeAt(0));
+    const mimeType = isSingle ? 'text/markdown' : 'application/zip';
+    const blob = new Blob([bytes], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [skill.slug]);
 
   return (
     <div style={{ maxWidth: 1024 }}>
@@ -135,10 +147,8 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
 
         {/* Actions row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a
-            href={downloadUrl}
-            download={skill.downloadFilename}
-            onClick={handleDownload}
+          <button
+            onClick={handleDownloadWithCompanions}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -147,13 +157,15 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
               borderRadius: 6,
               background: 'var(--color-primary)',
               color: '#FFFFFF',
-              textDecoration: 'none',
+              border: 'none',
+              cursor: 'pointer',
               fontSize: 13,
               fontWeight: 600,
+              fontFamily: 'inherit',
             }}
           >
             <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
-          </a>
+          </button>
 
           {session && (
             <BookmarkButton

@@ -1,14 +1,13 @@
 'use server';
 
-import { eq, sql } from 'drizzle-orm';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import { skillDownloads, showcaseViews } from '@/platform/db/schema';
+import { eq, and, inArray, sql } from 'drizzle-orm';
+import { skillDownloads, showcaseViews, reactions, bookmarks, comments } from '@/platform/db/schema';
+import { getDb as getDatabase, hasDatabase } from '@/platform/db/client';
+import { type Result, Ok, Err } from '@/platform/lib/result';
 
 function getDb() {
-  if (!process.env.DATABASE_URL) return null;
-  const s = neon(process.env.DATABASE_URL);
-  return drizzle(s);
+  if (!hasDatabase()) return null;
+  return getDatabase();
 }
 
 export async function trackSkillDownload(
@@ -62,6 +61,79 @@ export async function getShowcaseViewCount(showcaseId: string): Promise<number> 
   }
 }
 
+export type BulkSocialSignal = { upvoteCount: number; commentCount: number; isUpvoted: boolean; isBookmarked: boolean };
+
+export async function getBulkSocialSignals(
+  entityType: string,
+  entityIds: string[],
+  userId?: string,
+): Promise<Record<string, BulkSocialSignal>> {
+  const db = getDb();
+  if (!db || entityIds.length === 0) return {};
+
+  try {
+    // Bulk fetch all reactions for these entities
+    const allReactions = await db
+      .select()
+      .from(reactions)
+      .where(
+        and(
+          eq(reactions.entityType, entityType),
+          inArray(reactions.entityId, entityIds),
+        ),
+      );
+
+    // Bulk fetch bookmarks for current user
+    let userBookmarkSet: Set<string> = new Set();
+    if (userId) {
+      const bookmarkRows = await db
+        .select()
+        .from(bookmarks)
+        .where(
+          and(
+            eq(bookmarks.userId, userId),
+            eq(bookmarks.entityType, entityType),
+            inArray(bookmarks.entityId, entityIds),
+          ),
+        );
+      userBookmarkSet = new Set(bookmarkRows.map((b) => b.entityId));
+    }
+
+    // Bulk fetch comment counts
+    const allComments = await db
+      .select({ entityId: comments.entityId })
+      .from(comments)
+      .where(
+        and(
+          eq(comments.entityType, entityType),
+          inArray(comments.entityId, entityIds),
+        ),
+      );
+
+    // Aggregate per entity
+    const result: Record<string, BulkSocialSignal> = {};
+
+    for (const id of entityIds) {
+      const entityReactions = allReactions.filter((r) => r.entityId === id);
+      const upvoteCount = entityReactions.filter((r) => r.emoji === 'thumbsup').length;
+      const isUpvoted = userId
+        ? entityReactions.some((r) => r.emoji === 'thumbsup' && r.userId === userId)
+        : false;
+      const commentCount = allComments.filter((c) => c.entityId === id).length;
+      result[id] = {
+        upvoteCount,
+        commentCount,
+        isUpvoted,
+        isBookmarked: userBookmarkSet.has(id),
+      };
+    }
+
+    return result;
+  } catch {
+    return {};
+  }
+}
+
 export async function getRelatedSkills(
   slug: string,
   domains: string[],
@@ -96,5 +168,37 @@ export async function getRelatedSkills(
       }));
   } catch {
     return [];
+  }
+}
+
+export async function downloadSkillWithCompanions(slug: string): Promise<Result<{ zipBase64: string; fileName: string; isSingle: boolean }, Error>> {
+  try {
+    const { getAllSkills, getCompanionsFor } = await import('@/platform/lib/skills');
+    const allSkills = getAllSkills();
+    const skill = allSkills.find(s => s.slug === slug);
+    if (!skill) return Err(new Error('Skill not found'));
+
+    const companions = getCompanionsFor(slug);
+
+    if (companions.length === 0) {
+      // Single file — return as base64 text (no ZIP needed)
+      const base64 = Buffer.from(skill.content, 'utf-8').toString('base64');
+      return Ok({ zipBase64: base64, fileName: `${slug}.md`, isSingle: true });
+    }
+
+    // Has companions — bundle as ZIP
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    zip.file(`${skill.slug}.md`, skill.content);
+    for (const comp of companions) {
+      zip.file(`${comp.slug}.md`, comp.content);
+    }
+
+    const blob = await zip.generateAsync({ type: 'nodebuffer' });
+    const base64 = blob.toString('base64');
+    return Ok({ zipBase64: base64, fileName: `${slug}-with-references.zip`, isSingle: false });
+  } catch (err) {
+    console.error('[social] downloadSkillWithCompanions failed:', err);
+    return Err(new Error('Download failed'));
   }
 }

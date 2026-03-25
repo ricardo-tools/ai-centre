@@ -1,15 +1,13 @@
 'use server';
 
 import { eq, and, desc, isNull, sql } from 'drizzle-orm';
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { notifications, users } from '@/platform/db/schema';
 import { type Result, Ok, Err, ValidationError } from '@/platform/lib/result';
+import { getDb as getDatabase, hasDatabase } from '@/platform/db/client';
 
 function getDb() {
-  if (!process.env.DATABASE_URL) return null;
-  const s = neon(process.env.DATABASE_URL);
-  return drizzle(s);
+  if (!hasDatabase()) return null;
+  return getDatabase();
 }
 
 export interface NotificationData {
@@ -167,9 +165,9 @@ export async function createNotification(
         title,
         body: body ?? null,
       })
-      .returning({ id: notifications.id });
+      .returning();
 
-    return Ok({ id: rows[0]?.id ?? '' });
+    return Ok({ id: (rows[0] as Record<string, unknown>)?.id as string ?? '' });
   } catch (err) {
     console.error('[notifications] createNotification failed:', err);
     return Err(err instanceof Error ? err : new Error('Unknown error'));
