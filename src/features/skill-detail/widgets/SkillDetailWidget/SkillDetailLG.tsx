@@ -16,6 +16,14 @@ import { trackSkillDownload, getSkillDownloadCount, getRelatedSkills, downloadSk
 import type { Skill } from '@/platform/domain/Skill';
 import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
 
+/** Race a promise against a timeout — returns fallback if the promise takes too long. */
+function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 // Related skills fetched via server action (skills.ts uses fs, can't import in client)
 
 interface SkillDetailLGProps {
@@ -30,22 +38,22 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
   const [bookmarked, setBookmarked] = useState(false);
   const [downloadCount, setDownloadCount] = useState<number>(0);
 
-  // Check bookmark status on mount
+  // Check bookmark status on mount (with timeout to prevent hanging)
   useEffect(() => {
     if (session?.userId) {
-      checkBookmarked(session.userId, 'skill', skill.slug).then(setBookmarked);
+      withTimeout(checkBookmarked(session.userId, 'skill', skill.slug), false).then(setBookmarked);
     }
   }, [session?.userId, skill.slug]);
 
-  // Fetch download count on mount
+  // Fetch download count on mount (with timeout)
   useEffect(() => {
-    getSkillDownloadCount(skill.slug).then(setDownloadCount);
+    withTimeout(getSkillDownloadCount(skill.slug), 0).then(setDownloadCount);
   }, [skill.slug]);
 
   const [relatedSkills, setRelatedSkills] = useState<Array<{ slug: string; title: string; description: string; isOfficial: boolean; version: string; tags: { type: string; domain: string[]; layer: string } }>>([]);
   useEffect(() => {
     if (skill.tags) {
-      getRelatedSkills(skill.slug, skill.tags.domain, skill.tags.layer, skill.tags.type).then(setRelatedSkills);
+      withTimeout(getRelatedSkills(skill.slug, skill.tags.domain, skill.tags.layer, skill.tags.type), []).then(setRelatedSkills);
     }
   }, [skill.slug, skill.tags]);
 

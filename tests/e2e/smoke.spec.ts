@@ -155,8 +155,8 @@ test.describe('Smoke Tests', () => {
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
-    // Should show the brand name
-    await expect(page.locator('text=AI Centre')).toBeVisible();
+    // Should show the brand name (exact match to avoid matching "Sign in to AI Centre")
+    await expect(page.getByText('AI Centre', { exact: true })).toBeVisible();
 
     // Should show the email input
     const emailInput = page.locator('input[type="email"]');

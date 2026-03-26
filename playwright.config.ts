@@ -13,6 +13,7 @@ const webServers = Array.from({ length: WORKER_COUNT }, (_, i) => ({
     DATABASE_URL: `${DB_BASE}/aicentre_test_${i}`,
     SKIP_AUTH: 'true',
     PORT: String(BASE_PORT + i),
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ?? '',
   },
 }));
 
