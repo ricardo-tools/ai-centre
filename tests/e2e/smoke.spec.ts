@@ -148,4 +148,26 @@ test.describe('Smoke Tests', () => {
 
     console.assert();
   });
+
+  test('S9: Login page loads with branded layout', async ({ page }) => {
+    const console = createConsoleCollector();
+    console.start(page);
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+
+    // Should show the brand name
+    await expect(page.locator('text=AI Centre')).toBeVisible();
+
+    // Should show the email input
+    const emailInput = page.locator('input[type="email"]');
+    await expect(emailInput).toBeVisible();
+
+    // Should show the tagline
+    await expect(page.locator('text=The AI skill library for every team')).toBeVisible();
+
+    // Should show the company footer
+    await expect(page.locator('text=ezyCollect by Sidetrade')).toBeVisible();
+
+    console.assert();
+  });
 });

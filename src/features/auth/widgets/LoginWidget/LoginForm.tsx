@@ -132,13 +132,28 @@ export function LoginForm({
     <div
       style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
         padding: compact ? 16 : 32,
         background: 'var(--color-bg)',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
+      {/* Gradient orbs — decorative background */}
+      <div style={{
+        position: 'absolute', top: '-20%', right: '-10%', width: '50vw', height: '50vw',
+        borderRadius: '50%', background: 'var(--color-primary-muted)', opacity: 0.4,
+        filter: 'blur(80px)', pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-20%', left: '-10%', width: '40vw', height: '40vw',
+        borderRadius: '50%', background: 'var(--color-secondary-muted, rgba(59, 130, 246, 0.08))', opacity: 0.3,
+        filter: 'blur(80px)', pointerEvents: 'none',
+      }} />
+
       <div
         style={{
           width: '100%',
@@ -146,56 +161,42 @@ export function LoginForm({
           background: 'var(--color-surface)',
           borderRadius: 16,
           border: '1px solid var(--color-border)',
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
+          boxShadow: '0 8px 40px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        {/* Header with logo */}
+        {/* Header — logo + branding */}
         <div
           style={{
-            background: 'var(--color-bg-alt)',
-            padding: `${compact ? 24 : 32}px ${cardPadding}px`,
+            padding: `${compact ? 28 : 40}px ${cardPadding}px ${compact ? 20 : 28}px`,
             textAlign: 'center',
-            borderBottom: '1px solid var(--color-border)',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              justifyContent: 'center',
-            }}
-          >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', marginBottom: compact ? 12 : 16 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logos/square-color.png"
-              alt="ezyCollect"
-              className="logo-color"
-              style={{ height: 28 }}
-            />
+            <img src="/logos/rectangle-color.png" alt="ezyCollect" className="logo-color" style={{ height: compact ? 22 : 26 }} />
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logos/square-white.svg"
-              alt="ezyCollect"
-              className="logo-white"
-              style={{ height: 28 }}
-            />
-            <span
-              style={{
-                fontSize: compact ? 18 : 20,
-                fontWeight: 700,
-                color: 'var(--color-text-heading)',
-                letterSpacing: '-0.01em',
-              }}
-            >
+            <img src="/logos/rectangle-white.png" alt="ezyCollect" className="logo-white" style={{ height: compact ? 22 : 26 }} />
+            <div style={{ width: 1, height: compact ? 18 : 22, background: 'var(--color-border)' }} />
+            <span style={{ fontSize: compact ? 16 : 18, fontWeight: 700, color: 'var(--color-text-heading)', letterSpacing: '-0.01em' }}>
               {t('app.name')}
             </span>
           </div>
+          <p style={{
+            fontSize: compact ? 12 : 13, color: 'var(--color-text-muted)',
+            margin: 0, lineHeight: 1.5,
+          }}>
+            The AI skill library for every team
+          </p>
         </div>
 
-        {/* Body */}
-        <div style={{ padding: cardPadding }}>
+        {/* Divider */}
+        <div style={{ height: 1, background: 'var(--color-border)', margin: `0 ${cardPadding}px` }} />
+
+        {/* Body — form */}
+        <div style={{ padding: `${compact ? 24 : 32}px ${cardPadding}px ${cardPadding}px` }}>
           {step === 'email' ? (
             <EmailStep
               email={email}
@@ -228,6 +229,11 @@ export function LoginForm({
           )}
         </div>
       </div>
+
+      {/* Footer — subtle branding */}
+      <p style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 24, opacity: 0.6, position: 'relative', zIndex: 1 }}>
+        ezyCollect by Sidetrade
+      </p>
     </div>
   );
 }
