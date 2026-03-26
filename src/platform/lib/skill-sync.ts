@@ -67,7 +67,7 @@ async function uploadToBlob(path: string, content: string): Promise<string> {
   }
   const { put } = await import('@vercel/blob');
   const blob = await put(path, content, {
-    access: 'public',
+    access: 'private',
     contentType: 'text/markdown',
   });
   return blob.url;

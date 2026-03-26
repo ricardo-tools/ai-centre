@@ -187,7 +187,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
   try {
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       const { put } = await import('@vercel/blob');
-      const blob = await put(`showcases/${Date.now()}-${file.name}`, file, { access: 'public' });
+      const blob = await put(`showcases/${Date.now()}-${file.name}`, file, { access: 'private' });
       blobUrl = blob.url;
     } else {
       // Dev fallback: write to public/uploads/ for local preview
@@ -333,7 +333,7 @@ export async function updateShowcase(showcaseId: string, formData: FormData): Pr
     try {
       if (process.env.BLOB_READ_WRITE_TOKEN) {
         const { put } = await import('@vercel/blob');
-        const blob = await put(`showcases/${Date.now()}-${file.name}`, file, { access: 'public' });
+        const blob = await put(`showcases/${Date.now()}-${file.name}`, file, { access: 'private' });
         blobUrl = blob.url;
       } else {
         const fs = await import('fs/promises');

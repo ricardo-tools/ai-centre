@@ -23,6 +23,12 @@ import { useSession } from '@/platform/lib/SessionContext';
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
+/** Convert a blob URL to an authenticated proxy URL for private Vercel Blob storage. */
+function blobProxy(url: string): string {
+  if (!url || url.startsWith('file://') || url.startsWith('/')) return url;
+  return `/api/blob?url=${encodeURIComponent(url)}`;
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-AU', {
     day: 'numeric',
@@ -175,7 +181,7 @@ function Preview({ showcase }: { showcase: RawShowcaseUpload }) {
         }}
       >
         <iframe
-          src={showcase.blobUrl}
+          src={blobProxy(showcase.blobUrl)}
           title={showcase.title}
           style={{
             width: '100%',
@@ -215,7 +221,7 @@ function FeaturedPreview({ showcase }: { showcase: RawShowcaseUpload }) {
         }}
       >
         <iframe
-          src={showcase.blobUrl}
+          src={blobProxy(showcase.blobUrl)}
           title={showcase.title}
           style={{
             width: '100%',

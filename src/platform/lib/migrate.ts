@@ -44,7 +44,13 @@ export async function runMigrations(): Promise<void> {
 
     await migrate(db, { migrationsFolder });
 
-    console.log(`[migrate] Migrations complete (${Date.now() - started}ms)`);
+    // Log migration status for visibility
+    try {
+      const rows = await sql('SELECT hash, created_at FROM __drizzle_migrations__ ORDER BY created_at DESC LIMIT 5');
+      console.log(`[migrate] Migrations complete (${Date.now() - started}ms) — ${rows.length} applied, latest: ${rows[0]?.hash ?? 'none'}`);
+    } catch {
+      console.log(`[migrate] Migrations complete (${Date.now() - started}ms) — status table not readable`);
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (msg.includes('already exists')) {

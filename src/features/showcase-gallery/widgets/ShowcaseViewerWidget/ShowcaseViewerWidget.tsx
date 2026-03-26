@@ -18,6 +18,12 @@ import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { CommentThread } from '@/platform/components/CommentThread';
 import { Eye, ChatCircle } from '@phosphor-icons/react';
 
+/** Convert a blob URL to an authenticated proxy URL for private Vercel Blob storage. */
+function blobProxy(url: string): string {
+  if (!url || url.startsWith('file://') || url.startsWith('/')) return url;
+  return `/api/blob?url=${encodeURIComponent(url)}`;
+}
+
 interface ShowcaseViewerWidgetProps {
   showcase: RawShowcaseUpload;
 }
@@ -203,7 +209,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
     async function boot() {
       try {
         setPhase('fetching');
-        const res = await fetch(showcase.blobUrl);
+        const res = await fetch(blobProxy(showcase.blobUrl));
         if (!res.ok) throw new Error('Failed to fetch project');
         const blob = await res.blob();
 
@@ -425,7 +431,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
 
           {/* Download */}
           <a
-            href={showcase.blobUrl}
+            href={blobProxy(showcase.blobUrl)}
             download={showcase.fileName}
             style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', textDecoration: 'none', fontSize: 12, fontWeight: 500 }}
           >
@@ -563,7 +569,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
       <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         {showcase.fileType === 'html' ? (
           <iframe
-            src={showcase.blobUrl}
+            src={blobProxy(showcase.blobUrl)}
             title={showcase.title}
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
             sandbox="allow-scripts allow-same-origin"
@@ -588,7 +594,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
                   <>
                     <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-danger)', marginBottom: 8 }}>Failed to load preview</div>
                     <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>{errorMsg}</div>
-                    <a href={showcase.blobUrl} download={showcase.fileName} style={{ padding: '8px 16px', borderRadius: 6, background: 'var(--color-primary)', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
+                    <a href={blobProxy(showcase.blobUrl)} download={showcase.fileName} style={{ padding: '8px 16px', borderRadius: 6, background: 'var(--color-primary)', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
                       Download ZIP instead
                     </a>
                   </>
@@ -628,7 +634,7 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
         >
           {showcase.fileType === 'html' ? (
             <iframe
-              src={showcase.blobUrl}
+              src={blobProxy(showcase.blobUrl)}
               title={showcase.title}
               style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
               sandbox="allow-scripts allow-same-origin"

@@ -2,6 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatCircle, PencilSimple, Trash, ArrowBendDownRight, ArrowFatUp } from '@phosphor-icons/react';
+
+/** Race a promise against a timeout — returns fallback if the promise takes too long. */
+function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T> {
+  return Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms))]);
+}
 import {
   addComment,
   getComments,
@@ -479,10 +484,10 @@ export function CommentThread({
     });
   }, []);
 
-  // Fetch comments on mount
+  // Fetch comments on mount (with timeout to prevent hanging navigation)
   useEffect(() => {
     setLoading(true);
-    getComments(entityType, entityId).then((result) => {
+    withTimeout(getComments(entityType, entityId), { ok: true, value: [] } as { ok: true; value: CommentData[] }).then((result) => {
       if (result.ok) {
         setFlatComments(result.value);
       }
