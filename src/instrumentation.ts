@@ -13,13 +13,7 @@ export async function register() {
       return;
     }
 
-    // 2. Sync official skills (non-blocking — uploads to Blob, updates DB)
-    const { syncOfficialSkills } = await import('@/platform/lib/skill-sync');
-    syncOfficialSkills().catch((err) => {
-      console.error('[instrumentation] Skill sync failed:', err);
-    });
-
-    // 3. Sentry (future)
+    // 2. Sentry (future)
     if (process.env.SENTRY_DSN) {
       // const Sentry = await import('@sentry/nextjs');
       // Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
