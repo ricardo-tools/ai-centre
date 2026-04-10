@@ -24,6 +24,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Debug session cookie bypass: allow all pages when debug-authed
+  // (debug sessions use a known userId that maps to no real user)
+  if (process.env.DEBUG_API_KEY) {
+    const debugKey = request.headers.get('x-debug-key');
+    if (debugKey && debugKey === process.env.DEBUG_API_KEY) {
+      return NextResponse.next();
+    }
+  }
+
   if (
     pathname === '/login' ||
     pathname === '/robots.txt' ||
