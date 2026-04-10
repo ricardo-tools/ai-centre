@@ -58,7 +58,8 @@ export function SkillDetailLG({ skill, parsed, references }: SkillDetailLGProps)
     if (skill.tags) {
       withTimeout(getRelatedSkills(skill.slug, skill.tags.domain, skill.tags.layer, skill.tags.type), []).then(setRelatedSkills);
     }
-  }, [skill.slug, skill.tags]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skill.slug]);
 
   const handleToggleBookmark = useCallback(async (): Promise<{ bookmarked: boolean } | null> => {
     if (!session) return null;

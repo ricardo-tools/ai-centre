@@ -141,6 +141,7 @@ export async function getRelatedSkills(
   type: string,
   limit: number = 4,
 ): Promise<Array<{ slug: string; title: string; description: string; isOfficial: boolean; version: string; tags: { type: string; domain: string[]; layer: string } }>> {
+  console.log(`[social] getRelatedSkills: slug=${slug}`);
   try {
     const { getAllSkills } = await import('@/platform/lib/skills');
     const allSkills = getAllSkills();

@@ -12,7 +12,9 @@ export interface SkillReference {
 }
 
 export async function fetchAllSkills(): Promise<Result<RawSkillData[], Error>> {
-  return Ok(getAllSkills());
+  const skills = getAllSkills();
+  console.log(`[skill-library] fetchAllSkills: ${skills.length} skills, ${skills.filter(s => s.content.length > 0).length} with content`);
+  return Ok(skills);
 }
 
 export async function fetchSkillBySlug(slug: string): Promise<Result<RawSkillData, NotFoundError>> {
@@ -26,10 +28,15 @@ export async function fetchSkillWithParsed(slug: string): Promise<Result<{
   parsed: ParsedSkill;
   references: SkillReference[];
 }, NotFoundError>> {
+  console.log(`[skill-library] fetchSkillWithParsed: slug=${slug}`);
   const skill = getSkillBySlug(slug);
-  if (!skill) return Err(new NotFoundError('Skill', slug));
+  if (!skill) {
+    console.warn(`[skill-library] fetchSkillWithParsed: skill not found for slug=${slug}`);
+    return Err(new NotFoundError('Skill', slug));
+  }
 
   const parsed = parseSkillContent(skill.content);
   const references = getReferencesFor(slug);
+  console.log(`[skill-library] fetchSkillWithParsed: slug=${slug} content=${skill.content.length}b sections=${parsed.sections.length} refs=${references.length}`);
   return Ok({ skill, parsed, references });
 }
