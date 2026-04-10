@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadSimple, FileHtml, FileZip, SpinnerGap, X } from '@phosphor-icons/react';
+import { UploadSimple, FileHtml, FileZip, SpinnerGap, X, Image as ImageIcon } from '@phosphor-icons/react';
 import { useSession } from '@/platform/lib/SessionContext';
 import { uploadShowcase } from '@/features/showcase-gallery/action';
 import { SkillPicker } from '@/platform/components/SkillPicker';
@@ -26,6 +26,9 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [file, setFile] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
     formData.set('description', description.trim());
     formData.set('skillIds', JSON.stringify(selectedSkills));
     formData.set('file', file);
+    if (thumbnail) formData.set('thumbnail', thumbnail);
     // userId intentionally NOT sent — server reads it from the session
 
     try {
@@ -206,6 +210,53 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
           onChange={setSelectedSkills}
         />
       </div>
+
+      {/* Thumbnail (ZIP projects only) */}
+      {file?.name.endsWith('.zip') && (
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--color-text-body)', marginBottom: 8 }}>
+            Preview screenshot (optional)
+          </label>
+          <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '0 0 8px', lineHeight: 1.4 }}>
+            ZIP projects have no live preview in the gallery. Upload a screenshot so people can see what it looks like.
+          </p>
+          <input
+            ref={thumbnailInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setThumbnail(f);
+                setThumbnailPreview(URL.createObjectURL(f));
+              }
+            }}
+          />
+          {thumbnailPreview ? (
+            <div style={{ position: 'relative', display: 'inline-block', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+              <img src={thumbnailPreview} alt="Thumbnail preview" style={{ maxWidth: 320, maxHeight: 200, display: 'block' }} />
+              <button
+                onClick={() => { setThumbnail(null); setThumbnailPreview(null); }}
+                style={{ position: 'absolute', top: 4, right: 4, background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 4, padding: 2, cursor: 'pointer', display: 'flex' }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => thumbnailInputRef.current?.click()}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+                borderRadius: 6, border: '1px dashed var(--color-border)', background: 'var(--color-surface)',
+                color: 'var(--color-text-muted)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              <ImageIcon size={18} /> Add a screenshot
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Error */}
       {error && (

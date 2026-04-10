@@ -143,6 +143,7 @@ export const showcaseUploads = pgTable('showcase_uploads', {
   skillIds: jsonb('skill_ids').$type<string[]>().default([]),
   fileType: showcaseFileTypeEnum('file_type').notNull(),
   blobUrl: text('blob_url').notNull(),
+  thumbnailUrl: text('thumbnail_url'),
   fileName: text('file_name').notNull(),
   fileSizeBytes: integer('file_size_bytes').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),

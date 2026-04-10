@@ -36,6 +36,13 @@
       "when": 1776012600000,
       "tag": "0004_entity_id_uuid_to_text",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776098400000,
+      "tag": "0005_add_showcase_thumbnail",
+      "breakpoints": true
     }
   ]
 }

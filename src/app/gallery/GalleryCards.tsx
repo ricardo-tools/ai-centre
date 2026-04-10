@@ -193,6 +193,18 @@ function Preview({ showcase }: { showcase: RawShowcaseUpload }) {
       </div>
     );
   }
+  // ZIP with thumbnail
+  if (showcase.thumbnailUrl) {
+    return (
+      <div style={{ borderRadius: 8, overflow: 'hidden', background: 'var(--color-bg-alt)', height: 160, position: 'relative' }}>
+        <img src={blobProxy(showcase.thumbnailUrl)} alt={showcase.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ position: 'absolute', top: 8, right: 8 }}>
+          <TypeBadge fileType={showcase.fileType} />
+        </div>
+      </div>
+    );
+  }
+  // ZIP without thumbnail
   return (
     <div
       style={{
@@ -230,6 +242,16 @@ function FeaturedPreview({ showcase }: { showcase: RawShowcaseUpload }) {
             pointerEvents: 'none',
           }}
         />
+      </div>
+    );
+  }
+  if (showcase.thumbnailUrl) {
+    return (
+      <div style={{ borderRadius: 8, overflow: 'hidden', background: 'var(--color-bg-alt)', height: 400, position: 'relative' }}>
+        <img src={blobProxy(showcase.thumbnailUrl)} alt={showcase.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ position: 'absolute', top: 12, right: 12 }}>
+          <TypeBadge fileType={showcase.fileType} />
+        </div>
       </div>
     );
   }

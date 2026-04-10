@@ -95,10 +95,34 @@ After delivery, help them understand what they got and how to use it — explain
 When the user just wants skill files, pass mode: "skills-only" to generate_project. No project name or description is required — just the skill slugs. The ZIP will have a flat skills/ folder they can drop anywhere.
 
 ## After any download
-Help the user understand what they got. Offer continuation options for:
-- How to install skills in **Claude chat UI** (paste the skill content into a project's custom instructions)
-- How to use in **VS Code with Claude Code** (extract the ZIP into their project root)
-- How to use via **CLI** (extract into the project directory, run claude from that folder)
+Help the user understand what they got. Then ask: **"How are you planning to use these skills?"** and wait for their answer before giving setup instructions. The three platforms are:
+
+### Claude Web/Desktop App (claude.ai or desktop app)
+**Recommended:** Upload the skill files as project assets.
+1. Open your Claude project
+2. Click the attachment/paperclip icon
+3. Upload the .md skill files from the download
+4. Claude can now reference them throughout the conversation
+
+*Alternative:* Copy-paste skill content into your project's custom instructions. This works but clutters the instructions field and is harder to manage.
+
+### VS Code / JetBrains with Claude Code extension
+**Recommended:** Place skills in the \`.claude/skills/\` directory.
+1. Extract the ZIP into your project
+2. If the ZIP was generated in "project" mode, the \`.claude/skills/\` folder is already set up
+3. If you downloaded individual skills, create \`.claude/skills/\` manually and place the .md files there
+4. Claude Code automatically picks up skills from this directory
+
+**Important:** The \`.claude/\` folder is hidden by default. In VS Code, open Settings → search "files.exclude" → remove or uncheck \`**/.claude\`. In Finder, press Cmd+Shift+. to show hidden files.
+
+*Alternative:* Drop skill files anywhere in your project root — Claude Code can still read them, but \`.claude/skills/\` is the conventional location.
+
+### CLI (terminal with \`claude\` command)
+1. Extract the ZIP into your project directory
+2. If "project" mode, the \`.claude/skills/\` folder is ready
+3. Run \`claude\` from the project root — it reads skills from \`.claude/skills/\` automatically
+
+Always recommend the best option first, mention the alternative briefly, and explain why the recommended approach is better.
 
 ## Continuation chips
 At the end of every response, include a hidden comment block with 2–3 contextually relevant follow-up suggestions. The frontend renders these as clickable buttons. Format:

@@ -44,6 +44,7 @@ export interface RawShowcaseUpload {
   skillIds: string[];
   fileType: 'html' | 'zip';
   blobUrl: string;
+  thumbnailUrl: string | null;
   fileName: string;
   fileSizeBytes: number;
   createdAt: string;
@@ -68,6 +69,7 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
         skillIds: showcaseUploads.skillIds,
         fileType: showcaseUploads.fileType,
         blobUrl: showcaseUploads.blobUrl,
+        thumbnailUrl: showcaseUploads.thumbnailUrl,
         fileName: showcaseUploads.fileName,
         fileSizeBytes: showcaseUploads.fileSizeBytes,
         createdAt: showcaseUploads.createdAt,
@@ -110,6 +112,7 @@ export async function fetchShowcaseById(id: string): Promise<Result<RawShowcaseU
         skillIds: showcaseUploads.skillIds,
         fileType: showcaseUploads.fileType,
         blobUrl: showcaseUploads.blobUrl,
+        thumbnailUrl: showcaseUploads.thumbnailUrl,
         fileName: showcaseUploads.fileName,
         fileSizeBytes: showcaseUploads.fileSizeBytes,
         createdAt: showcaseUploads.createdAt,
@@ -181,6 +184,33 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
     skillIds = [];
   }
 
+  // Upload thumbnail if provided (optional, for ZIP projects)
+  const thumbnailFile = formData.get('thumbnail') as File | null;
+  let thumbnailUrl: string | null = null;
+
+  if (thumbnailFile && thumbnailFile.size > 0) {
+    const validImage = ['image/png', 'image/jpeg', 'image/webp'].includes(thumbnailFile.type);
+    if (validImage && thumbnailFile.size <= 2 * 1024 * 1024) { // 2MB max
+      try {
+        if (process.env.BLOB_READ_WRITE_TOKEN) {
+          const { put } = await import('@vercel/blob');
+          const blob = await put(`showcases/thumbs/${Date.now()}-${thumbnailFile.name}`, thumbnailFile, { access: 'private' });
+          thumbnailUrl = blob.url;
+        } else {
+          const fs = await import('fs/promises');
+          const path = await import('path');
+          const uploadsDir = path.resolve(process.cwd(), 'public', 'uploads', 'thumbs');
+          await fs.mkdir(uploadsDir, { recursive: true });
+          const thumbName = `${Date.now()}-${thumbnailFile.name}`;
+          await fs.writeFile(path.join(uploadsDir, thumbName), Buffer.from(await thumbnailFile.arrayBuffer()));
+          thumbnailUrl = `/uploads/thumbs/${thumbName}`;
+        }
+      } catch (err) {
+        console.error('[showcase-gallery] thumbnail upload failed (non-critical):', err);
+      }
+    }
+  }
+
   // Upload file storage
   let blobUrl: string;
 
@@ -218,6 +248,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       skillIds,
       fileType,
       blobUrl,
+      thumbnailUrl,
       fileName: file.name,
       fileSizeBytes: file.size,
       createdAt: new Date().toISOString(),
@@ -239,6 +270,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       skillIds,
       fileType,
       blobUrl,
+      thumbnailUrl,
       fileName: file.name,
       fileSizeBytes: file.size,
     }).returning();

@@ -28,9 +28,10 @@ interface ShowcaseViewerWidgetProps {
   showcase: RawShowcaseUpload;
 }
 
-type LoadingPhase = 'fetching' | 'extracting' | 'installing' | 'starting' | 'ready' | 'error';
+type LoadingPhase = 'cached' | 'fetching' | 'extracting' | 'installing' | 'starting' | 'ready' | 'error';
 
 const PHASE_LABELS: Record<LoadingPhase, string> = {
+  cached: 'Loading from cache...',
   fetching: 'Fetching project files...',
   extracting: 'Extracting archive...',
   installing: 'Installing dependencies...',
@@ -39,8 +40,92 @@ const PHASE_LABELS: Record<LoadingPhase, string> = {
   error: 'Failed to load preview',
 };
 
+const PHASE_PROGRESS: Record<LoadingPhase, number> = {
+  cached: 60,
+  fetching: 15,
+  extracting: 35,
+  installing: 55,
+  starting: 80,
+  ready: 100,
+  error: 0,
+};
+
+// ── IndexedDB cache for extracted ZIP files ──
+
+const IDB_NAME = 'ai-centre-showcase-cache';
+const IDB_STORE = 'extracted-files';
+const IDB_VERSION = 1;
+
+function openCacheDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function getCachedFiles(key: string): Promise<Record<string, string> | null> {
+  try {
+    const db = await openCacheDb();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const store = tx.objectStore(IDB_STORE);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result ?? null);
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedFiles(key: string, files: Record<string, string>): Promise<void> {
+  try {
+    const db = await openCacheDb();
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(files, key);
+  } catch {
+    // Cache write failure is non-critical
+  }
+}
+
 const NAV_HEIGHT = 56;
 const BAR_HEIGHT = 44;
+
+/** Fullscreen view for StackBlitz: reads the iframe src from the container and renders it fullscreen */
+function StackBlitzFullscreen({ containerRef, title }: { containerRef: React.RefObject<HTMLDivElement | null>; title: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    // StackBlitz creates an iframe inside our container div — find it
+    const iframe = containerRef.current?.querySelector('iframe');
+    if (iframe?.src) {
+      setSrc(iframe.src);
+    }
+  }, [containerRef]);
+
+  if (!src) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: 14 }}>
+        Loading fullscreen preview...
+      </div>
+    );
+  }
+
+  return (
+    <iframe
+      src={src}
+      title={title}
+      style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+    />
+  );
+}
 
 export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
   const iframeRef = useRef<HTMLDivElement>(null);
@@ -200,28 +285,42 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
   const FileIcon = showcase.fileType === 'html' ? FileHtml : FileZip;
   const typeLabel = showcase.fileType === 'html' ? 'HTML' : 'Next.js';
 
-  // Boot StackBlitz for ZIP projects
+  // Boot StackBlitz for ZIP projects (with IndexedDB cache)
   useEffect(() => {
     if (showcase.fileType !== 'zip' || !iframeRef.current) return;
 
     let cancelled = false;
+    const cacheKey = `${showcase.id}:${showcase.blobUrl}`;
 
     async function boot() {
       try {
-        setPhase('fetching');
-        const res = await fetch(blobProxy(showcase.blobUrl));
-        if (!res.ok) throw new Error('Failed to fetch project');
-        const blob = await res.blob();
+        // Try IndexedDB cache first
+        const cached = await getCachedFiles(cacheKey);
+        let files: Record<string, string>;
 
-        setPhase('extracting');
-        const JSZip = (await import('jszip')).default;
-        const zip = await JSZip.loadAsync(blob);
+        if (cached) {
+          setPhase('cached');
+          files = cached;
+        } else {
+          setPhase('fetching');
+          const res = await fetch(blobProxy(showcase.blobUrl));
+          if (!res.ok) throw new Error('Failed to fetch project');
+          const blob = await res.blob();
 
-        const files: Record<string, string> = {};
-        for (const [path, zipEntry] of Object.entries(zip.files)) {
-          if (!zipEntry.dir) {
-            files[path] = await zipEntry.async('string');
+          if (cancelled) return;
+          setPhase('extracting');
+          const JSZip = (await import('jszip')).default;
+          const zip = await JSZip.loadAsync(blob);
+
+          files = {};
+          for (const [path, zipEntry] of Object.entries(zip.files)) {
+            if (!zipEntry.dir) {
+              files[path] = await zipEntry.async('string');
+            }
           }
+
+          // Cache for next visit
+          setCachedFiles(cacheKey, files);
         }
 
         if (cancelled) return;
@@ -419,15 +518,21 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             {copied ? <><Check size={12} /> Copied!</> : <><LinkSimple size={12} /> Share</>}
           </button>
 
-          {/* Fullscreen (HTML only — ZIP has no meaningful fullscreen view) */}
-          {showcase.fileType !== 'zip' && (
-            <button
-              onClick={() => setIsFullscreen(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              <ArrowsOut size={12} /> Fullscreen
-            </button>
-          )}
+          {/* Fullscreen — available for both HTML and ZIP (once loaded) */}
+          <button
+            onClick={() => setIsFullscreen(true)}
+            disabled={showcase.fileType === 'zip' && phase !== 'ready'}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4,
+              border: '1px solid var(--color-border)', background: 'var(--color-surface)',
+              color: (showcase.fileType === 'zip' && phase !== 'ready') ? 'var(--color-text-muted)' : 'var(--color-text-body)',
+              fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
+              cursor: (showcase.fileType === 'zip' && phase !== 'ready') ? 'not-allowed' : 'pointer',
+              opacity: (showcase.fileType === 'zip' && phase !== 'ready') ? 0.5 : 1,
+            }}
+          >
+            <ArrowsOut size={12} /> Fullscreen
+          </button>
 
           {/* Download */}
           <a
@@ -602,14 +707,34 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
                   <>
                     <SpinnerGap size={32} weight="bold" style={{ color: 'var(--color-primary)', animation: 'spin 1s linear infinite', marginBottom: 16 }} />
                     <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-heading)', marginBottom: 4 }}>{PHASE_LABELS[phase]}</div>
-                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>This may take 20-30 seconds</div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 16 }}>
+                      {phase === 'cached' ? 'Using cached files — this will be quick' : 'First load may take 20-30 seconds'}
+                    </div>
+                    {/* Progress bar */}
+                    <div style={{ width: 240, height: 4, borderRadius: 2, background: 'var(--color-border)', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        borderRadius: 2,
+                        background: 'var(--color-primary)',
+                        width: `${PHASE_PROGRESS[phase]}%`,
+                        transition: 'width 600ms ease',
+                      }} />
+                    </div>
+                    {/* Phase steps */}
+                    <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 11, color: 'var(--color-text-muted)' }}>
                       {(['fetching', 'extracting', 'installing', 'starting'] as const).map((p) => {
                         const phases = ['fetching', 'extracting', 'installing', 'starting'] as const;
-                        const ci = phases.indexOf(phase as typeof phases[number]);
+                        const ci = phases.indexOf(phase === 'cached' ? 'installing' : phase as typeof phases[number]);
                         const ti = phases.indexOf(p);
+                        const isDone = ti < ci;
+                        const isCurrent = ti === ci;
                         return (
-                          <div key={p} style={{ width: 8, height: 8, borderRadius: '50%', background: ti === ci ? 'var(--color-primary)' : ti < ci ? 'var(--color-success)' : 'var(--color-border)' }} />
+                          <span key={p} style={{
+                            color: isDone ? 'var(--color-success)' : isCurrent ? 'var(--color-primary)' : 'var(--color-text-muted)',
+                            fontWeight: isCurrent ? 600 : 400,
+                          }}>
+                            {isDone ? '\u2713 ' : ''}{p.charAt(0).toUpperCase() + p.slice(1)}
+                          </span>
                         );
                       })}
                     </div>
@@ -640,9 +765,8 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
               sandbox="allow-scripts allow-same-origin"
             />
           ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: 14 }}>
-              Fullscreen preview is available for HTML showcases. Use the embedded viewer below.
-            </div>
+            // For ZIP/StackBlitz: find the iframe StackBlitz created and clone its src into a fullscreen iframe
+            <StackBlitzFullscreen containerRef={iframeRef} title={showcase.title} />
           )}
           <button
             onClick={() => setIsFullscreen(false)}
