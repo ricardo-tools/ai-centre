@@ -55,7 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ShellLayout>
             {children}
           </ShellLayout>
-          <ChatDrawerLazy />
+          {session && <ChatDrawerLazy />}
         </SessionProvider>
       </body>
     </html>
