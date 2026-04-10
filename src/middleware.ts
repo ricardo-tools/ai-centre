@@ -16,6 +16,14 @@ export async function middleware(request: NextRequest) {
     return new NextResponse('Service unavailable — authentication not configured', { status: 503 });
   }
 
+  // Debug endpoints: allow with API key header (works in all environments)
+  if (pathname.startsWith('/api/debug') || pathname === '/api/logs') {
+    const debugKey = request.headers.get('x-debug-key');
+    if (debugKey && process.env.DEBUG_API_KEY && debugKey === process.env.DEBUG_API_KEY) {
+      return NextResponse.next();
+    }
+  }
+
   if (
     pathname === '/login' ||
     pathname === '/robots.txt' ||

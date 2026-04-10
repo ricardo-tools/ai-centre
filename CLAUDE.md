@@ -91,6 +91,7 @@ MAILGUN_EU=                # (optional) Set to 'true' for EU endpoint
 ANTHROPIC_API_KEY=         # Showcase generation
 ADMIN_EMAIL=              # (optional) Auto-promote this email to admin on first login
 SKIP_AUTH=                # (optional) Set to 'true' ONLY in local dev — bypasses auth. NEVER set in production.
+DEBUG_API_KEY=            # (optional) Enables prod log capture + /api/logs and /api/debug access via x-debug-key header
 SENTRY_DSN=               # (optional) Sentry error tracking — future
 ```
 
@@ -98,28 +99,25 @@ SENTRY_DSN=               # (optional) Sentry error tracking — future
 - **Server Actions** for all internal mutations.
 - **API routes** only for external programmatic access.
 
-### Debugging (local dev only)
-When `SKIP_AUTH=true`, all server-side console output (`debug`, `info`, `log`, `warn`, `error`) is captured in a 1000-entry ring buffer and exposed via API:
+### Debugging
+Server-side console output is captured in a 1000-entry ring buffer when `SKIP_AUTH=true` (dev) or `DEBUG_API_KEY` is set (prod).
 
 ```bash
-# All recent logs (most recent first, limit 100)
+# Local dev (no auth needed)
 curl http://localhost:3000/api/logs
-
-# Filter by level: debug | info | log | warn | error
 curl http://localhost:3000/api/logs?level=error
-curl http://localhost:3000/api/logs?level=debug
 
-# Search by keyword
-curl http://localhost:3000/api/logs?search=admin&level=error
-
-# Logs since a timestamp
-curl http://localhost:3000/api/logs?since=2026-03-24T10:00:00Z
+# Production (requires x-debug-key header)
+curl -H "x-debug-key: $DEBUG_API_KEY" https://ai.ezycollect.tools/api/logs
+curl -H "x-debug-key: $DEBUG_API_KEY" https://ai.ezycollect.tools/api/logs?level=error&limit=50
+curl -H "x-debug-key: $DEBUG_API_KEY" https://ai.ezycollect.tools/api/logs?search=skill-library
+curl -H "x-debug-key: $DEBUG_API_KEY" https://ai.ezycollect.tools/api/debug?detail=true
 
 # Clear buffer
-curl -X POST http://localhost:3000/api/logs
+curl -X POST -H "x-debug-key: $DEBUG_API_KEY" https://ai.ezycollect.tools/api/logs
 ```
 
-Use this to diagnose 500 errors, failed server actions, or DB issues without needing terminal access to the server process. For deeper tracing, use `console.debug()` in code — it's captured in dev/test but silent in production.
+Use this to diagnose 500 errors, failed server actions, or DB issues. `console.debug()` is captured in all environments when log capture is active.
 
 ### Testing
 - E2E tests run against a **separate database** (`aicentre_test`) — dev DB is never touched.

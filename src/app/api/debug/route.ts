@@ -1,25 +1,55 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
-export async function GET() {
-  return NextResponse.json({
+/**
+ * GET /api/debug — Basic env diagnostics (safe info only, no auth needed).
+ * GET /api/debug?detail=true + x-debug-key header — Full diagnostics including log buffer stats.
+ */
+
+export async function GET(request: NextRequest) {
+  const basic = {
     timestamp: new Date().toISOString(),
     env: {
       NODE_ENV: process.env.NODE_ENV,
-      SKIP_AUTH: process.env.SKIP_AUTH ?? '(not set)',
-      AUTH_SECRET_SET: !!process.env.AUTH_SECRET,
-      AUTH_SECRET_LENGTH: process.env.AUTH_SECRET?.length ?? 0,
-      DATABASE_URL_SET: !!process.env.DATABASE_URL,
-      BLOB_TOKEN_SET: !!process.env.BLOB_READ_WRITE_TOKEN,
-      MAILGUN_KEY_SET: !!process.env.MAILGUN_API_KEY,
-      MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN ?? '(not set)',
-      ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? '(not set)',
       VERCEL_ENV: process.env.VERCEL_ENV ?? '(not set)',
       VERCEL_URL: process.env.VERCEL_URL ?? '(not set)',
+      AUTH_SECRET_SET: !!process.env.AUTH_SECRET,
+      DATABASE_URL_SET: !!process.env.DATABASE_URL,
+      BLOB_TOKEN_SET: !!process.env.BLOB_READ_WRITE_TOKEN,
+      DEBUG_API_KEY_SET: !!process.env.DEBUG_API_KEY,
+      SKIP_AUTH: process.env.SKIP_AUTH ?? '(not set)',
     },
-    middleware: {
-      note: 'If you can see this without auth, middleware is not blocking /api/debug',
-      skipAuthValue: process.env.SKIP_AUTH,
-      nodeEnvValue: process.env.NODE_ENV,
+  };
+
+  // Extended diagnostics require the debug key
+  const debugKey = request.headers.get('x-debug-key');
+  const isDebugAuthed = !!(debugKey && process.env.DEBUG_API_KEY && debugKey === process.env.DEBUG_API_KEY);
+
+  if (!isDebugAuthed || request.nextUrl.searchParams.get('detail') !== 'true') {
+    return NextResponse.json(basic);
+  }
+
+  // Import log buffer stats
+  const { getServerLogs } = await import('@/platform/lib/server-logs');
+  const allLogs = getServerLogs({ limit: 1000 });
+  const errorCount = allLogs.filter(l => l.level === 'error').length;
+  const warnCount = allLogs.filter(l => l.level === 'warn').length;
+  const lastError = allLogs.find(l => l.level === 'error');
+
+  return NextResponse.json({
+    ...basic,
+    logCapture: {
+      active: true,
+      totalEntries: allLogs.length,
+      errors: errorCount,
+      warnings: warnCount,
+      lastError: lastError ? { message: lastError.message.slice(0, 200), at: lastError.timestamp } : null,
+    },
+    env: {
+      ...basic.env,
+      MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN ?? '(not set)',
+      ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? '(not set)',
+      OPENROUTER_KEY_SET: !!process.env.OPENROUTER_API_KEY,
+      ANTHROPIC_KEY_SET: !!process.env.ANTHROPIC_API_KEY,
     },
   });
 }

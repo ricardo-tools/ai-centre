@@ -2,7 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getServerLogs, clearServerLogs, type LogLevel } from '@/platform/lib/server-logs';
 
 /**
- * GET /api/logs — Query server-side console logs (dev only).
+ * GET /api/logs — Query server-side console logs.
+ *
+ * Access: SKIP_AUTH=true (dev) OR x-debug-key header matching DEBUG_API_KEY (prod).
  *
  * Query params:
  *   level  — filter by debug|info|log|warn|error
@@ -15,9 +17,15 @@ import { getServerLogs, clearServerLogs, type LogLevel } from '@/platform/lib/se
 
 const VALID_LEVELS: LogLevel[] = ['debug', 'info', 'log', 'warn', 'error'];
 
+function isAuthorized(request: NextRequest): boolean {
+  if (process.env.SKIP_AUTH === 'true') return true;
+  const debugKey = request.headers.get('x-debug-key');
+  return !!(debugKey && process.env.DEBUG_API_KEY && debugKey === process.env.DEBUG_API_KEY);
+}
+
 export async function GET(request: NextRequest) {
-  if (process.env.SKIP_AUTH !== 'true') {
-    return NextResponse.json({ error: 'Forbidden — dev only' }, { status: 403 });
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const { searchParams } = request.nextUrl;
@@ -35,8 +43,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (process.env.SKIP_AUTH !== 'true') {
-    return NextResponse.json({ error: 'Forbidden — dev only' }, { status: 403 });
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   clearServerLogs();

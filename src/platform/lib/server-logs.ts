@@ -45,9 +45,11 @@ function push(level: LogLevel, args: unknown[]) {
   if (buffer.length > MAX_ENTRIES) buffer.shift();
 }
 
-/** Patch console once — call from instrumentation.ts */
+/** Patch console once — call from instrumentation.ts.
+ *  Active when SKIP_AUTH=true (dev) OR DEBUG_API_KEY is set (prod debugging). */
 export function installLogCapture() {
-  if (g.__devLogPatched || process.env.SKIP_AUTH !== 'true') return;
+  if (g.__devLogPatched) return;
+  if (process.env.SKIP_AUTH !== 'true' && !process.env.DEBUG_API_KEY) return;
   g.__devLogPatched = true;
 
   const origDebug = console.debug;
