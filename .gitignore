@@ -47,5 +47,8 @@ playwright-report/
 test-results/
 tests/e2e/.global-mark*
 
+# Pre-built skill bundle (generated at build time)
+src/platform/lib/skills-bundle.generated.json
+
 # Dev-mode showcase uploads
 public/uploads/

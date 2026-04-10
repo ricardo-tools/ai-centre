@@ -1,5 +1,4 @@
-import { readFileSync, existsSync } from 'fs';
-import { resolve } from 'path';
+import skillsBundle from './skills-bundle.generated.json';
 
 /** Skill type — what kind of skill this is */
 export type SkillType = 'principle' | 'implementation' | 'reference';
@@ -560,24 +559,12 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
 
 ];
 
-function getProjectRoot(): string {
-  return resolve(process.cwd());
-}
-
-/** Resolve skill file path — supports both Agent Skills spec directory format
- *  (skills/<slug>/SKILL.md) and legacy flat format (skills/<slug>.md). */
-function resolveSkillPath(root: string, slug: string): string {
-  const dirPath = resolve(root, 'skills', slug, 'SKILL.md');
-  if (existsSync(dirPath)) return dirPath;
-  return resolve(root, 'skills', `${slug}.md`);
-}
+const bundle = skillsBundle as Record<string, { slug: string; content: string; references: Array<{ filename: string; content: string }>; assets: Array<{ filename: string; base64: string }> }>;
 
 export function getAllSkills(): SkillData[] {
-  const root = getProjectRoot();
   return SKILL_DEFINITIONS.map((skill) => {
-    const filePath = resolveSkillPath(root, skill.slug);
-    const content = existsSync(filePath) ? readFileSync(filePath, 'utf-8') : '';
-    return { ...skill, content };
+    const entry = bundle[skill.slug];
+    return { ...skill, content: entry?.content ?? '' };
   });
 }
 
@@ -587,13 +574,11 @@ export function getSkillCatalog(): Array<{ slug: string; title: string; descript
 }
 
 export function getSkillBySlug(slug: string): SkillData | null {
-  const root = getProjectRoot();
   const definition = SKILL_DEFINITIONS.find((s) => s.slug === slug);
   if (!definition) return null;
 
-  const filePath = resolveSkillPath(root, slug);
-  const content = existsSync(filePath) ? readFileSync(filePath, 'utf-8') : '';
-  return { ...definition, content };
+  const entry = bundle[slug];
+  return { ...definition, content: entry?.content ?? '' };
 }
 
 /** Returns only behavioural skills (excludes reference companions) */
@@ -606,30 +591,17 @@ export function getCompanionsFor(parentSlug: string): SkillData[] {
   return getAllSkills().filter((s) => s.companionTo === parentSlug);
 }
 
-/** Returns reference file contents from a skill's references/ directory */
+/** Returns reference file contents from the pre-built bundle */
 export function getReferencesFor(slug: string): Array<{ filename: string; content: string }> {
-  const root = getProjectRoot();
-  const refsDir = resolve(root, 'skills', slug, 'references');
-  if (!existsSync(refsDir)) return [];
-  const { readdirSync } = require('fs');
-  const files: string[] = readdirSync(refsDir);
-  return files
-    .filter((f: string) => f.endsWith('.md'))
-    .map((f: string) => ({
-      filename: f,
-      content: readFileSync(resolve(refsDir, f), 'utf-8'),
-    }));
+  return bundle[slug]?.references ?? [];
 }
 
-/** Returns asset file buffers from a skill's assets/ directory (binary-safe) */
+/** Returns asset file buffers from the pre-built bundle (decoded from base64) */
 export function getAssetsFor(slug: string): Array<{ filename: string; buffer: Buffer }> {
-  const root = getProjectRoot();
-  const assetsDir = resolve(root, 'skills', slug, 'assets');
-  if (!existsSync(assetsDir)) return [];
-  const { readdirSync } = require('fs');
-  const files: string[] = readdirSync(assetsDir);
-  return files.map((f: string) => ({
-    filename: f,
-    buffer: readFileSync(resolve(assetsDir, f)),
+  const entry = bundle[slug];
+  if (!entry?.assets?.length) return [];
+  return entry.assets.map((a) => ({
+    filename: a.filename,
+    buffer: Buffer.from(a.base64, 'base64'),
   }));
 }

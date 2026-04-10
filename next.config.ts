@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ['@neondatabase/serverless'],
   outputFileTracingIncludes: {
-    '/**': ['./src/platform/db/migrations/**', './skills/**'],
+    '/**': ['./src/platform/db/migrations/**'],
   },
   async headers() {
     return [
