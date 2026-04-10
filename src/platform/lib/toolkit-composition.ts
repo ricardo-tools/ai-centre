@@ -38,16 +38,10 @@ export interface CompositionSelection {
 export const FOUNDATION_SKILLS: readonly SkillSlug[] = [
   'coding-standards',
   'clean-architecture',
-  'prompt-refinement',
-  'verification-loop',
-  'strategic-context',
-  'documentation-research',
+  'flow-strategic-context',
   'quality-assurance',
-  'research',
-  'planning',
-  'project-reference',
-  'roadmap',
-  'skill-creation',
+  'flow-project-reference',
+  'flow-roadmap',
   'skill-review',
 ] as const;
 
@@ -100,7 +94,7 @@ export const DOMAINS: readonly DomainDefinition[] = [
       'brand-design-system',
       'design-foundations',
       'presentation',
-      'presentation-html-implementation',
+      'presentation-html',
       'creative-toolkit',
     ],
     recommendedAddons: ['pptx-export'],
@@ -152,7 +146,7 @@ export const DOMAINS: readonly DomainDefinition[] = [
       'responsiveness',
       'accessibility',
       'web-performance',
-      'project-documentation',
+      'flow-project-docs',
     ],
     recommendedAddons: [],
   },
@@ -181,7 +175,7 @@ export const FEATURE_ADDONS: readonly FeatureAddonDefinition[] = [
     implementations: [
       { slug: 'neon-drizzle', title: 'Neon + Drizzle', description: 'Serverless Postgres with Drizzle ORM.', skills: ['db-neon-drizzle'] },
       { slug: 'supabase', title: 'Supabase', description: 'Postgres with Supabase platform.', skills: ['db-supabase'] },
-      { slug: 'redis', title: 'Redis', description: 'In-memory data store with Redis.', skills: ['db-redis'] },
+      { slug: 'redis', title: 'Redis', description: 'In-memory data store with Redis.', skills: ['db-redis-upstash'] },
     ],
   },
   {
@@ -209,11 +203,11 @@ export const FEATURE_ADDONS: readonly FeatureAddonDefinition[] = [
     title: 'AI Features',
     description: 'LLM integration and AI-powered capabilities.',
     icon: '🤖',
-    principleSkills: ['ai-capabilities', 'eval-driven-development'],
+    principleSkills: ['ai-capabilities'],
     implementations: [
       { slug: 'openrouter', title: 'OpenRouter', description: 'Multi-model access via OpenRouter.', skills: ['ai-openrouter'] },
       { slug: 'claude', title: 'Claude', description: 'Direct Claude API integration.', skills: ['ai-claude'] },
-      { slug: 'fal', title: 'fal.ai', description: 'Image and media generation via fal.ai.', skills: ['ai-fal'] },
+      { slug: 'fal', title: 'fal.ai', description: 'Image and media generation via fal.ai.', skills: ['ai-fal-media'] },
     ],
   },
   {

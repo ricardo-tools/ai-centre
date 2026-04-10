@@ -9,6 +9,7 @@ export const appShellConfig: ScreenRendererConfig = {
   grid: {
     columns: 1,
     rows: 2,
+    rowTemplate: 'auto 1fr',
     rowHeight: 'auto',
     gap: 0,
   },

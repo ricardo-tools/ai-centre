@@ -8,7 +8,7 @@ export type SkillType = 'principle' | 'implementation' | 'reference';
 export type SkillDomain = 'product-development' | 'marketing' | 'design' | 'engineering' | 'operations' | 'global';
 
 /** Layer — where it applies in the stack */
-export type SkillLayer = 'frontend' | 'backend' | 'fullstack' | 'infrastructure' | 'design' | 'process';
+export type SkillLayer = 'frontend' | 'backend' | 'fullstack' | 'infrastructure' | 'design' | 'process' | 'workflow';
 
 export interface SkillTags {
   type: SkillType;
@@ -31,12 +31,12 @@ export interface SkillData {
 /** All unique tag values for filter UI */
 export const SKILL_TYPES: SkillType[] = ['principle', 'implementation', 'reference'];
 export const SKILL_DOMAINS: SkillDomain[] = ['product-development', 'marketing', 'design', 'engineering', 'operations', 'global'];
-export const SKILL_LAYERS: SkillLayer[] = ['frontend', 'backend', 'fullstack', 'infrastructure', 'design', 'process'];
+export const SKILL_LAYERS: SkillLayer[] = ['frontend', 'backend', 'fullstack', 'infrastructure', 'design', 'process', 'workflow'];
 
 /** Human-readable labels */
 export const TYPE_LABELS: Record<SkillType, string> = { principle: 'Principle', implementation: 'Implementation', reference: 'Reference' };
 export const DOMAIN_LABELS: Record<SkillDomain, string> = { 'product-development': 'Product', marketing: 'Marketing', design: 'Design', engineering: 'Engineering', operations: 'Operations', global: 'Global' };
-export const LAYER_LABELS: Record<SkillLayer, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infrastructure', design: 'Design', process: 'Process' };
+export const LAYER_LABELS: Record<SkillLayer, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infrastructure', design: 'Design', process: 'Process', workflow: 'Workflow' };
 
 type SkillDefinition = Omit<SkillData, 'content'>;
 
@@ -68,8 +68,8 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     companionTo: 'ai-capabilities',
   },
   {
-    slug: 'ai-fal',
-    title: 'AI: fal.ai',
+    slug: 'ai-fal-media',
+    title: 'AI: fal.ai Media',
     description: 'Implementation skill for ai-capabilities. Generate images, videos, and audio using AI models via fal.ai MCP. Covers prompt craft, model discovery, iteration workflow, cost management, and quality evaluation.',
     isOfficial: true,
     version: '1.0.0',
@@ -202,7 +202,7 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     companionTo: 'database-design',
   },
   {
-    slug: 'db-redis',
+    slug: 'db-redis-upstash',
     title: 'DB: Redis / Upstash',
     description: 'Redis via Upstash for caching, rate limiting, sessions, pub/sub. REST-based, serverless-friendly.',
     isOfficial: true,
@@ -228,12 +228,75 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['design'], layer: 'design' },
   },
   {
-    slug: 'documentation-research',
-    title: 'Documentation Research',
-    description: 'When to consult documentation vs knowledge, source hierarchy for version-sensitive questions, checklist for finding authoritative sources.',
+    slug: 'flow',
+    title: 'Flow',
+    description: 'Core workflow router for human-AI paired work. Defines the three phases (PLANNING → IMPLEMENTATION → POST-DELIVERY) and safety guardrails. Does not define HOW to implement — plan templates define methodology.',
+    isOfficial: true,
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+  },
+  {
+    slug: 'flow-tdd',
+    title: 'Flow: TDD',
+    description: 'Opinion companion for flow. The single testing skill — covers what to test, at which level, how to write scenarios (Gherkin for integration + E2E), data isolation, test data factories, mocking strategy, and the hardening gate.',
+    isOfficial: true,
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-eval-driven',
+    title: 'Flow: Eval-Driven',
+    description: 'Opinion companion for flow. Eval-driven development — implement each scenario, evaluate by running the app like a real user (Playwright headless, console logs, server logs, HTML inspection, screenshots), then run the targeted test.',
+    isOfficial: true,
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-observability',
+    title: 'Flow: Observability',
+    description: 'Opinion companion for flow. Granular structured logging at every code path, controlled by log level per environment. Code MUST add logs — silent code is a bug.',
+    isOfficial: true,
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-plan-log',
+    title: 'Flow: Plan Log',
+    description: 'Opinion companion for flow. Maintains .plans/LOG.md — a structured execution log of all plans. Active Context (AI-optimised), Plan & Chapter Overview (human-readable), Execution Log (detailed history).',
     isOfficial: true,
     version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-planning',
+    title: 'Flow: Planning',
+    description: 'Plan structure and planning methodology. Defines folder layout (.plans/), templates, and the full planning cycle: triage, research, debate, drafting, and iterative review.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-research',
+    title: 'Flow: Research',
+    description: 'Research methodology for evidence-based decisions. Covers four research types: documentation lookup, technology comparison, bug investigation, and pattern/best-practice research.',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
+  },
+  {
+    slug: 'flow-prototype',
+    title: 'Flow: Prototype',
+    description: 'Lightweight prototyping workflow. Prototypes live in /prototypes, use the same stack as the main app, require no tests or planning. Divergent exploration with three agents (Strict, Adaptive, Creative).',
+    isOfficial: true,
+    version: '1.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
   },
   {
     slug: 'email-sending',
@@ -251,14 +314,6 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     version: '1.0.0',
     tags: { type: 'implementation', domain: ['product-development', 'engineering'], layer: 'backend' },
     companionTo: 'email-sending',
-  },
-  {
-    slug: 'eval-driven-development',
-    title: 'Eval-Driven Development',
-    description: 'EDD workflow, deterministic vs LLM-as-judge evaluations, handling non-determinism, eval iteration loops, quality gates via automated checks.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
   },
   {
     slug: 'file-storage',
@@ -319,18 +374,20 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
   {
     slug: 'playwright-e2e',
     title: 'Playwright E2E',
-    description: 'End-to-end testing patterns with Playwright. Covers test structure, locators, assertions, fixtures, CI integration.',
+    description: 'End-to-end testing patterns with Playwright. Covers test structure, locators, assertions, fixture workarounds, per-worker DB isolation, 3-tier data lifecycle, diagnostics, CI integration.',
     isOfficial: true,
-    version: '1.0.0',
+    version: '2.0.0',
     tags: { type: 'implementation', domain: ['engineering'], layer: 'fullstack' },
+    companionTo: 'testing-strategy',
   },
   {
-    slug: 'planning',
-    title: 'Planning',
-    description: 'The discipline of planning before execution in AI-human collaborative development. Structured planning with progressive elaboration, phase gates, dependency marking, and failure classification.',
+    slug: 'playwright-e2e-reference',
+    title: 'Playwright E2E Reference',
+    description: 'Copy-paste implementation templates for Playwright E2E infrastructure: config, helpers, seed data, test API, global setup/teardown, per-worker DB isolation, 3-tier data lifecycle.',
     isOfficial: true,
     version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    tags: { type: 'reference', domain: ['engineering'], layer: 'fullstack' },
+    companionTo: 'playwright-e2e',
   },
   {
     slug: 'pptx-export',
@@ -349,8 +406,8 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['marketing', 'design'], layer: 'design' },
   },
   {
-    slug: 'presentation-html-implementation',
-    title: 'Presentation HTML Implementation',
+    slug: 'presentation-html',
+    title: 'Presentation HTML',
     description: 'Single HTML file presentation pattern with slide transitions, footer bar, design toolkit. Covers glassmorphism, layered backgrounds, responsive slide sizing.',
     isOfficial: true,
     version: '1.0.0',
@@ -365,41 +422,27 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['design', 'marketing'], layer: 'design' },
   },
   {
-    slug: 'prompt-refinement',
-    title: 'Prompt Refinement',
-    description: 'Translates unstructured user requests into clear, AI-effective prompts. Clarifies intent, identifies scope, selects relevant skills, and suggests a refined prompt proportional to the original request.',
+    slug: 'flow-project-docs',
+    title: 'Flow: Project Docs',
+    description: 'Opinion companion for flow. Docs are a separate Next.js app at /docs. Diataxis structure, MDX authoring, React Flow diagrams with dagre auto-layout. Updated after plan completion, not per task.',
     isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
   },
   {
-    slug: 'project-documentation',
-    title: 'Project Documentation',
-    description: 'Defines how to build and maintain living project documentation that auto-updates alongside development, serves as a knowledge base for humans and AI, and is accessible through a URL. Covers Diataxis structure, MDX authoring, CI-enforced quality.',
+    slug: 'flow-project-reference',
+    title: 'Flow: Project Reference',
+    description: 'Opinion companion for flow. Living project reference document that AI agents and humans use to prevent regression, context loss, and decision contradiction as projects grow.',
     isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
-  },
-  {
-    slug: 'project-reference',
-    title: 'Project Reference',
-    description: 'How to maintain a living project reference document that AI agents and humans use to prevent regression, context loss, and decision contradiction as projects grow.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
   },
   {
     slug: 'quality-assurance',
     title: 'Quality Assurance',
     description: 'Quality dimensions — trust, effectiveness, reliability, emotion, craft. Flowing top-down (from vision) and bottom-up (from implementation).',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
-  },
-  {
-    slug: 'research',
-    title: 'Research',
-    description: 'The discipline of investigating before acting. Teaches how to calibrate research depth to decision impact, evaluate sources critically, falsify hypotheses, debug scientifically, and synthesise findings into trade-off analyses.',
     isOfficial: true,
     version: '1.0.0',
     tags: { type: 'principle', domain: ['global'], layer: 'process' },
@@ -413,12 +456,13 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['product-development', 'design'], layer: 'frontend' },
   },
   {
-    slug: 'roadmap',
-    title: 'Roadmap',
-    description: 'Defines how to maintain a living roadmap that auto-updates as work progresses. Structured as Now / Next / Later / Parking Lot / Bugs / Completed. Works with any project type.',
+    slug: 'flow-roadmap',
+    title: 'Flow: Roadmap',
+    description: 'Opinion companion for flow. Defines how to maintain a living roadmap that auto-updates as work progresses. Structured as Now / Next / Later / Parking Lot / Bugs / Completed.',
     isOfficial: true,
     version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
   },
   {
     slug: 'security-review',
@@ -429,28 +473,21 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     tags: { type: 'principle', domain: ['engineering', 'operations'], layer: 'backend' },
   },
   {
-    slug: 'skill-creation',
-    title: 'Skill Creation',
-    description: 'How to write effective AI coding skills (SKILL.md files). A skill is a self-contained instruction set that steers AI code generation toward a specific outcome.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
-  },
-  {
     slug: 'skill-review',
     title: 'Skill Review',
-    description: 'Three-layer skill quality audit: structural (completeness, format), individual (clarity, verifiability), collection coherence.',
+    description: 'Audit and score skills against the Agent Skills open spec (9 dimensions, 27-point scale). Detects contradictions, staleness, gaps, and overlap across the library. Generates actionable improvement reports usable as prompts.',
     isOfficial: true,
-    version: '1.0.0',
+    version: '2.0.0',
     tags: { type: 'principle', domain: ['global'], layer: 'process' },
   },
   {
-    slug: 'strategic-context',
-    title: 'Strategic Context',
-    description: 'Knowledge persistence across sessions. Checkpointing at phase boundaries, storing ephemeral context in CLAUDE.md, maintaining decision history.',
+    slug: 'flow-strategic-context',
+    title: 'Flow: Strategic Context',
+    description: 'Opinion companion for flow. Knowledge persistence across AI sessions. Dispatch-count checkpointing, phase-boundary compaction, decision history.',
     isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global'], layer: 'process' },
+    version: '2.0.0',
+    tags: { type: 'principle', domain: ['global'], layer: 'workflow' },
+    companionTo: 'flow',
   },
   {
     slug: 'storage-vercel-blob',
@@ -484,14 +521,6 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     isOfficial: true,
     version: '1.0.0',
     tags: { type: 'principle', domain: ['product-development', 'design'], layer: 'frontend' },
-  },
-  {
-    slug: 'verification-loop',
-    title: 'Verification Loop',
-    description: 'Two modes of verification: quick check (build, type, lint) and full review (tests, diff, behavior). Verification phases, gating criteria, reporting.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'principle', domain: ['global', 'operations'], layer: 'process' },
   },
   {
     slug: 'web-performance',
@@ -529,62 +558,24 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
     companionTo: 'social-features',
   },
 
-  // ── Reference companions (5) ──────────────────────────────────────
-  {
-    slug: 'app-layout-patterns-reference',
-    title: 'App Layout Patterns Reference',
-    description: 'Layout pattern specifications for Patterns B, C, and D. Reference lookup for app-layout skill. Contains shell configurations, responsive breakpoint mappings, and grid declarations.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'reference', domain: ['product-development', 'design'], layer: 'frontend' },
-    companionTo: 'app-layout',
-  },
-  {
-    slug: 'brand-tokens-reference',
-    title: 'Brand Tokens Reference',
-    description: 'Token lookup tables and CSS variable mappings for all themes (Light, Night, Dark, Legacy). Reference data companion to brand-design-system.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'reference', domain: ['design'], layer: 'design' },
-    companionTo: 'brand-design-system',
-  },
-  {
-    slug: 'pptx-export-reference',
-    title: 'PPTX Export Reference',
-    description: 'Quality gate checklist and spacing constants for PPTX export. Reference companion — for rules see pptx-export.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'reference', domain: ['design'], layer: 'design' },
-    companionTo: 'pptx-export',
-  },
-  {
-    slug: 'creative-toolkit-charts-reference',
-    title: 'Creative Toolkit Charts Reference',
-    description: 'Nivo chart theme configuration and chart-specific styling patterns. Reference lookup for creative-toolkit.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'reference', domain: ['design'], layer: 'design' },
-    companionTo: 'creative-toolkit',
-  },
-  {
-    slug: 'social-features-reference',
-    title: 'Social Features Reference',
-    description: 'Schema templates, reaction emoji registry, notification type registry, and UI patterns for social features. Reference companion — for rules see social-features, comments-reactions, and activity-notifications.',
-    isOfficial: true,
-    version: '1.0.0',
-    tags: { type: 'reference', domain: ['product-development'], layer: 'fullstack' },
-    companionTo: 'social-features',
-  },
 ];
 
 function getProjectRoot(): string {
   return resolve(process.cwd());
 }
 
+/** Resolve skill file path — supports both Agent Skills spec directory format
+ *  (skills/<slug>/SKILL.md) and legacy flat format (skills/<slug>.md). */
+function resolveSkillPath(root: string, slug: string): string {
+  const dirPath = resolve(root, 'skills', slug, 'SKILL.md');
+  if (existsSync(dirPath)) return dirPath;
+  return resolve(root, 'skills', `${slug}.md`);
+}
+
 export function getAllSkills(): SkillData[] {
   const root = getProjectRoot();
   return SKILL_DEFINITIONS.map((skill) => {
-    const filePath = resolve(root, 'skills', `${skill.slug}.md`);
+    const filePath = resolveSkillPath(root, skill.slug);
     const content = existsSync(filePath) ? readFileSync(filePath, 'utf-8') : '';
     return { ...skill, content };
   });
@@ -600,7 +591,7 @@ export function getSkillBySlug(slug: string): SkillData | null {
   const definition = SKILL_DEFINITIONS.find((s) => s.slug === slug);
   if (!definition) return null;
 
-  const filePath = resolve(root, 'skills', `${slug}.md`);
+  const filePath = resolveSkillPath(root, slug);
   const content = existsSync(filePath) ? readFileSync(filePath, 'utf-8') : '';
   return { ...definition, content };
 }
@@ -610,7 +601,35 @@ export function getBehaviouralSkills(): SkillData[] {
   return getAllSkills().filter((s) => s.tags.type !== 'reference');
 }
 
-/** Returns reference companions for a given parent skill slug */
+/** Returns companion skills (opinion/implementation) for a given parent skill slug */
 export function getCompanionsFor(parentSlug: string): SkillData[] {
   return getAllSkills().filter((s) => s.companionTo === parentSlug);
+}
+
+/** Returns reference file contents from a skill's references/ directory */
+export function getReferencesFor(slug: string): Array<{ filename: string; content: string }> {
+  const root = getProjectRoot();
+  const refsDir = resolve(root, 'skills', slug, 'references');
+  if (!existsSync(refsDir)) return [];
+  const { readdirSync } = require('fs');
+  const files: string[] = readdirSync(refsDir);
+  return files
+    .filter((f: string) => f.endsWith('.md'))
+    .map((f: string) => ({
+      filename: f,
+      content: readFileSync(resolve(refsDir, f), 'utf-8'),
+    }));
+}
+
+/** Returns asset file buffers from a skill's assets/ directory (binary-safe) */
+export function getAssetsFor(slug: string): Array<{ filename: string; buffer: Buffer }> {
+  const root = getProjectRoot();
+  const assetsDir = resolve(root, 'skills', slug, 'assets');
+  if (!existsSync(assetsDir)) return [];
+  const { readdirSync } = require('fs');
+  const files: string[] = readdirSync(assetsDir);
+  return files.map((f: string) => ({
+    filename: f,
+    buffer: readFileSync(resolve(assetsDir, f)),
+  }));
 }

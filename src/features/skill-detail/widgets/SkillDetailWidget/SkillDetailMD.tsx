@@ -1,25 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { DownloadSimple, Lightning, FileText, Code, Table, ListBullets } from '@phosphor-icons/react';
 import { useLocale } from '@/platform/screen-renderer/LocaleContext';
 import { Stat } from '@/platform/components/Stat';
 import { ToggleButton } from '@/platform/components/ToggleButton';
-import { SkillShowcase } from '@/platform/components/SkillShowcase';
+import { SkillContentTabs } from './SkillContentTabs';
 import { SkillInPractice } from './SkillInPractice';
+import { trackSkillDownload, downloadSkillWithCompanions } from '@/features/social/action';
 import type { Skill } from '@/platform/domain/Skill';
 import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
+import type { SkillReference } from '@/features/skill-library/action';
 
 interface SkillDetailMDProps {
   skill: Skill;
   parsed: ParsedSkillContent;
+  references: SkillReference[];
 }
 
-export function SkillDetailMD({ skill, parsed }: SkillDetailMDProps) {
+export function SkillDetailMD({ skill, parsed, references }: SkillDetailMDProps) {
   const { t } = useLocale();
   const [view, setView] = useState<'practice' | 'markdown'>('practice');
+  const isWorkflow = skill.tags.layer === 'workflow';
 
-  const downloadUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(skill.content)}`;
+  const handleDownload = useCallback(async () => {
+    trackSkillDownload(skill.slug, 'detail_download');
+    const result = await downloadSkillWithCompanions(skill.slug);
+    if (!result.ok) return;
+
+    const { zipBase64, fileName } = result.value;
+    const bytes = Uint8Array.from(atob(zipBase64), c => c.charCodeAt(0));
+    const blob = new Blob([bytes], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [skill.slug]);
 
   return (
     <div style={{ maxWidth: 'max(720px, 70vw)', padding: 16 }}>
@@ -74,24 +94,27 @@ export function SkillDetailMD({ skill, parsed }: SkillDetailMDProps) {
 
         {/* Actions row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a
-            href={downloadUrl}
-            download={skill.downloadFilename}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 16px',
-              borderRadius: 6,
-              background: 'var(--color-primary)',
-              color: '#FFFFFF',
-              textDecoration: 'none',
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
-          </a>
+          {!isWorkflow && (
+            <button
+              onClick={handleDownload}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                borderRadius: 6,
+                background: 'var(--color-primary)',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'inherit',
+              }}
+            >
+              <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
+            </button>
+          )}
 
           {/* View toggle */}
           <div
@@ -132,7 +155,7 @@ export function SkillDetailMD({ skill, parsed }: SkillDetailMDProps) {
               background: 'var(--color-surface)',
             }}
           >
-            <SkillShowcase content={skill.content} />
+            <SkillContentTabs skillContent={skill.content} references={references} />
           </div>
         </div>
       </div>

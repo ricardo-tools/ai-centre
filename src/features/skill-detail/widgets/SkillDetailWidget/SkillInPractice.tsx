@@ -24,7 +24,6 @@ import BackendPatternsShowcaseWidget from '@/features/skill-detail/widgets/Backe
 import TestingStrategyShowcaseWidget from '@/features/skill-detail/widgets/TestingStrategyShowcaseWidget/TestingStrategyShowcaseWidget';
 import PlaywrightE2eShowcaseWidget from '@/features/skill-detail/widgets/PlaywrightE2eShowcaseWidget/PlaywrightE2eShowcaseWidget';
 import QualityAssuranceShowcaseWidget from '@/features/skill-detail/widgets/QualityAssuranceShowcaseWidget/QualityAssuranceShowcaseWidget';
-import VerificationLoopShowcaseWidget from '@/features/skill-detail/widgets/VerificationLoopShowcaseWidget/VerificationLoopShowcaseWidget';
 
 // ── Batch 3: Design & UX ────────────────────────────────────────────
 import InteractionMotionShowcaseWidget from '@/features/skill-detail/widgets/InteractionMotionShowcaseWidget/InteractionMotionShowcaseWidget';
@@ -40,10 +39,8 @@ import AiMediaGenerationShowcaseWidget from '@/features/skill-detail/widgets/AiM
 import ObservabilityShowcaseWidget from '@/features/skill-detail/widgets/ObservabilityShowcaseWidget/ObservabilityShowcaseWidget';
 
 // ── Batch 5: Meta & Process ──────────────────────────────────────────
-import SkillCreationShowcaseWidget from '@/features/skill-detail/widgets/SkillCreationShowcaseWidget/SkillCreationShowcaseWidget';
 import SkillReviewShowcaseWidget from '@/features/skill-detail/widgets/SkillReviewShowcaseWidget/SkillReviewShowcaseWidget';
 import StrategicContextShowcaseWidget from '@/features/skill-detail/widgets/StrategicContextShowcaseWidget/StrategicContextShowcaseWidget';
-import DocumentationResearchShowcaseWidget from '@/features/skill-detail/widgets/DocumentationResearchShowcaseWidget/DocumentationResearchShowcaseWidget';
 import SecurityReviewShowcaseWidget from '@/features/skill-detail/widgets/SecurityReviewShowcaseWidget/SecurityReviewShowcaseWidget';
 
 // ── Batch 6: Specialized ─────────────────────────────────────────────
@@ -51,10 +48,45 @@ import McpServerPatternsShowcaseWidget from '@/features/skill-detail/widgets/Mcp
 import PresentationHtmlImplementationShowcaseWidget from '@/features/skill-detail/widgets/PresentationHtmlImplementationShowcaseWidget/PresentationHtmlImplementationShowcaseWidget';
 import WebPerformanceShowcaseWidget from '@/features/skill-detail/widgets/WebPerformanceShowcaseWidget/WebPerformanceShowcaseWidget';
 
-// ── Batch 7: Reference Companions ────────────────────────────────────
-import AppLayoutPatternsReferenceShowcaseWidget from '@/features/skill-detail/widgets/AppLayoutPatternsReferenceShowcaseWidget/AppLayoutPatternsReferenceShowcaseWidget';
-import BrandTokensReferenceShowcaseWidget from '@/features/skill-detail/widgets/BrandTokensReferenceShowcaseWidget/BrandTokensReferenceShowcaseWidget';
-import CreativeToolkitChartsReferenceShowcaseWidget from '@/features/skill-detail/widgets/CreativeToolkitChartsReferenceShowcaseWidget/CreativeToolkitChartsReferenceShowcaseWidget';
+// ── Batch 7: Auth & Authz ───────────────────────────────────────────
+import AuthenticationShowcaseWidget from '@/features/skill-detail/widgets/AuthenticationShowcaseWidget/AuthenticationShowcaseWidget';
+import AuthClerkShowcaseWidget from '@/features/skill-detail/widgets/AuthClerkShowcaseWidget/AuthClerkShowcaseWidget';
+import AuthCustomOtpShowcaseWidget from '@/features/skill-detail/widgets/AuthCustomOtpShowcaseWidget/AuthCustomOtpShowcaseWidget';
+import AuthorizationShowcaseWidget from '@/features/skill-detail/widgets/AuthorizationShowcaseWidget/AuthorizationShowcaseWidget';
+import AuthzRbacDrizzleShowcaseWidget from '@/features/skill-detail/widgets/AuthzRbacDrizzleShowcaseWidget/AuthzRbacDrizzleShowcaseWidget';
+
+// ── Batch 8: Database & Storage ─────────────────────────────────────
+import DatabaseDesignShowcaseWidget from '@/features/skill-detail/widgets/DatabaseDesignShowcaseWidget/DatabaseDesignShowcaseWidget';
+import DbNeonDrizzleShowcaseWidget from '@/features/skill-detail/widgets/DbNeonDrizzleShowcaseWidget/DbNeonDrizzleShowcaseWidget';
+import DbRedisShowcaseWidget from '@/features/skill-detail/widgets/DbRedisShowcaseWidget/DbRedisShowcaseWidget';
+import DbSupabaseShowcaseWidget from '@/features/skill-detail/widgets/DbSupabaseShowcaseWidget/DbSupabaseShowcaseWidget';
+import FileStorageShowcaseWidget from '@/features/skill-detail/widgets/FileStorageShowcaseWidget/FileStorageShowcaseWidget';
+import StorageVercelBlobShowcaseWidget from '@/features/skill-detail/widgets/StorageVercelBlobShowcaseWidget/StorageVercelBlobShowcaseWidget';
+
+// ── Batch 9: Email, Social & User ───────────────────────────────────
+import EmailSendingShowcaseWidget from '@/features/skill-detail/widgets/EmailSendingShowcaseWidget/EmailSendingShowcaseWidget';
+import EmailMailgunShowcaseWidget from '@/features/skill-detail/widgets/EmailMailgunShowcaseWidget/EmailMailgunShowcaseWidget';
+import SocialFeaturesShowcaseWidget from '@/features/skill-detail/widgets/SocialFeaturesShowcaseWidget/SocialFeaturesShowcaseWidget';
+import CommentsReactionsShowcaseWidget from '@/features/skill-detail/widgets/CommentsReactionsShowcaseWidget/CommentsReactionsShowcaseWidget';
+import ActivityNotificationsShowcaseWidget from '@/features/skill-detail/widgets/ActivityNotificationsShowcaseWidget/ActivityNotificationsShowcaseWidget';
+import UserManagementShowcaseWidget from '@/features/skill-detail/widgets/UserManagementShowcaseWidget/UserManagementShowcaseWidget';
+
+// ── Batch 10: AI & Misc ─────────────────────────────────────────────
+import AiCapabilitiesShowcaseWidget from '@/features/skill-detail/widgets/AiCapabilitiesShowcaseWidget/AiCapabilitiesShowcaseWidget';
+import AiOpenrouterShowcaseWidget from '@/features/skill-detail/widgets/AiOpenrouterShowcaseWidget/AiOpenrouterShowcaseWidget';
+import LocalDevelopmentShowcaseWidget from '@/features/skill-detail/widgets/LocalDevelopmentShowcaseWidget/LocalDevelopmentShowcaseWidget';
+import RoadmapShowcaseWidget from '@/features/skill-detail/widgets/RoadmapShowcaseWidget/RoadmapShowcaseWidget';
+import FlowShowcaseWidget from '@/features/skill-detail/widgets/FlowShowcaseWidget/FlowShowcaseWidget';
+
+// ── Batch 11: Flow Family ───────────────────────────────────────────
+import FlowTddShowcaseWidget from '@/features/skill-detail/widgets/FlowTddShowcaseWidget/FlowTddShowcaseWidget';
+import FlowObservabilityShowcaseWidget from '@/features/skill-detail/widgets/FlowObservabilityShowcaseWidget/FlowObservabilityShowcaseWidget';
+import FlowPlanningShowcaseWidget from '@/features/skill-detail/widgets/FlowPlanningShowcaseWidget/FlowPlanningShowcaseWidget';
+import FlowPlanLogShowcaseWidget from '@/features/skill-detail/widgets/FlowPlanLogShowcaseWidget/FlowPlanLogShowcaseWidget';
+import FlowResearchShowcaseWidget from '@/features/skill-detail/widgets/FlowResearchShowcaseWidget/FlowResearchShowcaseWidget';
+import FlowProjectDocsShowcaseWidget from '@/features/skill-detail/widgets/FlowProjectDocsShowcaseWidget/FlowProjectDocsShowcaseWidget';
+import FlowProjectReferenceShowcaseWidget from '@/features/skill-detail/widgets/FlowProjectReferenceShowcaseWidget/FlowProjectReferenceShowcaseWidget';
+import FlowPrototypeShowcaseWidget from '@/features/skill-detail/widgets/FlowPrototypeShowcaseWidget/FlowPrototypeShowcaseWidget';
 
 const showcaseMap: Record<string, React.ComponentType<{ size: SizeVariant }>> = {
   // Original 8
@@ -75,7 +107,6 @@ const showcaseMap: Record<string, React.ComponentType<{ size: SizeVariant }>> = 
   'testing-strategy': TestingStrategyShowcaseWidget,
   'playwright-e2e': PlaywrightE2eShowcaseWidget,
   'quality-assurance': QualityAssuranceShowcaseWidget,
-  'verification-loop': VerificationLoopShowcaseWidget,
   // Batch 3
   'interaction-motion': InteractionMotionShowcaseWidget,
   'responsiveness': ResponsivenessShowcaseWidget,
@@ -83,24 +114,53 @@ const showcaseMap: Record<string, React.ComponentType<{ size: SizeVariant }>> = 
   'content-design': ContentDesignShowcaseWidget,
   'accessibility': AccessibilityShowcaseWidget,
   // Batch 4
-  'claude-api': ClaudeApiShowcaseWidget,
-  'eval-driven-development': EvalDrivenDevelopmentShowcaseWidget,
-  'ai-media-generation': AiMediaGenerationShowcaseWidget,
+  'ai-claude': ClaudeApiShowcaseWidget,
+  'flow-eval-driven': EvalDrivenDevelopmentShowcaseWidget,
+  'ai-fal-media': AiMediaGenerationShowcaseWidget,
   'observability': ObservabilityShowcaseWidget,
   // Batch 5
-  'skill-creation': SkillCreationShowcaseWidget,
   'skill-review': SkillReviewShowcaseWidget,
-  'strategic-context': StrategicContextShowcaseWidget,
-  'documentation-research': DocumentationResearchShowcaseWidget,
+  'flow-strategic-context': StrategicContextShowcaseWidget,
   'security-review': SecurityReviewShowcaseWidget,
   // Batch 6
   'mcp-server-patterns': McpServerPatternsShowcaseWidget,
-  'presentation-html-implementation': PresentationHtmlImplementationShowcaseWidget,
+  'presentation-html': PresentationHtmlImplementationShowcaseWidget,
   'web-performance': WebPerformanceShowcaseWidget,
-  // Batch 7
-  'app-layout-patterns-reference': AppLayoutPatternsReferenceShowcaseWidget,
-  'brand-tokens-reference': BrandTokensReferenceShowcaseWidget,
-  'creative-toolkit-charts-reference': CreativeToolkitChartsReferenceShowcaseWidget,
+  // Batch 7: Auth & Authz
+  'authentication': AuthenticationShowcaseWidget,
+  'auth-clerk': AuthClerkShowcaseWidget,
+  'auth-custom-otp': AuthCustomOtpShowcaseWidget,
+  'authorization': AuthorizationShowcaseWidget,
+  'authz-rbac-drizzle': AuthzRbacDrizzleShowcaseWidget,
+  // Batch 8: Database & Storage
+  'database-design': DatabaseDesignShowcaseWidget,
+  'db-neon-drizzle': DbNeonDrizzleShowcaseWidget,
+  'db-redis-upstash': DbRedisShowcaseWidget,
+  'db-supabase': DbSupabaseShowcaseWidget,
+  'file-storage': FileStorageShowcaseWidget,
+  'storage-vercel-blob': StorageVercelBlobShowcaseWidget,
+  // Batch 9: Email, Social & User
+  'email-sending': EmailSendingShowcaseWidget,
+  'email-mailgun': EmailMailgunShowcaseWidget,
+  'social-features': SocialFeaturesShowcaseWidget,
+  'comments-reactions': CommentsReactionsShowcaseWidget,
+  'activity-notifications': ActivityNotificationsShowcaseWidget,
+  'user-management': UserManagementShowcaseWidget,
+  // Batch 10: AI & Misc
+  'ai-capabilities': AiCapabilitiesShowcaseWidget,
+  'ai-openrouter': AiOpenrouterShowcaseWidget,
+  'local-development': LocalDevelopmentShowcaseWidget,
+  'flow-roadmap': RoadmapShowcaseWidget,
+  'flow': FlowShowcaseWidget,
+  // Batch 11: Flow Family
+  'flow-tdd': FlowTddShowcaseWidget,
+  'flow-observability': FlowObservabilityShowcaseWidget,
+  'flow-planning': FlowPlanningShowcaseWidget,
+  'flow-plan-log': FlowPlanLogShowcaseWidget,
+  'flow-research': FlowResearchShowcaseWidget,
+  'flow-project-docs': FlowProjectDocsShowcaseWidget,
+  'flow-project-reference': FlowProjectReferenceShowcaseWidget,
+  'flow-prototype': FlowPrototypeShowcaseWidget,
 };
 
 interface SkillInPracticeProps {

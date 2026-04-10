@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { House, Books, Toolbox, Rocket, Images, ChatCircle, GearSix } from '@phosphor-icons/react';
+import { House, Books, Toolbox, Rocket, Images, GearSix } from '@phosphor-icons/react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { useSession } from '@/platform/lib/SessionContext';
 import { signOut } from '@/features/auth/action';
@@ -31,7 +31,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/toolkits', label: 'Toolkits', icon: Toolbox },
   { href: '/generate', label: 'Generate', icon: Rocket },
   { href: '/gallery', label: 'Gallery', icon: Images },
-  { href: '/chat', label: 'Chat', icon: ChatCircle },
 ];
 
 export function useTopNav({ mock }: UseTopNavOptions = {}): UseTopNavResult {
@@ -42,9 +41,9 @@ export function useTopNav({ mock }: UseTopNavOptions = {}): UseTopNavResult {
     signOut();
   }, []);
 
-  const items = session?.roleSlug === 'admin'
-    ? [...NAV_ITEMS, { href: '/admin', label: 'Admin', icon: GearSix }]
-    : NAV_ITEMS;
+  const base = [...NAV_ITEMS];
+  if (session?.roleSlug === 'admin') base.push({ href: '/admin', label: 'Admin', icon: GearSix });
+  const items = base;
 
   return {
     items,

@@ -66,9 +66,32 @@ function seedRoles(i: number) {
     INSERT INTO roles (id, slug, name, description, is_system)
     VALUES
       (gen_random_uuid(), 'admin', 'Admin', 'Full access', true),
-      (gen_random_uuid(), 'member', 'Member', 'Standard access', true)
+      (gen_random_uuid(), 'member', 'Member', 'Standard access', true),
+      (gen_random_uuid(), 'developer', 'Developer', 'API documentation and testing access', true)
     ON CONFLICT (slug) DO NOTHING;
   `);
+
+  // Seed role_permissions — admin gets ALL, developer gets api:*
+  const adminPerms = [
+    'skill:create','skill:edit','skill:delete','skill:publish',
+    'archetype:create','archetype:edit','archetype:delete','archetype:publish',
+    'showcase:upload','showcase:delete','project:generate',
+    'user:list','user:edit-role','user:deactivate','user:invite',
+    'role:create','role:edit','role:delete','audit:view',
+    'api:view','api:create','api:edit','api:delete','api:test',
+  ];
+  const devPerms = ['api:view','api:create','api:edit','api:delete','api:test','skill:create','skill:edit','showcase:upload','project:generate'];
+  const memberPerms = ['skill:create','skill:edit','archetype:create','archetype:edit','showcase:upload','showcase:delete','project:generate'];
+
+  for (const perm of adminPerms) {
+    try { psql(workerDbUrl(i), `INSERT INTO role_permissions (id, role_id, permission) VALUES (gen_random_uuid(), (SELECT id FROM roles WHERE slug = 'admin'), '${perm}') ON CONFLICT DO NOTHING;`); } catch { /* exists */ }
+  }
+  for (const perm of devPerms) {
+    try { psql(workerDbUrl(i), `INSERT INTO role_permissions (id, role_id, permission) VALUES (gen_random_uuid(), (SELECT id FROM roles WHERE slug = 'developer'), '${perm}') ON CONFLICT DO NOTHING;`); } catch { /* exists */ }
+  }
+  for (const perm of memberPerms) {
+    try { psql(workerDbUrl(i), `INSERT INTO role_permissions (id, role_id, permission) VALUES (gen_random_uuid(), (SELECT id FROM roles WHERE slug = 'member'), '${perm}') ON CONFLICT DO NOTHING;`); } catch { /* exists */ }
+  }
 }
 
 function seedUsers(i: number) {

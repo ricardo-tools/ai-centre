@@ -95,6 +95,12 @@ export const SYSTEM_ROLE_SEEDS = {
     'showcase:delete',
     'project:generate',
   ] as Permission[],
+  developer: [
+    'skill:create',
+    'skill:edit',
+    'showcase:upload',
+    'project:generate',
+  ] as Permission[],
 };
 
 /** Check if a session can access a resource (owner or admin role) */

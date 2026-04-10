@@ -59,11 +59,13 @@ export async function requirePermission(permission: Permission): Promise<Result<
 
   const session = authResult.value;
 
-  // Dev mode (no DATABASE_URL): admin gets all permissions
+  // Admin role always has all permissions (system role — source of truth is code, not DB)
+  if (session.roleSlug === 'admin') {
+    return Ok(session);
+  }
+
+  // Dev mode (no DATABASE_URL): only admin bypasses above
   if (!process.env.DATABASE_URL) {
-    if (session.roleSlug === 'admin') {
-      return Ok(session);
-    }
     return Err(new ForbiddenError(permission));
   }
 

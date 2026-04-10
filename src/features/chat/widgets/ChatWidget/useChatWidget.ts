@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { ChatMessage, ChatMessageData, TokenUsage } from '../../domain/ChatMessage';
+import { ChatMessage } from '../../domain/ChatMessage';
+import type { ChatMessageData, TokenUsage } from '../../domain/ChatMessage';
 import { getMessages as fetchMessages } from '../../action';
 
 interface StreamEvent {
@@ -35,7 +36,7 @@ interface ChatWidgetState {
 }
 
 export function useChatWidget(opts?: UseChatWidgetOptions) {
-  const [state, setState] = useState<ChatWidgetState>({
+  const [state, setState] = useState<ChatWidgetState>(() => ({
     messages: [],
     isLoading: false,
     isStreaming: false,
@@ -46,10 +47,11 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
     conversationId: opts?.conversationId ?? null,
     error: null,
     downloadData: null,
-  });
+  }));
   const abortRef = useRef<AbortController | null>(null);
   const loadedConvRef = useRef<string | null>(null);
   const loadVersionRef = useRef(0);
+  const greetingSentRef = useRef(false);
 
   // Load messages when conversationId changes
   useEffect(() => {
@@ -85,12 +87,15 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
   useEffect(() => {
     if (opts?.conversationId === null || opts?.conversationId === undefined) {
       loadedConvRef.current = null;
+      greetingSentRef.current = false;
       setState((s) => ({ ...s, conversationId: null, messages: [], error: null }));
     }
   }, [opts?.conversationId]);
 
-  const sendMessage = useCallback(async (content: string) => {
+  const sendMessage = useCallback(async (content: string, options?: { hidden?: boolean }) => {
     if (!content.trim() || state.isStreaming) return;
+
+    const hidden = options?.hidden ?? false;
 
     const userMessage: ChatMessage = {
       id: `temp-${Date.now()}`,
@@ -110,7 +115,7 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
 
     setState((s) => ({
       ...s,
-      messages: [...s.messages, userMessage],
+      messages: hidden ? s.messages : [...s.messages, userMessage],
       isStreaming: true,
       streamingContent: '',
       reasoningContent: '',
@@ -134,6 +139,7 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
         body: JSON.stringify({
           conversationId: state.conversationId,
           message: content.trim(),
+          ...(hidden && { greeting: true }),
         }),
         signal: controller.signal,
       });
@@ -286,6 +292,19 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
   const setMessages = useCallback((messages: ChatMessage[]) => {
     setState((s) => ({ ...s, messages }));
   }, []);
+
+  // Auto-send greeting on mount for new conversations
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+  useEffect(() => {
+    if (opts?.conversationId || greetingSentRef.current) return;
+    greetingSentRef.current = true;
+    // Small delay to ensure state is settled after mount
+    const timer = setTimeout(() => {
+      sendMessageRef.current('hi', { hidden: true });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [opts?.conversationId]);
 
   return {
     ...state,

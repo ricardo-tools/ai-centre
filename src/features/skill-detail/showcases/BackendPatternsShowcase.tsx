@@ -52,7 +52,7 @@ function FlowBox({ label, desc, color, width }: { label: string; desc: string; c
 
 export function BackendPatternsShowcase() {
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div>
       {/* Companion Skills Callout */}
       <div style={{
         padding: 16,

@@ -32,7 +32,9 @@ export interface UseCompositionWizardResult {
   resolvedSkills: string[];
   skillCount: number;
 
-  // Description
+  // Project details
+  projectName: string;
+  setProjectName: (n: string) => void;
   description: string;
   setDescription: (d: string) => void;
 
@@ -45,6 +47,7 @@ export function useCompositionWizard(): UseCompositionWizardResult {
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [implementationChoices, setImplementationChoices] = useState<Record<string, string | null>>({});
+  const [projectName, setProjectName] = useState('');
   const [description, setDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -155,6 +158,7 @@ export function useCompositionWizard(): UseCompositionWizardResult {
         domainSlug: selectedDomain,
         resolvedSkills,
         description,
+        projectName: projectName.trim() || undefined,
       });
 
       if (!result.ok) {
@@ -178,7 +182,7 @@ export function useCompositionWizard(): UseCompositionWizardResult {
     } finally {
       setIsGenerating(false);
     }
-  }, [selectedDomain, resolvedSkills, description]);
+  }, [selectedDomain, resolvedSkills, description, projectName]);
 
   return {
     domains: DOMAINS,
@@ -192,6 +196,8 @@ export function useCompositionWizard(): UseCompositionWizardResult {
     foundationSkills: FOUNDATION_SKILLS,
     resolvedSkills,
     skillCount: resolvedSkills.length,
+    projectName,
+    setProjectName,
     description,
     setDescription,
     isGenerating,

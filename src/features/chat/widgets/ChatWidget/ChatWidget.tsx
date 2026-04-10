@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import Link from 'next/link';
 import { codeToHtml } from 'shiki';
 import { useChatWidget } from './useChatWidget';
+import { parseChips } from './parseChips';
 import type { ChatMessage } from '../../domain/ChatMessage';
 
 /** Syntax-highlighted code block using Shiki (async, progressive enhancement). */
@@ -98,6 +99,12 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
     textareaRef.current?.focus();
   };
 
+  const handleChipClick = (chip: string) => {
+    if (chat.isStreaming) return;
+    chat.sendMessage(chip);
+    textareaRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -125,37 +132,7 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
             <span style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>Loading conversation...</span>
           </div>
         )}
-        {chat.messages.length === 0 && !chat.isStreaming && !chat.isLoading && (
-          <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--color-text-muted)' }}>
-            <Robot size={48} weight="light" style={{ marginBottom: 16, opacity: 0.5 }} />
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)', margin: '0 0 8px' }}>
-              AI Centre Assistant
-            </h3>
-            <p style={{ fontSize: 14, margin: '0 0 24px', lineHeight: 1.5 }}>
-              Ask me about skills, get recommendations, or generate projects.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 300, margin: '0 auto' }}>
-              {[
-                'What skills do I need for a dashboard?',
-                'Tell me about the accessibility skill',
-                'Generate a presentation project',
-              ].map((prompt) => (
-                <button
-                  key={prompt}
-                  onClick={() => { chat.sendMessage(prompt); }}
-                  style={{
-                    padding: '8px 16px', borderRadius: 8, fontSize: 13,
-                    border: '1px solid var(--color-border)', background: 'var(--color-surface)',
-                    color: 'var(--color-text-body)', cursor: 'pointer', fontFamily: 'inherit',
-                    textAlign: 'left',
-                  }}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Empty state removed — the greeting message from useChatWidget handles new conversations */}
 
         {(() => {
           const filtered = chat.messages.filter((msg) => {
@@ -164,19 +141,63 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
             if (msg.role === 'assistant' && msg.hasToolCalls) return false;
             return true;
           });
-          // Find the last assistant message to attach download data
+          // Find the last assistant message to attach download data + chips
           const lastAssistantIdx = filtered.reduce((acc, msg, i) => msg.role === 'assistant' ? i : acc, -1);
-          return filtered.map((msg, i) => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              downloadData={i === lastAssistantIdx ? chat.downloadData : undefined}
-            />
-          ));
+          return filtered.map((msg, i) => {
+            const isLastAssistant = i === lastAssistantIdx;
+            return (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                downloadData={isLastAssistant ? chat.downloadData : undefined}
+                onChipClick={isLastAssistant && !chat.isStreaming ? handleChipClick : undefined}
+              />
+            );
+          });
         })()}
 
         {/* Streaming / thinking indicator */}
-        {chat.isStreaming && (
+        {chat.isStreaming && (() => {
+          // Strip any incomplete HTML comment from the end of streaming content.
+          // This prevents raw <!-- fact: ... or <!-- chips: ... from flashing to the user
+          // while the closing --> hasn't arrived yet.
+          const raw = chat.streamingContent;
+          const lastOpenComment = raw.lastIndexOf('<!--');
+          const hasUnclosedComment = lastOpenComment !== -1 && raw.indexOf('-->', lastOpenComment) === -1;
+          const safeContent = hasUnclosedComment ? raw.slice(0, lastOpenComment) : raw;
+
+          const streamParsed = safeContent ? parseChips(safeContent) : null;
+          const hasFact = streamParsed?.fact != null;
+          const isWaitingForFact = hasUnclosedComment && !hasFact;
+          const displayContent = streamParsed?.content ?? '';
+
+          return (
+          <>
+          {/* Completed fact card */}
+          {hasFact && (
+            <div
+              data-testid="chat-fun-fact"
+              style={{
+                padding: '16px 20px',
+                marginBottom: 8,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, var(--color-primary-muted), var(--color-surface-raised, var(--color-surface)))',
+                border: '1px solid var(--color-border)',
+                fontSize: 14,
+                color: 'var(--color-text-body)',
+                lineHeight: 1.6,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <Robot size={16} weight="fill" style={{ color: 'var(--color-primary)' }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Today in history
+                </span>
+              </div>
+              {streamParsed!.fact}
+            </div>
+          )}
+
           <div data-testid="chat-thinking" style={{ display: 'flex', gap: 12, padding: '12px 0' }}>
             <div className={chat.isReasoning || (!chat.streamingContent && !chat.activeToolCall) ? 'chat-thinking-icon' : undefined} style={{ flexShrink: 0, marginTop: 2 }}>
               <Robot size={20} style={{ color: 'var(--color-primary)' }} />
@@ -199,10 +220,21 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
                 </div>
               )}
 
-              {/* Streaming response text — pre-wrap for readability during streaming */}
-              {chat.streamingContent ? (
-                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  {chat.streamingContent}
+              {/* Streaming response — markdown rendered progressively, raw markers hidden */}
+              {displayContent ? (
+                <div className="chat-markdown">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>
+                    {displayContent}
+                  </ReactMarkdown>
+                </div>
+              ) : isWaitingForFact ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Thinking of something interesting...</span>
+                  <span style={{ display: 'flex', gap: 3 }}>
+                    <span className="typing-dot" />
+                    <span className="typing-dot" style={{ animationDelay: '0.2s' }} />
+                    <span className="typing-dot" style={{ animationDelay: '0.4s' }} />
+                  </span>
                 </div>
               ) : !chat.activeToolCall && !chat.reasoningContent ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -218,7 +250,9 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
               ) : null}
             </div>
           </div>
-        )}
+          </>
+          );
+        })()}
 
         {/* Error */}
         {chat.error && (
@@ -281,9 +315,17 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
   );
 }
 
-function MessageBubble({ message, downloadData }: { message: ChatMessage; downloadData?: { base64: string; filename: string } | null }) {
+function MessageBubble({ message, downloadData, chips, onChipClick }: {
+  message: ChatMessage;
+  downloadData?: { base64: string; filename: string } | null;
+  chips?: string[];
+  onChipClick?: (chip: string) => void;
+}) {
   const isUser = message.role === 'user';
   const [copied, setCopied] = useState(false);
+
+  const parsed = !isUser ? parseChips(message.content) : null;
+  const displayContent = parsed ? parsed.content : message.content;
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
@@ -305,7 +347,36 @@ function MessageBubble({ message, downloadData }: { message: ChatMessage; downlo
     URL.revokeObjectURL(url);
   };
 
+  // Show chips only when this is the last assistant message (chips prop is passed)
+  const displayChips = chips && chips.length > 0 ? chips : (parsed?.chips ?? []);
+  const showChips = !isUser && displayChips.length > 0 && !!onChipClick;
+
   return (
+    <>
+    {/* Fun fact card — only when this message has a fact */}
+    {parsed?.fact && (
+      <div
+        data-testid="chat-fun-fact"
+        style={{
+          padding: '16px 20px',
+          marginBottom: 8,
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, var(--color-primary-muted), var(--color-surface-raised, var(--color-surface)))',
+          border: '1px solid var(--color-border)',
+          fontSize: 14,
+          color: 'var(--color-text-body)',
+          lineHeight: 1.6,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <Robot size={16} weight="fill" style={{ color: 'var(--color-primary)' }} />
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Today in history
+          </span>
+        </div>
+        {parsed.fact}
+      </div>
+    )}
     <div
       style={{
         display: 'flex',
@@ -338,10 +409,24 @@ function MessageBubble({ message, downloadData }: { message: ChatMessage; downlo
             } : {}),
           }}
         >
-          {isUser ? message.content : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>{message.content}</ReactMarkdown>
+          {isUser ? displayContent : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={chatMarkdownComponents}>{displayContent}</ReactMarkdown>
           )}
         </div>
+        {/* Chip suggestions — only on last assistant message */}
+        {showChips && (
+          <div
+            data-testid="chat-chips"
+            style={{
+              display: 'flex', flexWrap: 'wrap', gap: 8,
+              marginTop: 10,
+            }}
+          >
+            {displayChips.map((chip) => (
+              <ChipButton key={chip} label={chip} onClick={() => onChipClick(chip)} />
+            ))}
+          </div>
+        )}
         {/* Action bar — assistant messages only */}
         {!isUser && (
           <div
@@ -371,6 +456,7 @@ function MessageBubble({ message, downloadData }: { message: ChatMessage; downlo
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -395,6 +481,31 @@ function ActionButton({ testId, onClick, icon, label, active }: {
     >
       {icon}
       <span>{label}</span>
+    </button>
+  );
+}
+
+function ChipButton({ label, onClick }: { label: string; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      data-testid="chat-chip"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        padding: '6px 14px',
+        borderRadius: 16,
+        border: `1px solid ${hovered ? 'var(--color-primary)' : 'var(--color-border)'}`,
+        background: hovered ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+        color: 'var(--color-text-body)',
+        fontSize: 13,
+        fontFamily: 'inherit',
+        cursor: 'pointer',
+        transition: 'background 150ms, border-color 150ms',
+      }}
+    >
+      {label}
     </button>
   );
 }

@@ -2,7 +2,7 @@
 
 > **Before responding to any request:** check [`PROJECT_REFERENCE.md`](PROJECT_REFERENCE.md) — it contains the feature map, data flows, implementation status, and constraints. Use it to understand what exists before making changes. **After completing any change**, update `PROJECT_REFERENCE.md` to reflect the new state. Always execute, no exceptions.
 
-> **On any request:** apply the **prompt-refinement** skill (`skills/prompt-refinement.md`). Present a refined prompt with intent, scope, constraints, and relevant skills. **Wait for user confirmation before starting work.** Always execute, no exceptions.
+> **On any request:** apply the **flow** skill (`skills/flow.md`). Active opinions: `flow-tdd`, `flow-eval-driven`, `flow-research`, `flow-observability`, `flow-project-reference`, `flow-project-docs`, `flow-strategic-context`. Always execute, no exceptions.
 
 > **This file must stay under 200 lines.** If an addition would push it over, ask the user what to remove or move to `PROJECT_REFERENCE.md` before proceeding. Never silently exceed 200 lines.
 

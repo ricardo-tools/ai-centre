@@ -18,6 +18,8 @@ export function CompositionWizardXS({ wizard }: CompositionWizardXSProps) {
     toggleAddon,
     resolvedSkills,
     skillCount,
+    projectName,
+    setProjectName,
     description,
     setDescription,
     isGenerating,
@@ -148,7 +150,7 @@ export function CompositionWizardXS({ wizard }: CompositionWizardXSProps) {
         </div>
       )}
 
-      {/* Description */}
+      {/* Project details */}
       <div style={{ marginBottom: 16 }}>
         <h2
           style={{
@@ -159,8 +161,27 @@ export function CompositionWizardXS({ wizard }: CompositionWizardXSProps) {
             marginTop: 0,
           }}
         >
-          Describe your project
+          Project details
         </h2>
+        <input
+          type="text"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+          style={{
+            width: '100%',
+            padding: 10,
+            borderRadius: 6,
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-body)',
+            fontFamily: 'inherit',
+            fontSize: 12,
+            lineHeight: 1.4,
+            boxSizing: 'border-box' as const,
+            marginBottom: 8,
+          }}
+        />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}

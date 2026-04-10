@@ -7,14 +7,15 @@ import { useLocale } from '@/platform/screen-renderer/LocaleContext';
 import { useSession } from '@/platform/lib/SessionContext';
 import { Stat } from '@/platform/components/Stat';
 import { ToggleButton } from '@/platform/components/ToggleButton';
-import { SkillShowcase } from '@/platform/components/SkillShowcase';
 import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { SkillInPractice } from './SkillInPractice';
 import { CommentThread } from '@/platform/components/CommentThread';
+import { SkillContentTabs } from './SkillContentTabs';
 import { isBookmarked as checkBookmarked, toggleBookmark } from '@/features/social/bookmarks-action';
 import { trackSkillDownload, getSkillDownloadCount, getRelatedSkills, downloadSkillWithCompanions } from '@/features/social/action';
 import type { Skill } from '@/platform/domain/Skill';
 import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
+import type { SkillReference } from '@/features/skill-library/action';
 
 /** Race a promise against a timeout — returns fallback if the promise takes too long. */
 function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T> {
@@ -29,11 +30,13 @@ function withTimeout<T>(promise: Promise<T>, fallback: T, ms = 5000): Promise<T>
 interface SkillDetailLGProps {
   skill: Skill;
   parsed: ParsedSkillContent;
+  references: SkillReference[];
 }
 
-export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
+export function SkillDetailLG({ skill, parsed, references }: SkillDetailLGProps) {
   const { t } = useLocale();
   const session = useSession();
+  const isWorkflow = skill.tags.layer === 'workflow';
   const [view, setView] = useState<'practice' | 'markdown'>('practice');
   const [bookmarked, setBookmarked] = useState(false);
   const [downloadCount, setDownloadCount] = useState<number>(0);
@@ -69,10 +72,9 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
     const result = await downloadSkillWithCompanions(skill.slug);
     if (!result.ok) return;
 
-    const { zipBase64, fileName, isSingle } = result.value;
+    const { zipBase64, fileName } = result.value;
     const bytes = Uint8Array.from(atob(zipBase64), c => c.charCodeAt(0));
-    const mimeType = isSingle ? 'text/markdown' : 'application/zip';
-    const blob = new Blob([bytes], { type: mimeType });
+    const blob = new Blob([bytes], { type: 'application/zip' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -148,32 +150,34 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
           <Stat icon={<Code size={16} />} label={t('skillDetail.codeExamples')} value={parsed.codeExampleCount} />
           <Stat icon={<Table size={16} />} label={t('skillDetail.referenceTables')} value={parsed.referenceTableCount} />
           <Stat icon={<FileText size={16} />} label={t('skillDetail.version')} value={skill.formatVersion('')} />
-          {downloadCount > 0 && (
+          {!isWorkflow && downloadCount > 0 && (
             <Stat icon={<DownloadSimple size={16} />} label="Downloads" value={downloadCount} />
           )}
         </div>
 
         {/* Actions row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            onClick={handleDownloadWithCompanions}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 20px',
-              borderRadius: 6,
-              background: 'var(--color-primary)',
-              color: '#FFFFFF',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: 'inherit',
-            }}
-          >
-            <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
-          </button>
+          {!isWorkflow && (
+            <button
+              onClick={handleDownloadWithCompanions}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '10px 20px',
+                borderRadius: 6,
+                background: 'var(--color-primary)',
+                color: '#FFFFFF',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: 'inherit',
+              }}
+            >
+              <DownloadSimple size={16} weight="bold" /> {t('skillDetail.download')}
+            </button>
+          )}
 
           {session && (
             <BookmarkButton
@@ -223,7 +227,7 @@ export function SkillDetailLG({ skill, parsed }: SkillDetailLGProps) {
               background: 'var(--color-surface)',
             }}
           >
-            <SkillShowcase content={skill.content} />
+            <SkillContentTabs skillContent={skill.content} references={references} />
           </div>
         </div>
       </div>

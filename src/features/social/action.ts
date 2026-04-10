@@ -173,30 +173,46 @@ export async function getRelatedSkills(
 
 export async function downloadSkillWithCompanions(slug: string): Promise<Result<{ zipBase64: string; fileName: string; isSingle: boolean }, Error>> {
   try {
-    const { getAllSkills, getCompanionsFor } = await import('@/platform/lib/skills');
+    const { getAllSkills, getCompanionsFor, getReferencesFor, getAssetsFor } = await import('@/platform/lib/skills');
     const allSkills = getAllSkills();
     const skill = allSkills.find(s => s.slug === slug);
     if (!skill) return Err(new Error('Skill not found'));
 
     const companions = getCompanionsFor(slug);
+    const references = getReferencesFor(slug);
+    const assets = slug === 'brand-design-system' ? getAssetsFor(slug) : [];
 
-    if (companions.length === 0) {
-      // Single file — return as base64 text (no ZIP needed)
-      const base64 = Buffer.from(skill.content, 'utf-8').toString('base64');
-      return Ok({ zipBase64: base64, fileName: `${slug}.md`, isSingle: true });
-    }
-
-    // Has companions — bundle as ZIP
+    // Always produce a ZIP with <slug>/SKILL.md structure
     const JSZip = (await import('jszip')).default;
     const zip = new JSZip();
-    zip.file(`${skill.slug}.md`, skill.content);
-    for (const comp of companions) {
-      zip.file(`${comp.slug}.md`, comp.content);
+    const skillDir = slug;
+    zip.file(`${skillDir}/SKILL.md`, skill.content);
+
+    // Include reference files
+    for (const ref of references) {
+      zip.file(`${skillDir}/references/${ref.filename}`, ref.content);
     }
 
+    // Include brand assets
+    for (const asset of assets) {
+      zip.file(`${skillDir}/assets/${asset.filename}`, asset.buffer);
+    }
+
+    // Include companion skills
+    for (const comp of companions) {
+      const compDir = comp.slug;
+      zip.file(`${compDir}/SKILL.md`, comp.content);
+
+      const compRefs = getReferencesFor(comp.slug);
+      for (const ref of compRefs) {
+        zip.file(`${compDir}/references/${ref.filename}`, ref.content);
+      }
+    }
+
+    const hasExtras = companions.length > 0 || references.length > 0 || assets.length > 0;
     const blob = await zip.generateAsync({ type: 'nodebuffer' });
     const base64 = blob.toString('base64');
-    return Ok({ zipBase64: base64, fileName: `${slug}-with-references.zip`, isSingle: false });
+    return Ok({ zipBase64: base64, fileName: `${slug}.zip`, isSingle: false });
   } catch (err) {
     console.error('[social] downloadSkillWithCompanions failed:', err);
     return Err(new Error('Download failed'));

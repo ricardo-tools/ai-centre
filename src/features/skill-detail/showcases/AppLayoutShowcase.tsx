@@ -32,7 +32,7 @@ export function AppLayoutShowcase() {
           <div style={{ padding: 20, borderRadius: 8, border: '2px solid var(--color-primary)', background: 'var(--color-surface)' }}>
             <PatternLabel letter="A" name="TopBar + Sidebar" badge="This App" />
             <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr', gridTemplateRows: '24px 1fr', height: 160, gap: 2, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
-              <Box label="" bg="var(--color-sidebar-bg)" color="#fff" style={{ gridRow: '1 / -1' }} />
+              <Box label="" bg="var(--color-sidebar-bg)" color="var(--color-sidebar-text-active)" style={{ gridRow: '1 / -1' }} />
               <Box label="TopBar" bg="var(--color-topnav-bg)" color="var(--color-topnav-text)" />
               <Box label="Content" bg="var(--color-bg)" color="var(--color-text-muted)" />
             </div>
@@ -54,7 +54,7 @@ export function AppLayoutShowcase() {
           <div style={{ padding: 20, borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
             <PatternLabel letter="C" name="Sidebar Only" />
             <div style={{ display: 'grid', gridTemplateColumns: '48px 1fr', gridTemplateRows: '1fr', height: 160, gap: 2, borderRadius: 6, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
-              <Box label="Nav" bg="var(--color-sidebar-bg)" color="#fff" />
+              <Box label="Nav" bg="var(--color-sidebar-bg)" color="var(--color-sidebar-text-active)" />
               <Box label="Content" bg="var(--color-bg)" color="var(--color-text-muted)" />
             </div>
             <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 8 }}>Figma/Linear-style tools, settings-heavy apps — no top bar, sidebar-driven navigation.</p>
@@ -176,13 +176,13 @@ export function AppLayoutShowcase() {
               <div style={{ width: 140, background: 'var(--color-sidebar-bg)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                 {/* Zone 1: Logo */}
                 <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>Logo</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-sidebar-text-active)' }}>Logo</span>
                 </div>
                 {/* Zone 2: Nav (scrollable) */}
                 <div style={{ flex: 1, padding: '6px 0', overflow: 'hidden' }}>
                   <div style={{ padding: '6px 8px 2px', fontSize: 8, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Section</div>
                   {['Dashboard', 'Skills', 'Archetypes', 'Generate'].map((item, i) => (
-                    <div key={item} style={{ margin: '1px 6px', padding: '5px 8px', borderRadius: 4, fontSize: 10, color: i === 0 ? '#fff' : 'rgba(255,255,255,0.6)', background: i === 0 ? 'rgba(255,255,255,0.08)' : 'transparent', fontWeight: i === 0 ? 600 : 400 }}>{item}</div>
+                    <div key={item} style={{ margin: '1px 6px', padding: '5px 8px', borderRadius: 4, fontSize: 10, color: i === 0 ? 'var(--color-sidebar-text-active)' : 'var(--color-sidebar-text)', background: i === 0 ? 'var(--color-sidebar-hover)' : 'transparent', fontWeight: i === 0 ? 600 : 400 }}>{item}</div>
                   ))}
                 </div>
                 {/* Zone 3: Footer */}

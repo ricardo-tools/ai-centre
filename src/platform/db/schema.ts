@@ -286,3 +286,32 @@ export const chatMessages = pgTable('chat_messages', {
   index('idx_chat_messages_conversation').on(table.conversationId),
   index('idx_chat_messages_created_at').on(table.createdAt),
 ]);
+
+// ── Chat Feedback ──────────────────────────────────────────────────
+
+export const chatFeedback = pgTable('chat_feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  messageId: uuid('message_id').notNull().references(() => chatMessages.id, { onDelete: 'cascade' }),
+  conversationId: uuid('conversation_id').notNull().references(() => chatConversations.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => users.id),
+  rating: text('rating').notNull(), // 'up' | 'down'
+  correction: text('correction'), // optional user-provided correction text
+  queryContext: text('query_context').notNull(), // the user message that prompted this response
+  responseContext: text('response_context').notNull(), // the assistant response that was rated
+  embedding: text('embedding'), // serialized float array for vector search (we'll use raw SQL for similarity)
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── Skill Gaps ─────────────────────────────────────────────────────
+
+export const skillGaps = pgTable('skill_gaps', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  description: text('description').notNull(), // what the user needed
+  userQuery: text('user_query').notNull(), // the original question/request
+  conversationId: uuid('conversation_id').references(() => chatConversations.id),
+  userId: uuid('user_id').references(() => users.id),
+  status: text('status').notNull().default('open'), // 'open' | 'planned' | 'resolved'
+  resolvedSkillSlug: text('resolved_skill_slug'), // filled when a skill is created to address this gap
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+

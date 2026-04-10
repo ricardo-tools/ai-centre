@@ -49,7 +49,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-send"]').click();
 
     await expect(page.locator('[data-testid="chat-thinking"]')).toBeVisible({ timeout: 2000 });
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
   });
 
   test('CH-TH2: Response renders as markdown and per-message thinking block persists', async ({ page }) => {
@@ -59,7 +60,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('List 3 things using bullet points');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     // Response should have rendered HTML
@@ -87,7 +89,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('What is Next.js?');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     const text = await assistant.textContent();
@@ -102,15 +105,15 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Find skills about auth');
     await page.locator('[data-testid="chat-send"]').click();
 
-    // Wait for response
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // Wait for response — nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
 
-    // There should be exactly 1 assistant message (the final response)
+    // There should be exactly 2 assistant messages (greeting + the final response)
     const assistantCount = await page.locator('[data-testid="chat-message-assistant"]').count();
-    expect(assistantCount).toBe(1);
+    expect(assistantCount).toBe(2);
 
-    // No raw JSON visible
-    const text = await page.locator('[data-testid="chat-message-assistant"]').first().textContent();
+    // No raw JSON visible in the API response
+    const text = await page.locator('[data-testid="chat-message-assistant"]').nth(1).textContent();
     expect(text!).not.toContain('{"count":');
   });
 
@@ -121,10 +124,11 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Say hi');
     await page.locator('[data-testid="chat-send"]').click();
 
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
 
-    // Action bar should appear
-    const actionBar = page.locator('[data-testid="chat-action-bar"]').first();
+    // Action bar on the API response (second action bar, after greeting's)
+    const actionBar = page.locator('[data-testid="chat-action-bar"]').nth(1);
     await expect(actionBar).toBeVisible();
 
     // Copy button should be in the action bar
@@ -139,10 +143,11 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Say hello world');
     await page.locator('[data-testid="chat-send"]').click();
 
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
 
-    // Click copy — verify it's clickable and doesn't error
-    const copyButton = page.locator('[data-testid="chat-copy-button"]').first();
+    // Click copy on the API response (second copy button, after greeting's)
+    const copyButton = page.locator('[data-testid="chat-copy-button"]').nth(1);
     await copyButton.click();
     // Brief wait for feedback animation
     await page.waitForTimeout(500);
@@ -157,7 +162,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('What skills do I need for a dashboard?');
     await page.locator('[data-testid="chat-send"]').click();
 
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
 
     // If reasoning was produced, check it's not duplicated
     const reasoningBlock = page.locator('[data-testid="chat-reasoning-block"]');
@@ -212,7 +218,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('What skills do I need for a dashboard?');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     const text = await assistant.textContent();
@@ -240,7 +247,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Do you have a skill for Kubernetes?');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     const text = await assistant.textContent();
@@ -257,7 +265,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Show me a short TypeScript function example');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     // Code block should exist with Shiki highlighting (shiki-wrapper class or spans with style)
@@ -281,7 +290,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Tell me about the authentication skill and link me to it');
     await page.locator('[data-testid="chat-send"]').click();
 
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // nth(1) because nth(0) is the proactive greeting message
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     // Check for clickable links (rendered <a> tags, not raw markdown text)
@@ -299,10 +309,11 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Say hi');
     await page.locator('[data-testid="chat-send"]').click();
 
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 30000 });
+    // nth(1) because nth(0) is the proactive greeting message
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 30000 });
 
-    // Copy button should have "Copy" label text
-    const copyButton = page.locator('[data-testid="chat-copy-button"]').first();
+    // Copy button on the API response (second copy button, after greeting's)
+    const copyButton = page.locator('[data-testid="chat-copy-button"]').nth(1);
     await expect(copyButton).toBeVisible();
     await expect(copyButton).toContainText('Copy');
   });
@@ -314,8 +325,8 @@ test.describe('Chat Display', () => {
     await page.locator('[data-testid="chat-input"]').fill('Find skills about authentication');
     await page.locator('[data-testid="chat-send"]').click();
 
-    // Should get a response without error
-    const assistant = page.locator('[data-testid="chat-message-assistant"]').first();
+    // Should get a response without error — nth(1) because nth(0) is the proactive greeting
+    const assistant = page.locator('[data-testid="chat-message-assistant"]').nth(1);
     await expect(assistant).toBeVisible({ timeout: 30000 });
 
     // No error message should appear

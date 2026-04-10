@@ -35,7 +35,13 @@ export function ScreenRenderer({ config, slots, containerStyle }: ScreenRenderer
     ...containerStyle,
   };
 
-  if (rows !== 'auto') {
+  const rowTemplate = config.grid.rowTemplate
+    ? resolveResponsive(config.grid.rowTemplate, breakpoint)
+    : undefined;
+
+  if (rowTemplate) {
+    gridStyle.gridTemplateRows = rowTemplate;
+  } else if (rows !== 'auto') {
     gridStyle.gridTemplateRows = `repeat(${rows}, ${rowHeight === 'auto' ? 'auto' : `${rowHeight}px`})`;
   } else if (rowHeight !== 'auto') {
     gridStyle.gridAutoRows = `${rowHeight}px`;
@@ -53,6 +59,7 @@ export function ScreenRenderer({ config, slots, containerStyle }: ScreenRenderer
             gridRow: `${gridPos.row} / span ${gridPos.rowSpan}`,
             minHeight: 0,
             display: 'grid',
+            alignContent: 'start',
           };
 
           if (isSlotEntry(entry)) {

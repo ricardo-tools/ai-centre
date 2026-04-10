@@ -13,11 +13,6 @@ import { useSocialSignals } from '@/features/social/useSocialSignals';
 import { getBulkSocialSignals, type BulkSocialSignal } from '@/features/social/action';
 import { useBookmarkOrder } from '@/features/social/useBookmarkOrder';
 import { CommentDrawer } from '@/platform/components/CommentDrawer';
-import {
-  FOUNDATION_SKILLS,
-  DOMAINS,
-  FEATURE_ADDONS,
-} from '@/platform/lib/toolkit-composition';
 
 // ─── Primary tabs ─────────────────────────────────────────────────────────────
 
@@ -71,102 +66,24 @@ function SocialSkillCard({ skill, officialLabel, viewLabel, initialData }: { ski
 
 const PRIMARY_TABS = [
   { key: 'all', label: 'All' },
-  { key: 'foundation', label: 'Foundation' },
-  { key: 'domains', label: 'Domains' },
-  { key: 'features', label: 'Features' },
-  { key: 'implementation', label: 'Implementation' },
+  { key: 'design', label: 'Design' },
+  { key: 'engineering', label: 'Engineering' },
+  { key: 'ai', label: 'AI' },
+  { key: 'workflow', label: 'Workflow' },
 ];
 
-// ─── Sub-filter definitions ───────────────────────────────────────────────────
+// ─── Category filter sets ─────────────────────────────────────────────────────
 
-const DOMAIN_PILLS = DOMAINS.map((d) => ({
-  key: d.slug,
-  label: d.title,
-  icon: d.icon,
-}));
+const DESIGN_SLUGS = new Set([
+  'accessibility', 'app-layout', 'brand-design-system', 'content-design',
+  'creative-toolkit', 'design-foundations', 'interaction-motion', 'pptx-export',
+  'presentation', 'presentation-html', 'print-design', 'responsiveness',
+  'user-experience',
+]);
 
-const FEATURE_PILLS = FEATURE_ADDONS.map((f) => ({
-  key: f.slug,
-  label: f.title,
-  icon: f.icon,
-}));
-
-// ─── Slug sets for filtering ──────────────────────────────────────────────────
-
-const foundationSet = new Set(FOUNDATION_SKILLS);
-
-function getDomainSkillSlugs(domainSlug: string): Set<string> {
-  const domain = DOMAINS.find((d) => d.slug === domainSlug);
-  return domain ? new Set(domain.skills) : new Set();
-}
-
-function getFeatureSkillSlugs(featureSlug: string): Set<string> {
-  const addon = FEATURE_ADDONS.find((f) => f.slug === featureSlug);
-  if (!addon) return new Set();
-  const slugs = new Set<string>();
-  for (const s of addon.principleSkills) slugs.add(s);
-  for (const impl of addon.implementations) {
-    for (const s of impl.skills) slugs.add(s);
-  }
-  return slugs;
-}
-
-function getAllDomainSkillSlugs(): Set<string> {
-  const slugs = new Set<string>();
-  for (const d of DOMAINS) {
-    for (const s of d.skills) slugs.add(s);
-  }
-  return slugs;
-}
-
-function getAllFeatureSkillSlugs(): Set<string> {
-  const slugs = new Set<string>();
-  for (const f of FEATURE_ADDONS) {
-    for (const s of f.principleSkills) slugs.add(s);
-    for (const impl of f.implementations) {
-      for (const s of impl.skills) slugs.add(s);
-    }
-  }
-  return slugs;
-}
-
-// ─── Sub-filter pill component ────────────────────────────────────────────────
-
-function FilterPill({
-  icon,
-  label,
-  isActive,
-  onClick,
-}: {
-  icon: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '6px 16px',
-        borderRadius: 16,
-        border: '1px solid var(--color-border)',
-        background: isActive ? 'var(--color-primary)' : 'var(--color-surface)',
-        color: isActive ? 'white' : 'var(--color-text-body)',
-        fontSize: 12,
-        fontWeight: 500,
-        cursor: 'pointer',
-        whiteSpace: 'nowrap',
-        fontFamily: 'inherit',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        transition: 'background 0.15s, color 0.15s',
-      }}
-    >
-      <span>{icon}</span> {label}
-    </button>
-  );
-}
+const AI_SLUGS = new Set([
+  'ai-capabilities', 'ai-claude', 'ai-fal-media', 'ai-openrouter',
+]);
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -177,7 +94,6 @@ export function SkillLibraryCards() {
   const [socialData, setSocialData] = useState<Record<string, BulkSocialSignal>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
-  const [subFilter, setSubFilter] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -198,10 +114,8 @@ export function SkillLibraryCards() {
     });
   }, [session?.userId]);
 
-  // Reset sub-filter when primary tab changes
   function handleTabChange(key: string) {
     setActiveTab(key);
-    setSubFilter(null);
   }
 
   function handleSearchChange(value: string) {
@@ -217,27 +131,24 @@ export function SkillLibraryCards() {
 
     // Apply primary tab filter
     switch (activeTab) {
-      case 'foundation':
-        result = result.filter((s) => foundationSet.has(s.slug));
+      case 'design':
+        result = result.filter((s) => DESIGN_SLUGS.has(s.slug));
         break;
-      case 'domains': {
-        const slugSet = subFilter
-          ? getDomainSkillSlugs(subFilter)
-          : getAllDomainSkillSlugs();
-        result = result.filter((s) => slugSet.has(s.slug));
+      case 'engineering':
+        result = result.filter((s) =>
+          s.tags.layer !== 'workflow' && !DESIGN_SLUGS.has(s.slug) && !AI_SLUGS.has(s.slug)
+        );
         break;
-      }
-      case 'features': {
-        const slugSet = subFilter
-          ? getFeatureSkillSlugs(subFilter)
-          : getAllFeatureSkillSlugs();
-        result = result.filter((s) => slugSet.has(s.slug));
+      case 'ai':
+        result = result.filter((s) => AI_SLUGS.has(s.slug));
         break;
-      }
-      case 'implementation':
-        result = result.filter((s) => s.tags.type === 'implementation');
+      case 'workflow':
+        result = result.filter((s) => s.tags.layer === 'workflow');
         break;
-      // 'all' — no filter
+      default:
+        // 'all' — exclude workflow skills (they have their own tab)
+        result = result.filter((s) => s.tags.layer !== 'workflow');
+        break;
     }
 
     // Apply search within category
@@ -247,7 +158,7 @@ export function SkillLibraryCards() {
     }
 
     return result;
-  }, [skills, activeTab, subFilter, searchQuery]);
+  }, [skills, activeTab, searchQuery]);
 
   // Sort bookmarked skills to the top
   const sortedSkills = useMemo(() => {
@@ -266,41 +177,9 @@ export function SkillLibraryCards() {
     );
   }
 
-  const showDomainPills = activeTab === 'domains';
-  const showFeaturePills = activeTab === 'features';
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <Tabs items={PRIMARY_TABS} activeKey={activeTab} onChange={handleTabChange} />
-
-      {/* Sub-filter pills */}
-      {(showDomainPills || showFeaturePills) && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            overflowX: 'auto',
-            paddingBottom: 4,
-            WebkitOverflowScrolling: 'touch',
-          }}
-        >
-          <FilterPill
-            icon={showDomainPills ? '🌐' : '📦'}
-            label="All"
-            isActive={subFilter === null}
-            onClick={() => setSubFilter(null)}
-          />
-          {(showDomainPills ? DOMAIN_PILLS : FEATURE_PILLS).map((pill) => (
-            <FilterPill
-              key={pill.key}
-              icon={pill.icon}
-              label={pill.label}
-              isActive={subFilter === pill.key}
-              onClick={() => setSubFilter(subFilter === pill.key ? null : pill.key)}
-            />
-          ))}
-        </div>
-      )}
 
       {/* Search input */}
       <div className="search-wrapper" style={{ position: 'relative' }}>
@@ -337,6 +216,31 @@ export function SkillLibraryCards() {
       <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
         {filtered.length} {filtered.length === 1 ? 'skill' : 'skills'}
       </div>
+
+      {/* Workflow WIP alert */}
+      {activeTab === 'workflow' && (
+        <div
+          style={{
+            padding: '12px 16px',
+            borderRadius: 8,
+            background: 'var(--color-warning-muted, rgba(245, 158, 11, 0.1))',
+            border: '1px solid var(--color-warning, #f59e0b)',
+            display: 'flex',
+            gap: 10,
+            alignItems: 'flex-start',
+            fontSize: 13,
+            lineHeight: 1.5,
+            color: 'var(--color-text-body)',
+          }}
+        >
+          <span style={{ fontSize: 16, flexShrink: 0 }}>&#9888;</span>
+          <div>
+            <strong style={{ color: 'var(--color-text-heading)' }}>Workflow skills are a package.</strong>{' '}
+            These skills work together as the Flow methodology and are not available for individual download.
+            They are included automatically when Flow is part of a toolkit.
+          </div>
+        </div>
+      )}
 
       {/* Skill cards grid */}
       {sortedSkills.length === 0 ? (

@@ -1,18 +1,27 @@
 'use client';
 
 import type { RenderableWidget, SizeVariant } from '@/platform/screen-renderer/types';
+import type { SkillReference } from '@/features/skill-library/action';
 import { useSkillDetail } from './useSkillDetail';
 import { SkillDetailXS } from './SkillDetailXS';
 import { SkillDetailSM } from './SkillDetailSM';
 import { SkillDetailMD } from './SkillDetailMD';
 import { SkillDetailLG } from './SkillDetailLG';
+import type { Skill } from '@/platform/domain/Skill';
+import type { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
+
+export interface SkillDetailSizeProps {
+  skill: Skill;
+  parsed: ParsedSkillContent;
+  references: SkillReference[];
+}
 
 interface SkillDetailWidgetProps extends RenderableWidget {
   slug: string;
   mock?: boolean;
 }
 
-const SIZE_COMPONENTS: Record<SizeVariant, typeof SkillDetailXS> = {
+const SIZE_COMPONENTS: Record<SizeVariant, React.ComponentType<SkillDetailSizeProps>> = {
   xs: SkillDetailXS,
   sm: SkillDetailSM,
   md: SkillDetailMD,
@@ -27,7 +36,7 @@ const SIZE_FALLBACK: Record<SizeVariant, SizeVariant> = {
 };
 
 export function SkillDetailWidget({ size, slug, mock }: SkillDetailWidgetProps) {
-  const { skill, parsed, loading } = useSkillDetail({ slug, mock });
+  const { skill, parsed, references, loading } = useSkillDetail({ slug, mock });
 
   if (loading) {
     return (
@@ -63,5 +72,5 @@ export function SkillDetailWidget({ size, slug, mock }: SkillDetailWidgetProps) 
 
   const Component = SIZE_COMPONENTS[size] ?? SIZE_COMPONENTS[SIZE_FALLBACK[size]];
 
-  return <Component skill={skill} parsed={parsed} />;
+  return <Component skill={skill} parsed={parsed} references={references} />;
 }

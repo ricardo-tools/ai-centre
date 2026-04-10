@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, DownloadSimple, ArrowFatUp, ChatCircle, BookmarkSimple } from '@phosphor-icons/react';
 
 const TYPE_LABELS: Record<string, string> = { principle: 'Principle', implementation: 'Implementation', reference: 'Reference' };
-const LAYER_LABELS: Record<string, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infra', design: 'Design', process: 'Process' };
+const LAYER_LABELS: Record<string, string> = { frontend: 'Frontend', backend: 'Backend', fullstack: 'Full Stack', infrastructure: 'Infra', design: 'Design', process: 'Process', workflow: 'Workflow' };
 const DOMAIN_LABELS: Record<string, string> = { 'product-development': 'Product', marketing: 'Marketing', design: 'Design', engineering: 'Engineering', operations: 'Ops', global: 'Global' };
 
 interface SkillCardProps {
@@ -28,7 +28,8 @@ interface SkillCardProps {
 }
 
 export function SkillCard({ slug, title, description, isOfficial, version, tags, officialLabel = 'Official', viewLabel = 'View', author, downloadCount, upvoteCount, commentCount, isUpvoted, isBookmarked, onToggleBookmark, onToggleUpvote, onCommentClick }: SkillCardProps) {
-  const showNewBadge = downloadCount === undefined || downloadCount === 0;
+  const isWorkflow = tags?.layer === 'workflow';
+  const showNewBadge = !isWorkflow && (downloadCount === undefined || downloadCount === 0);
   return (
     <div
       className="card-hover"
@@ -82,7 +83,11 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
             background: tags.type === 'principle' ? 'var(--color-primary-muted)' : tags.type === 'implementation' ? 'var(--color-success-muted)' : 'var(--color-bg-alt)',
             color: tags.type === 'principle' ? 'var(--color-primary)' : tags.type === 'implementation' ? 'var(--color-success)' : 'var(--color-text-muted)',
           }}>{TYPE_LABELS[tags.type]}</span>
-          <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 3, background: 'var(--color-bg-alt)', color: 'var(--color-text-muted)' }}>
+          <span style={{
+            fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 3,
+            background: isWorkflow ? 'var(--color-warning-muted, var(--color-bg-alt))' : 'var(--color-bg-alt)',
+            color: isWorkflow ? 'var(--color-warning, var(--color-text-muted))' : 'var(--color-text-muted)',
+          }}>
             {LAYER_LABELS[tags.layer]}
           </span>
           {tags.domain.slice(0, 2).map(d => (
@@ -116,7 +121,7 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {downloadCount !== undefined && downloadCount > 0 ? (
+          {!isWorkflow && downloadCount !== undefined && downloadCount > 0 ? (
             <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
               <DownloadSimple size={12} /> {downloadCount}
             </span>

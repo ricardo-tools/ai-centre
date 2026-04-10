@@ -95,6 +95,8 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
     foundationSkills,
     resolvedSkills,
     skillCount,
+    projectName,
+    setProjectName,
     description,
     setDescription,
     isGenerating,
@@ -512,9 +514,28 @@ export function CompositionWizardLG({ wizard }: CompositionWizardLGProps) {
       <section style={{ marginBottom: 48 }}>
         <h2 style={sectionHeadingStyle}>Generate project</h2>
         <p style={subtitleStyle}>
-          Describe your project idea. The generated scaffold will include a tailored CLAUDE.md
-          with all selected skills.
+          Name your project and describe what you are building. The generated scaffold will include
+          a tailored CLAUDE.md with all selected skills.
         </p>
+        <input
+          type="text"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name (e.g. Sales Dashboard Redesign)"
+          style={{
+            width: '100%',
+            padding: 16,
+            borderRadius: 8,
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-body)',
+            fontFamily: 'inherit',
+            fontSize: 14,
+            lineHeight: 1.5,
+            boxSizing: 'border-box' as const,
+            marginBottom: 16,
+          }}
+        />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}

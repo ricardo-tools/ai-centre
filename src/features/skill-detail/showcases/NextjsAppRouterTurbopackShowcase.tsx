@@ -84,7 +84,7 @@ function DecisionNode({ question, yes, no }: { question: string; yes: string; no
 
 export function NextjsAppRouterTurbopackShowcase() {
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div>
       {/* Companion Skills Callout */}
       <div style={{
         padding: 16,

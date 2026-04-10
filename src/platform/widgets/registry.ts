@@ -46,7 +46,6 @@ import SkillReviewShowcaseWidget from '@/features/skill-detail/widgets/SkillRevi
 import StrategicContextShowcaseWidget from '@/features/skill-detail/widgets/StrategicContextShowcaseWidget/StrategicContextShowcaseWidget';
 import TestingStrategyShowcaseWidget from '@/features/skill-detail/widgets/TestingStrategyShowcaseWidget/TestingStrategyShowcaseWidget';
 import UserExperienceShowcaseWidget from '@/features/skill-detail/widgets/UserExperienceShowcaseWidget/UserExperienceShowcaseWidget';
-import VerificationLoopShowcaseWidget from '@/features/skill-detail/widgets/VerificationLoopShowcaseWidget/VerificationLoopShowcaseWidget';
 import WebPerformanceShowcaseWidget from '@/features/skill-detail/widgets/WebPerformanceShowcaseWidget/WebPerformanceShowcaseWidget';
 
 // ── Feature: archetypes ──────────────────────────────────────────────
@@ -105,7 +104,7 @@ export const widgetRegistry: Record<string, React.ComponentType<any>> = {
   'nextjs-app-router-turbopack-showcase': NextjsAppRouterTurbopackShowcaseWidget,
   'observability-showcase': ObservabilityShowcaseWidget,
   'playwright-e2e-showcase': PlaywrightE2eShowcaseWidget,
-  'presentation-html-implementation-showcase': PresentationHtmlImplementationShowcaseWidget,
+  'presentation-html-showcase': PresentationHtmlImplementationShowcaseWidget,
   'quality-assurance-showcase': QualityAssuranceShowcaseWidget,
   'responsiveness-showcase': ResponsivenessShowcaseWidget,
   'security-review-showcase': SecurityReviewShowcaseWidget,
@@ -114,6 +113,5 @@ export const widgetRegistry: Record<string, React.ComponentType<any>> = {
   'strategic-context-showcase': StrategicContextShowcaseWidget,
   'testing-strategy-showcase': TestingStrategyShowcaseWidget,
   'user-experience-showcase': UserExperienceShowcaseWidget,
-  'verification-loop-showcase': VerificationLoopShowcaseWidget,
   'web-performance-showcase': WebPerformanceShowcaseWidget,
 };

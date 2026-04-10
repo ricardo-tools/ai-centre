@@ -1,17 +1,21 @@
 /**
  * Auto-sync system for official skills.
  *
- * On app startup, compares local skill .md files against the DB.
- * - New files → creates skill + published version, uploads content to Vercel Blob.
- * - Changed files (checksum mismatch) → bumps patch version, uploads new content.
- * - Unchanged files → skipped.
+ * On app startup, compares local skill directories against the DB.
+ * Skills use directory format: skills/<slug>/SKILL.md with optional
+ * skills/<slug>/references/*.md companion files.
+ *
+ * - New skills → creates skill + published version, uploads content to Vercel Blob.
+ * - Changed skills (checksum mismatch) → bumps patch version, uploads new content.
+ * - Unchanged skills → skipped.
+ * - References are uploaded alongside the main content to Blob.
  *
  * Skill content is stored in Vercel Blob (contentBlobUrl) and also kept inline
  * in the `content` column for backward compatibility.
  */
 
 import { createHash } from 'crypto';
-import { readFileSync, readdirSync } from 'fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'fs';
 import { join } from 'path';
 import { eq } from 'drizzle-orm';
 import { getDb, hasDatabase } from '@/platform/db/client';
@@ -161,6 +165,21 @@ function checksumOf(content: string): string {
 
 // ── Per-skill sync ──────────────────────────────────────────────────
 
+interface ReferenceFile {
+  filename: string;
+  content: string;
+}
+
+async function uploadReferences(
+  slug: string,
+  version: string,
+  references: ReferenceFile[],
+): Promise<void> {
+  for (const ref of references) {
+    await uploadToBlob(`skills/${slug}/v${version}/references/${ref.filename}`, ref.content);
+  }
+}
+
 async function syncSkill(
   db: DrizzleClient,
   slug: string,
@@ -168,6 +187,7 @@ async function syncSkill(
   checksum: string,
   systemUserId: string,
   metaLookup: Map<string, SkillMeta>,
+  references: ReferenceFile[],
   result: SyncResult,
 ): Promise<void> {
   const meta = metaLookup.get(slug);
@@ -184,6 +204,7 @@ async function syncSkill(
   if (existingRows.length === 0) {
     // ── CREATE ──────────────────────────────────────────────────────
     const blobUrl = await uploadToBlob(`skills/${slug}/v1.0.0.md`, content);
+    await uploadReferences(slug, '1.0.0', references);
 
     const [newSkill] = await db
       .insert(skills)
@@ -220,7 +241,7 @@ async function syncSkill(
       entityId: newSkill.id,
       action: 'published',
       userId: systemUserId,
-      metadata: { version: '1.0.0', source: 'skill-sync' },
+      metadata: { version: '1.0.0', source: 'skill-sync', referenceCount: references.length },
     });
 
     result.created.push(slug);
@@ -258,6 +279,7 @@ async function syncSkill(
   // ── UPDATE ─────────────────────────────────────────────────────────
   const newVersionStr = bumpPatch(currentVersion.version);
   const blobUrl = await uploadToBlob(`skills/${slug}/v${newVersionStr}.md`, content);
+  await uploadReferences(slug, newVersionStr, references);
 
   const [newVersion] = await db
     .insert(skillVersions)
@@ -292,6 +314,7 @@ async function syncSkill(
       version: newVersionStr,
       previousVersion: currentVersion.version,
       source: 'skill-sync',
+      referenceCount: references.length,
     },
   });
 
@@ -327,17 +350,36 @@ export async function syncOfficialSkills(): Promise<SyncResult> {
     const definitions = getSkillDefinitions();
     const metaLookup = new Map<string, SkillMeta>(definitions.map((d) => [d.slug, d]));
 
-    // Read all .md files from the skills directory
+    // Scan skills directory for directory-based skills (skills/<slug>/SKILL.md)
     const skillsDir = join(process.cwd(), 'skills');
-    const files = readdirSync(skillsDir).filter((f) => f.endsWith('.md'));
+    const entries = readdirSync(skillsDir).filter((entry) => {
+      const entryPath = join(skillsDir, entry);
+      return statSync(entryPath).isDirectory();
+    });
 
-    for (const file of files) {
-      const slug = file.replace('.md', '');
-      const content = readFileSync(join(skillsDir, file), 'utf-8');
+    for (const dir of entries) {
+      const skillFile = join(skillsDir, dir, 'SKILL.md');
+      if (!existsSync(skillFile)) continue;
+
+      const slug = dir;
+      const content = readFileSync(skillFile, 'utf-8');
       const checksum = checksumOf(content);
 
+      // Read references/ subdirectory if present
+      const references: ReferenceFile[] = [];
+      const refsDir = join(skillsDir, dir, 'references');
+      if (existsSync(refsDir) && statSync(refsDir).isDirectory()) {
+        const refFiles = readdirSync(refsDir).filter((f) => f.endsWith('.md'));
+        for (const refFile of refFiles) {
+          references.push({
+            filename: refFile,
+            content: readFileSync(join(refsDir, refFile), 'utf-8'),
+          });
+        }
+      }
+
       try {
-        await syncSkill(db, slug, content, checksum, systemUserId, metaLookup, result);
+        await syncSkill(db, slug, content, checksum, systemUserId, metaLookup, references, result);
       } catch (err) {
         result.errors.push(`${slug}: ${err instanceof Error ? err.message : String(err)}`);
       }

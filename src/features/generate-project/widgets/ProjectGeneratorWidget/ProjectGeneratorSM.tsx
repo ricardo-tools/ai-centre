@@ -5,6 +5,7 @@ import { CheckSquare, Square, Rocket, Package } from '@phosphor-icons/react';
 import { useLocale } from '@/platform/screen-renderer/LocaleContext';
 import type { Skill } from '@/platform/domain/Skill';
 import type { Archetype } from '@/platform/domain/Archetype';
+import { generateProject } from '@/features/generate-project/action';
 
 interface ProjectGeneratorSMProps {
   skills: Skill[];
@@ -55,22 +56,20 @@ export function ProjectGeneratorSM({ skills, archetypes }: ProjectGeneratorSMPro
     if (selectedSkills.size === 0) return;
     setIsGenerating(true);
     try {
-      const { generateProjectZip } = await import('@/platform/lib/generate-project-zip');
-      const archetype = archetypes.find((a) => a.slug === selectedArchetype);
-      const selectedSkillData = skills.filter((s) => selectedSkills.has(s.slug));
-
-      const blob = await generateProjectZip({
-        archetypeName: archetype?.title || 'Custom Project',
-        archetypeDescription: archetype?.description || 'A custom project with selected skills.',
-        selectedSkills: selectedSkillData,
-        userDescription: description,
-        includeTemplate: selectedArchetype === 'presentation',
+      const result = await generateProject({
+        domainSlug: selectedArchetype || 'custom',
+        resolvedSkills: Array.from(selectedSkills),
+        description,
       });
 
+      if (!result.ok) throw result.error;
+
+      const bytes = Uint8Array.from(atob(result.value.zipBase64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: 'application/zip' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${selectedArchetype || 'project'}-skills.zip`;
+      a.download = result.value.fileName;
       a.click();
       URL.revokeObjectURL(url);
     } finally {

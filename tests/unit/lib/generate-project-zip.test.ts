@@ -1,19 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import JSZip from 'jszip';
-import { generateProjectZip } from '@/platform/lib/generate-project-zip';
+import { generateProjectZip, type SkillBundle } from '@/platform/lib/generate-project-zip';
 import { skillFactory } from '../../factories';
 
 describe('generateProjectZip', () => {
-  const skills = [
-    skillFactory.build({ slug: 'brand-design-system', content: '# Brand Design System\n\nContent.' }),
-    skillFactory.build({ slug: 'frontend-architecture', content: '# Frontend Architecture\n\nContent.' }),
+  const bundles: SkillBundle[] = [
+    {
+      skill: skillFactory.build({ slug: 'brand-design-system', content: '# Brand Design System\n\nContent.' }),
+      references: [{ filename: 'tokens.md', content: '# Tokens\n\nToken content.' }],
+      assets: [{ filename: 'favicon.svg', buffer: Buffer.from('<svg></svg>') }],
+    },
+    {
+      skill: skillFactory.build({ slug: 'frontend-architecture', content: '# Frontend Architecture\n\nContent.' }),
+      references: [],
+      assets: [],
+    },
   ];
 
   it('produces a valid ZIP blob', async () => {
     const blob = await generateProjectZip({
       archetypeName: 'Test Project',
       archetypeDescription: 'A test project',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: 'Build something cool',
     });
 
@@ -25,7 +33,7 @@ describe('generateProjectZip', () => {
     const blob = await generateProjectZip({
       archetypeName: 'Test',
       archetypeDescription: 'Desc',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: 'My idea',
     });
 
@@ -34,42 +42,70 @@ describe('generateProjectZip', () => {
     expect(claudeMd).not.toBeNull();
 
     const content = await claudeMd!.async('string');
-    expect(content).toContain('# Test Project');
+    expect(content).toContain('# Test');
     expect(content).toContain('My idea');
   });
 
-  it('includes skill files in skills/ directory', async () => {
+  it('includes skill files in .claude/skills/<slug>/SKILL.md structure', async () => {
     const blob = await generateProjectZip({
       archetypeName: 'Test',
       archetypeDescription: 'Desc',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: '',
     });
 
     const zip = await JSZip.loadAsync(blob);
-    expect(zip.file('skills/brand-design-system.md')).not.toBeNull();
-    expect(zip.file('skills/frontend-architecture.md')).not.toBeNull();
+    expect(zip.file('.claude/skills/brand-design-system/SKILL.md')).not.toBeNull();
+    expect(zip.file('.claude/skills/frontend-architecture/SKILL.md')).not.toBeNull();
   });
 
-  it('generates CLAUDE.md with skill references', async () => {
+  it('generates CLAUDE.md with .claude/skills/ references', async () => {
     const blob = await generateProjectZip({
       archetypeName: 'Presentation',
       archetypeDescription: 'Slides',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: '',
     });
 
     const zip = await JSZip.loadAsync(blob);
     const content = await zip.file('CLAUDE.md')!.async('string');
-    expect(content).toContain('skills/brand-design-system.md');
-    expect(content).toContain('skills/frontend-architecture.md');
+    expect(content).toContain('.claude/skills/brand-design-system/SKILL.md');
+    expect(content).toContain('.claude/skills/frontend-architecture/SKILL.md');
+  });
+
+  it('includes references/ subdirectory when skill has references', async () => {
+    const blob = await generateProjectZip({
+      archetypeName: 'Test',
+      archetypeDescription: 'Desc',
+      skillBundles: bundles,
+      userDescription: '',
+    });
+
+    const zip = await JSZip.loadAsync(blob);
+    const tokensFile = zip.file('.claude/skills/brand-design-system/references/tokens.md');
+    expect(tokensFile).not.toBeNull();
+    const content = await tokensFile!.async('string');
+    expect(content).toContain('# Tokens');
+  });
+
+  it('includes assets/ for brand-design-system', async () => {
+    const blob = await generateProjectZip({
+      archetypeName: 'Test',
+      archetypeDescription: 'Desc',
+      skillBundles: bundles,
+      userDescription: '',
+    });
+
+    const zip = await JSZip.loadAsync(blob);
+    const faviconFile = zip.file('.claude/skills/brand-design-system/assets/favicon.svg');
+    expect(faviconFile).not.toBeNull();
   });
 
   it('includes presentation template when requested', async () => {
     const blob = await generateProjectZip({
       archetypeName: 'Presentation',
       archetypeDescription: 'Slides',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: '',
       includeTemplate: true,
     });
@@ -85,7 +121,7 @@ describe('generateProjectZip', () => {
     const blob = await generateProjectZip({
       archetypeName: 'Test',
       archetypeDescription: 'Desc',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: '',
     });
 
@@ -94,23 +130,27 @@ describe('generateProjectZip', () => {
   });
 
   it('skips skills with empty content', async () => {
-    const emptySkill = skillFactory.build({ slug: 'empty', content: '' });
+    const emptyBundle: SkillBundle = {
+      skill: skillFactory.build({ slug: 'empty', content: '' }),
+      references: [],
+      assets: [],
+    };
     const blob = await generateProjectZip({
       archetypeName: 'Test',
       archetypeDescription: 'Desc',
-      selectedSkills: [emptySkill],
+      skillBundles: [emptyBundle],
       userDescription: '',
     });
 
     const zip = await JSZip.loadAsync(blob);
-    expect(zip.file('skills/empty.md')).toBeNull();
+    expect(zip.file('.claude/skills/empty/SKILL.md')).toBeNull();
   });
 
   it('shows placeholder when no user description provided', async () => {
     const blob = await generateProjectZip({
       archetypeName: 'Test',
       archetypeDescription: 'Desc',
-      selectedSkills: skills,
+      skillBundles: bundles,
       userDescription: '',
     });
 

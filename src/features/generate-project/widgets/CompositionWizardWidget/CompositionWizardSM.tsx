@@ -17,6 +17,8 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
     selectedAddons,
     toggleAddon,
     skillCount,
+    projectName,
+    setProjectName,
     description,
     setDescription,
     isGenerating,
@@ -179,7 +181,7 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
         </div>
       )}
 
-      {/* Description */}
+      {/* Project details */}
       <div style={{ marginBottom: 24 }}>
         <h2
           style={{
@@ -190,8 +192,27 @@ export function CompositionWizardSM({ wizard }: CompositionWizardSMProps) {
             marginTop: 0,
           }}
         >
-          Describe your project
+          Project details
         </h2>
+        <input
+          type="text"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+          style={{
+            width: '100%',
+            padding: 12,
+            borderRadius: 8,
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-text-body)',
+            fontFamily: 'inherit',
+            fontSize: 13,
+            lineHeight: 1.4,
+            boxSizing: 'border-box' as const,
+            marginBottom: 8,
+          }}
+        />
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}

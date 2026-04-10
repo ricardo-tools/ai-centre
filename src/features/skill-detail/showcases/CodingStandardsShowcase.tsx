@@ -83,7 +83,7 @@ function PipelineStep({ label, input, output, color }: { label: string; input: s
 
 export function CodingStandardsShowcase() {
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div>
       {/* Companion Skills Callout */}
       <div style={{
         padding: 16,

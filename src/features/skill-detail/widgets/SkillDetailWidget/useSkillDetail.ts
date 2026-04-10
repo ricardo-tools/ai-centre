@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Skill } from '@/platform/domain/Skill';
 import { ParsedSkillContent } from '@/platform/domain/ParsedSkill';
 import { fetchSkillWithParsed } from '@/features/skill-library/action';
+import type { SkillReference } from '@/features/skill-library/action';
 import { toSkill } from '@/platform/acl/skill.mapper';
 import { toParsedSkillContent } from '@/platform/acl/parsed-skill.mapper';
 
@@ -15,6 +16,7 @@ interface UseSkillDetailOptions {
 interface UseSkillDetailResult {
   skill: Skill | null;
   parsed: ParsedSkillContent | null;
+  references: SkillReference[];
   loading: boolean;
 }
 
@@ -47,12 +49,14 @@ function createMockParsed(): ParsedSkillContent {
 export function useSkillDetail({ slug, mock }: UseSkillDetailOptions): UseSkillDetailResult {
   const [skill, setSkill] = useState<Skill | null>(null);
   const [parsed, setParsed] = useState<ParsedSkillContent | null>(null);
+  const [references, setReferences] = useState<SkillReference[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (mock) {
       setSkill(createMockSkill());
       setParsed(createMockParsed());
+      setReferences([]);
       setLoading(false);
       return;
     }
@@ -61,10 +65,11 @@ export function useSkillDetail({ slug, mock }: UseSkillDetailOptions): UseSkillD
       if (result.ok) {
         setSkill(toSkill(result.value.skill));
         setParsed(toParsedSkillContent(result.value.parsed));
+        setReferences(result.value.references);
       }
       setLoading(false);
     });
   }, [slug, mock]);
 
-  return { skill, parsed, loading };
+  return { skill, parsed, references, loading };
 }

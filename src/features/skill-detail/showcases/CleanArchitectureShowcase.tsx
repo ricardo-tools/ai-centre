@@ -88,7 +88,7 @@ function Arrow() {
 
 export function CleanArchitectureShowcase() {
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto' }}>
+    <div>
       {/* Companion Skills Callout */}
       <div style={{
         padding: 16,

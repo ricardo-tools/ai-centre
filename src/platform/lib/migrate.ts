@@ -42,6 +42,9 @@ export async function runMigrations(): Promise<void> {
     const sql = neon(dbUrl);
     const db = drizzle(sql);
 
+    // Ensure pgvector extension is available (needed for feedback RAG embeddings)
+    await sql('CREATE EXTENSION IF NOT EXISTS vector');
+
     await migrate(db, { migrationsFolder });
 
     // Log migration status for visibility

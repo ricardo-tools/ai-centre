@@ -270,8 +270,8 @@ columns: { default: 1, sm: 2, lg: 12 }`}</CodeBlock>
                 </div>
                 <div style={{ flex: 1, padding: 8, borderRadius: 4, border: '2px dashed var(--color-secondary)' }}>
                   <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-secondary)' }}>Slot: main-content</span>
-                  <div style={{ marginTop: 6, padding: 8, borderRadius: 4, border: '2px solid #1F2B7A', background: 'var(--color-surface)' }}>
-                    <span style={{ fontSize: 10, fontWeight: 600, color: '#1F2B7A' }}>Dashboard (nested Screen Renderer)</span>
+                  <div style={{ marginTop: 6, padding: 8, borderRadius: 4, border: '2px solid var(--color-brand)', background: 'var(--color-surface)' }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-brand)' }}>Dashboard (nested Screen Renderer)</span>
                     <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
                       <div style={{ flex: 1, padding: 4, borderRadius: 3, background: '#1462D2', fontSize: 9, color: '#fff', textAlign: 'center' }}>Widget</div>
                       <div style={{ flex: 2, padding: 4, borderRadius: 3, background: '#1462D2', fontSize: 9, color: '#fff', textAlign: 'center' }}>Widget</div>

@@ -1,7 +1,7 @@
 'use server';
 
-import { getAllSkills, getCompanionsFor } from '@/platform/lib/skills';
-import { generateProjectZip } from '@/platform/lib/generate-project-zip';
+import { getAllSkills, getCompanionsFor, getReferencesFor, getAssetsFor } from '@/platform/lib/skills';
+import { generateProjectZip, type SkillBundle } from '@/platform/lib/generate-project-zip';
 import { Skill } from '@/platform/domain/Skill';
 import { DOMAINS } from '@/platform/lib/toolkit-composition';
 import { type Result, Ok, Err, AuthError } from '@/platform/lib/result';
@@ -11,6 +11,9 @@ interface GenerateProjectInput {
   domainSlug: string;
   resolvedSkills: string[];
   description: string;
+  projectName?: string;
+  targetAudience?: string;
+  keyConstraints?: string;
 }
 
 export async function generateProject(input: GenerateProjectInput): Promise<Result<{ zipBase64: string; fileName: string }, Error>> {
@@ -42,11 +45,19 @@ export async function generateProject(input: GenerateProjectInput): Promise<Resu
     const domain = DOMAINS.find(d => d.slug === input.domainSlug);
     const domainTitle = domain?.title ?? input.domainSlug;
 
+    const skillBundles: SkillBundle[] = selectedSkillObjects.map(skill => ({
+      skill,
+      references: getReferencesFor(skill.slug),
+      assets: skill.slug === 'brand-design-system' ? getAssetsFor(skill.slug) : [],
+    }));
+
     const zip = await generateProjectZip({
-      archetypeName: `${domainTitle} Project`,
+      archetypeName: input.projectName || `${domainTitle} Project`,
       archetypeDescription: domain?.description ?? '',
-      selectedSkills: selectedSkillObjects,
+      skillBundles,
       userDescription: input.description,
+      targetAudience: input.targetAudience,
+      keyConstraints: input.keyConstraints,
       includeTemplate: input.domainSlug === 'presentation',
     });
 

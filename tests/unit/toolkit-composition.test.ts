@@ -131,8 +131,8 @@ describe('resolveComposition', () => {
     const presentation = TOOLKIT_PRESETS.find((p) => p.slug === 'presentation')!;
     const webDashboard = TOOLKIT_PRESETS.find((p) => p.slug === 'web-dashboard')!;
 
-    // Presentation: 11 foundation + 5 domain + 1 pptx-export principle = 17 unique
-    expect(presentation.skills.length).toBeGreaterThanOrEqual(15);
+    // Foundation (reduced after removing stubs/renamed skills) + domain + pptx-export
+    expect(presentation.skills.length).toBeGreaterThanOrEqual(12);
     expect(presentation.skills).toContain('presentation');
     expect(presentation.skills).toContain('pptx-export');
     expect(presentation.skills).toContain('coding-standards');

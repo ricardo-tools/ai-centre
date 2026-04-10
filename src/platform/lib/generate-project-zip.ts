@@ -1,35 +1,61 @@
 import JSZip from 'jszip';
 import type { Skill } from '@/platform/domain/Skill';
 
+export interface SkillReference {
+  filename: string;
+  content: string;
+}
+
+export interface SkillAsset {
+  filename: string;
+  buffer: Buffer;
+}
+
+export interface SkillBundle {
+  skill: Skill;
+  references: SkillReference[];
+  assets: SkillAsset[];
+}
+
 interface GenerateZipOptions {
   archetypeName: string;
   archetypeDescription: string;
-  selectedSkills: Skill[];
+  skillBundles: SkillBundle[];
   userDescription: string;
+  targetAudience?: string;
+  keyConstraints?: string;
   includeTemplate?: boolean;
 }
 
 function generateClaudeMd(options: GenerateZipOptions): string {
-  const hasPromptRefinement = options.selectedSkills.some(s => s.slug === 'prompt-refinement');
+  const hasFlow = options.skillBundles.some(b => b.skill.slug === 'flow');
 
-  const skillList = options.selectedSkills
-    .map((s) => `- **skills/${s.slug}.md** — ${s.description}`)
+  const skillList = options.skillBundles
+    .map((b) => `- **.claude/skills/${b.skill.slug}/SKILL.md** — ${b.skill.description}`)
     .join('\n');
 
-  const promptRefinementDirective = hasPromptRefinement
-    ? `\n> **On any request:** apply the **prompt-refinement** skill (\`skills/prompt-refinement.md\`). Scan the skill library for applicable skills. Suggest research if non-trivial. Suggest planning if multi-step. Present a refined prompt. **Wait for user confirmation before starting work.** Always execute, no exceptions.\n`
+  const flowDirective = hasFlow
+    ? `\n> **On any request:** apply the **flow** skill (\`.claude/skills/flow/SKILL.md\`). Scan the skill library for applicable skills. Triage the request, suggest research if non-trivial, suggest planning if multi-step. **Wait for user confirmation before starting work.** Always execute, no exceptions.\n`
     : '';
 
-  return `# ${options.archetypeName} Project
-${promptRefinementDirective}
+  const audienceSection = options.targetAudience
+    ? `\n## Target Audience\n\n${options.targetAudience}\n`
+    : '';
+
+  const constraintsSection = options.keyConstraints
+    ? `\n## Key Constraints\n\n${options.keyConstraints}\n`
+    : '';
+
+  return `# ${options.archetypeName}
+${flowDirective}
 ${options.archetypeDescription}
 
 ---
 
-## User Brief
+## Project Description
 
 ${options.userDescription || '_No description provided._'}
-
+${audienceSection}${constraintsSection}
 ---
 
 ## Included Skills
@@ -92,9 +118,18 @@ export async function generateProjectZip(options: GenerateZipOptions): Promise<B
 
   zip.file('CLAUDE.md', generateClaudeMd(options));
 
-  for (const skill of options.selectedSkills) {
+  for (const { skill, references, assets } of options.skillBundles) {
     if (skill.content) {
-      zip.file(`skills/${skill.slug}.md`, skill.content);
+      const skillDir = `.claude/skills/${skill.slug}`;
+      zip.file(`${skillDir}/SKILL.md`, skill.content);
+
+      for (const ref of references) {
+        zip.file(`${skillDir}/references/${ref.filename}`, ref.content);
+      }
+
+      for (const asset of assets) {
+        zip.file(`${skillDir}/assets/${asset.filename}`, asset.buffer);
+      }
     }
   }
 

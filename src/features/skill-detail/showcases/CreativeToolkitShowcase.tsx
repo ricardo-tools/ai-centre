@@ -308,7 +308,7 @@ export function CreativeToolkitShowcase() {
               </div>
               <div style={{ padding: 20, borderRadius: 8, background: 'var(--color-surface)', border: '1px solid var(--color-border)', textAlign: 'center' }}>
                 <div style={{ width: 48, height: 26, borderRadius: 13, background: 'var(--color-border)', margin: '11px auto 10px', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--color-surface)', position: 'absolute', top: 3, left: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-heading)' }}>State Toggle</span>
                 <p style={{ fontSize: 10, color: 'var(--color-text-muted)', margin: '2px 0 0' }}>Bound to app state machine</p>
@@ -364,7 +364,7 @@ export function CreativeToolkitShowcase() {
                 axisLeft={{ tickSize: 0, tickPadding: 8, format: (v: number) => `$${v / 1000}k` }}
                 motionConfig="gentle"
                 theme={{
-                  axis: { ticks: { text: { fontSize: 10, fill: '#4B5563' } } },
+                  axis: { ticks: { text: { fontSize: 10, fill: 'var(--color-text-muted)' } } },
                   grid: { line: { stroke: 'transparent' } },
                 }}
               />
@@ -392,7 +392,7 @@ export function CreativeToolkitShowcase() {
                 pointSize={8}
                 pointColor="#FF5A28"
                 pointBorderWidth={2}
-                pointBorderColor="#fff"
+                pointBorderColor="var(--color-surface)"
                 enableGridX={false}
                 enableGridY={false}
                 enableArea={true}
@@ -401,7 +401,7 @@ export function CreativeToolkitShowcase() {
                 axisLeft={{ tickSize: 0, tickPadding: 8, format: (v: number) => `${v}d` }}
                 motionConfig="gentle"
                 theme={{
-                  axis: { ticks: { text: { fontSize: 10, fill: '#4B5563' } } },
+                  axis: { ticks: { text: { fontSize: 10, fill: 'var(--color-text-muted)' } } },
                 }}
               />
             </div>
@@ -437,7 +437,7 @@ export function CreativeToolkitShowcase() {
                   translateX: 70,
                   itemWidth: 60,
                   itemHeight: 20,
-                  itemTextColor: '#4B5563',
+                  itemTextColor: 'var(--color-text-body)',
                   symbolSize: 10,
                   symbolShape: 'circle',
                 }]}

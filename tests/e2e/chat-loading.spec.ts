@@ -59,19 +59,19 @@ test.describe('Chat Loading Indicators', () => {
     // Wait for thinking to appear
     await expect(page.locator('[data-testid="chat-thinking"]')).toBeVisible({ timeout: 2000 });
 
-    // Wait for AI response to finish
-    await expect(page.locator('[data-testid="chat-message-assistant"]').first()).toBeVisible({ timeout: 15000 });
+    // Wait for AI response to finish — greeting is the first assistant message, so wait for the second
+    await expect(page.locator('[data-testid="chat-message-assistant"]').nth(1)).toBeVisible({ timeout: 15000 });
 
     // Thinking indicator should be gone
     await expect(page.locator('[data-testid="chat-thinking"]')).not.toBeVisible();
   });
 
-  test('CH-L3: Suggested prompt shows thinking indicator', async ({ page }) => {
+  test('CH-L3: Chip from greeting message shows thinking indicator', async ({ page }) => {
     await page.goto('/chat');
     await page.waitForLoadState('networkidle');
 
-    // Click a suggested prompt
-    await page.locator('button', { hasText: 'What skills do I need for a dashboard?' }).click();
+    // Click a chip from the greeting message
+    await page.locator('[data-testid="chat-chip"]', { hasText: 'Browse skills' }).click();
 
     // Thinking indicator should appear immediately
     const thinking = page.locator('[data-testid="chat-thinking"]');

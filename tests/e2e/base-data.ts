@@ -33,7 +33,254 @@ export const BASE = {
       name: 'Test Member',
       roleSlug: 'member',
     },
+    developer: {
+      id: '00000000-0000-0000-0000-000000000003',
+      email: 'developer@test.local',
+      name: 'Test Developer',
+      roleSlug: 'developer',
+    },
   },
+
+  // ── Sample OpenAPI Specs (for API Hub tests) ─────────────────────────
+
+  /** Minimal OpenAPI 3.0 spec — v1.0.0 with 4 endpoints (GET, POST, PUT, DELETE) */
+  sampleOpenApiV1: `openapi: "3.0.3"
+info:
+  title: Pet Store API
+  description: A sample API for testing the API Hub
+  version: "1.0.0"
+servers:
+  - url: https://petstore.example.com/api/v1
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Pet:
+      type: object
+      required: [name, species]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Fido
+        species:
+          type: string
+          enum: [dog, cat, bird]
+          example: dog
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+security:
+  - bearerAuth: []
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: A list of pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+    post:
+      summary: Create a pet
+      operationId: createPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+            example:
+              name: Fido
+              species: dog
+      responses:
+        "201":
+          description: Pet created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /pets/{petId}:
+    put:
+      summary: Update a pet
+      operationId: updatePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          description: Pet updated
+    delete:
+      summary: Delete a pet
+      operationId: deletePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "204":
+          description: Pet deleted
+`,
+
+  /** Modified v2.0.0 spec — adds GET /pets/{petId}/profile, removes DELETE /pets/{petId} */
+  sampleOpenApiV2: `openapi: "3.0.3"
+info:
+  title: Pet Store API
+  description: A sample API for testing the API Hub (v2 — breaking change)
+  version: "2.0.0"
+servers:
+  - url: https://petstore.example.com/api/v2
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Pet:
+      type: object
+      required: [name, species]
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Fido
+        species:
+          type: string
+          enum: [dog, cat, bird]
+          example: dog
+        nickname:
+          type: string
+          example: Good Boy
+    PetProfile:
+      type: object
+      properties:
+        petId:
+          type: integer
+        bio:
+          type: string
+        vaccinated:
+          type: boolean
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+security:
+  - bearerAuth: []
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      operationId: listPets
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: A list of pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Pet"
+    post:
+      summary: Create a pet
+      operationId: createPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+            example:
+              name: Fido
+              species: dog
+      responses:
+        "201":
+          description: Pet created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+  /pets/{petId}:
+    put:
+      summary: Update a pet
+      operationId: updatePet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          description: Pet updated
+  /pets/{petId}/profile:
+    get:
+      summary: Get pet profile
+      operationId: getPetProfile
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Pet profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PetProfile"
+`,
 
   // ── Upvotes ────────────────────────────────────────────────────────
   // Admin user upvotes the first 5 skills (alphabetically by slug)
@@ -43,7 +290,7 @@ export const BASE = {
     'activity-notifications',
     'ai-capabilities',
     'ai-claude',
-    'ai-fal',
+    'ai-fal-media',
   ] as readonly string[],
 
   // ── Bookmarks ──────────────────────────────────────────────────────

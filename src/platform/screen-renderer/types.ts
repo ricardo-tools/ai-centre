@@ -14,6 +14,7 @@ export interface GridConfig {
   columns: Responsive<number>;
   columnTemplate?: Responsive<string>;
   rows: number | 'auto';
+  rowTemplate?: Responsive<string>;
   rowHeight: Responsive<number | 'auto'>;
   gap: Responsive<number>;
 }

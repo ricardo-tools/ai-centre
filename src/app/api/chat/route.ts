@@ -10,10 +10,12 @@ import { composeToolkitDefinition, executeComposeToolkit } from '@/features/chat
 import { generateProjectDefinition, executeGenerateProject } from '@/features/chat/tools/generate-project';
 import { navigateDefinition, executeNavigate } from '@/features/chat/tools/navigate';
 import { getSkillDetailDefinition, executeGetSkillDetail } from '@/features/chat/tools/get-skill-detail';
+import { logSkillGapDefinition, executeLogSkillGap } from '@/features/chat/tools/log-skill-gap';
 import { validateSkillReferences } from '@/features/chat/validation/validate-skill-references';
+import { getRelevantCorrections } from '@/features/chat/feedback-rag';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'mistralai/mistral-small-2603';
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-4';
 
 const tools = [
   searchSkillsDefinition,
@@ -21,6 +23,7 @@ const tools = [
   composeToolkitDefinition,
   generateProjectDefinition,
   navigateDefinition,
+  logSkillGapDefinition,
 ];
 
 const toolExecutors: Record<string, (args: Record<string, unknown>) => Promise<string>> = {
@@ -29,6 +32,7 @@ const toolExecutors: Record<string, (args: Record<string, unknown>) => Promise<s
   compose_toolkit: (args) => executeComposeToolkit(args as Parameters<typeof executeComposeToolkit>[0]),
   generate_project: (args) => executeGenerateProject(args as Parameters<typeof executeGenerateProject>[0]),
   navigate: (args) => executeNavigate(args as Parameters<typeof executeNavigate>[0]),
+  log_skill_gap: (args) => executeLogSkillGap(args as unknown as Parameters<typeof executeLogSkillGap>[0]),
 };
 
 const COMPLEX_KEYWORDS = /\b(research|think|analyze|compare|explain in detail|pros and cons|deep dive|evaluate|plan|strategy|architecture|trade-?offs|comprehensive|thorough)\b/i;
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Parse body
-  let body: { conversationId?: string; message: string };
+  let body: { conversationId?: string; message: string; greeting?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -68,6 +72,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { message } = body;
+  const isGreeting = body.greeting === true;
+
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return new Response(JSON.stringify({ error: 'Message is required' }), { status: 400 });
   }
@@ -85,8 +91,10 @@ export async function POST(request: NextRequest) {
     conversationId = convResult.value.id;
   }
 
-  // Save user message
-  await addMessage(conversationId, 'user', message.trim());
+  // Save user message (skip for greeting triggers — they're invisible)
+  if (!isGreeting) {
+    await addMessage(conversationId, 'user', message.trim());
+  }
 
   // Load conversation history
   const historyResult = await getMessages(conversationId);
@@ -105,26 +113,40 @@ export async function POST(request: NextRequest) {
     } catch { /* non-critical */ }
   }
 
+  // Retrieve relevant corrections from past feedback (RAG)
+  let relevantCorrections = '';
+  try {
+    relevantCorrections = await getRelevantCorrections(message.trim());
+  } catch { /* non-critical — continue without corrections */ }
+
   // Build system prompt with skill catalog for grounding
   const skillCatalog = getSkillCatalog();
-  const priorMessageCount = history.length - 1; // -1 because we just added the user message
+  const priorMessageCount = isGreeting ? 0 : history.length - 1; // -1 because we just added the user message
   const systemPrompt = buildSystemPrompt({
     skillCatalog,
     domains: DOMAINS.map((d) => d.title),
     addons: FEATURE_ADDONS.map((f) => f.title),
     messageCount: Math.max(0, priorMessageCount),
     relevantSkillContent,
+    relevantCorrections,
   });
 
   // Build OpenRouter messages
+  const historyMessages = history.map((m) => ({
+    role: m.role,
+    content: m.content,
+    ...(m.toolCalls ? { tool_calls: m.toolCalls.map((tc) => ({ id: tc.id, type: 'function' as const, function: { name: tc.name, arguments: tc.arguments } })) } : {}),
+    ...(m.role === 'tool' && m.toolResults?.[0] ? { tool_call_id: m.toolResults[0].toolCallId } : {}),
+  }));
+
+  // For greeting triggers, inject a hidden user message since it wasn't saved to DB
+  if (isGreeting && historyMessages.length === 0) {
+    historyMessages.push({ role: 'user', content: message.trim() });
+  }
+
   const messages = [
     { role: 'system', content: systemPrompt },
-    ...history.map((m) => ({
-      role: m.role,
-      content: m.content,
-      ...(m.toolCalls ? { tool_calls: m.toolCalls.map((tc) => ({ id: tc.id, type: 'function' as const, function: { name: tc.name, arguments: tc.arguments } })) } : {}),
-      ...(m.role === 'tool' && m.toolResults?.[0] ? { tool_call_id: m.toolResults[0].toolCallId } : {}),
-    })),
+    ...historyMessages,
   ];
 
   // Stream response
@@ -133,7 +155,7 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       try {
         const reasoningEffort = getReasoningEffort(message);
-        const fullResponse = await callOpenRouter(apiKey, messages, controller, encoder, conversationId!, 0, reasoningEffort);
+        const fullResponse = await callOpenRouter(apiKey, messages, controller, encoder, conversationId!, 0, reasoningEffort, session.userId);
 
         // Validate and clean skill references before saving
         let finalContent = fullResponse.content;
@@ -154,10 +176,12 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Auto-generate conversation title (async, non-blocking)
-        const userMsgCount = history.filter((m) => m.role === 'user').length;
-        if (userMsgCount <= 2) {
-          generateTitle(apiKey, message.trim(), fullResponse.content, conversationId!).catch(() => {});
+        // Auto-generate conversation title (async, non-blocking) — skip for greeting triggers
+        if (!isGreeting) {
+          const userMsgCount = history.filter((m) => m.role === 'user').length;
+          if (userMsgCount <= 2) {
+            generateTitle(apiKey, message.trim(), fullResponse.content, conversationId!).catch(() => {});
+          }
         }
 
         // Send conversation ID + title update
@@ -196,6 +220,7 @@ async function callOpenRouter(
   conversationId: string,
   depth = 0,
   reasoningEffort: 'none' | 'high' = 'none',
+  userId?: string,
 ): Promise<OpenRouterResponse> {
   if (depth > 5) throw new Error('Too many tool call iterations');
 
@@ -352,6 +377,11 @@ async function callOpenRouter(
       if (executor) {
         try {
           const args = JSON.parse(tc.arguments);
+          // Inject request context for tools that need it
+          if (tc.name === 'log_skill_gap') {
+            args.conversationId = conversationId;
+            args.userId = userId;
+          }
           result = await executor(args);
         } catch (err) {
           result = JSON.stringify({ error: `Tool execution failed: ${String(err)}` });
@@ -390,7 +420,7 @@ async function callOpenRouter(
     }
 
     // Continue conversation with tool results
-    return callOpenRouter(apiKey, messages, controller, encoder, conversationId, depth + 1, reasoningEffort);
+    return callOpenRouter(apiKey, messages, controller, encoder, conversationId, depth + 1, reasoningEffort, userId);
   }
 
   return { content: fullContent, reasoning: fullReasoning, tokenUsage };
@@ -406,7 +436,7 @@ async function generateTitle(apiKey: string, userMessage: string, assistantRespo
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-haiku-4.5',
+        model: 'anthropic/claude-haiku-4',
         messages: [
           {
             role: 'user',
