@@ -116,22 +116,6 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-        {/* Loading overlay when switching conversations */}
-        {chat.isLoading && (
-          <div data-testid="chat-loading" style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: '64px 24px', gap: 16,
-          }}>
-            <div className="chat-loading-pulse" style={{
-              width: 48, height: 48, borderRadius: '50%',
-              background: 'var(--color-primary-muted)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Robot size={24} style={{ color: 'var(--color-primary)' }} />
-            </div>
-            <span style={{ fontSize: 13, color: 'var(--color-text-muted)', fontWeight: 500 }}>Loading conversation...</span>
-          </div>
-        )}
         {/* Empty state removed — the greeting message from useChatWidget handles new conversations */}
 
         {(() => {
@@ -155,6 +139,23 @@ export function ChatWidget({ conversationId, onConversationCreated }: ChatWidget
             );
           });
         })()}
+
+        {/* Loading indicator — shown below existing messages when switching conversations */}
+        {chat.isLoading && (
+          <div data-testid="chat-loading" style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '16px 0',
+          }}>
+            <div className="chat-loading-pulse" style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'var(--color-primary-muted)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}>
+              <Robot size={16} style={{ color: 'var(--color-primary)' }} />
+            </div>
+            <span style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Loading conversation...</span>
+          </div>
+        )}
 
         {/* Streaming / thinking indicator */}
         {chat.isStreaming && (() => {
@@ -445,11 +446,10 @@ function MessageBubble({ message, downloadData, chips, onChipClick }: {
               active={copied}
             />
             {downloadData && (
-              <ActionButton
+              <DownloadButton
                 testId="chat-download-button"
                 onClick={handleDownload}
-                icon={<DownloadSimple size={13} />}
-                label="Download"
+                filename={downloadData.filename}
               />
             )}
           </div>
@@ -481,6 +481,35 @@ function ActionButton({ testId, onClick, icon, label, active }: {
     >
       {icon}
       <span>{label}</span>
+    </button>
+  );
+}
+
+function DownloadButton({ testId, onClick, filename }: { testId: string; onClick: () => void; filename: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      data-testid={testId}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+        fontFamily: 'inherit',
+        background: hovered ? 'var(--color-primary)' : 'var(--color-primary-muted)',
+        color: hovered ? '#fff' : 'var(--color-primary)',
+        border: '1px solid var(--color-primary)',
+        cursor: 'pointer',
+        transition: 'all 200ms ease',
+        transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 4px 12px rgba(0,0,0,0.12)' : 'none',
+      }}
+    >
+      <DownloadSimple size={16} weight="bold" style={{
+        animation: 'chat-download-bounce 2s ease-in-out infinite',
+      }} />
+      <span>Download {filename}</span>
     </button>
   );
 }

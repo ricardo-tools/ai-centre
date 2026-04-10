@@ -62,7 +62,7 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
     // Increment version — stale responses from prior loads will be discarded
     const version = ++loadVersionRef.current;
 
-    setState((s) => ({ ...s, conversationId: convId, messages: [], isLoading: true, isStreaming: false, error: null }));
+    setState((s) => ({ ...s, conversationId: convId, isLoading: true, isStreaming: false, error: null }));
 
     fetchMessages(convId).then((result) => {
       // Discard if a newer load started while this one was in flight
@@ -216,6 +216,9 @@ export function useChatWidget(opts?: UseChatWidgetOptions) {
                 break;
               case 'meta':
                 if (event.conversationId) {
+                  // Mark as already loaded so the load-messages effect doesn't
+                  // clear and re-fetch when the parent passes this ID back as a prop
+                  loadedConvRef.current = event.conversationId;
                   setState((s) => ({ ...s, conversationId: event.conversationId! }));
                 }
                 break;

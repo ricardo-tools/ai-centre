@@ -450,6 +450,14 @@ select:focus {
   50% { transform: scale(1.05); box-shadow: 0 0 0 12px transparent; }
 }
 
+/* Chat download button bounce */
+@keyframes chat-download-bounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-3px); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(2px); }
+}
+
 /* Typing dots */
 .typing-dot {
   width: 6px;
