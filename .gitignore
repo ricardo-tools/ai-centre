@@ -19,6 +19,8 @@ next-env.d.ts
 
 # Reference files (downloaded assets, not source)
 references/
+# But keep skill reference files
+!skills/**/references/
 
 # OS files
 .DS_Store
