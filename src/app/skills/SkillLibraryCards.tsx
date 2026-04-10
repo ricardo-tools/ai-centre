@@ -100,15 +100,14 @@ export function SkillLibraryCards() {
   const bookmarkedSlugs = useBookmarkOrder('skill');
 
   useEffect(() => {
-    fetchAllSkills().then((result) => {
+    fetchAllSkills().then(async (result) => {
       if (result.ok) {
         const loaded = toSkills(result.value);
-        setSkills(loaded);
-        // Bulk fetch social signals for all skills in a single request
+        // Bulk fetch social signals BEFORE setting skills, so cards mount with initialData
         const slugs = loaded.map((s) => s.slug);
-        getBulkSocialSignals('skill', slugs, session?.userId ?? undefined).then((data) => {
-          setSocialData(data);
-        });
+        const data = await getBulkSocialSignals('skill', slugs, session?.userId ?? undefined).catch(() => ({}));
+        setSocialData(data);
+        setSkills(loaded);
       }
       setLoading(false);
     });
@@ -284,7 +283,7 @@ export function SkillLibraryCards() {
               skill={skill}
               officialLabel={t('skills.official')}
               viewLabel={t('skills.view')}
-              initialData={socialData[skill.slug]}
+              initialData={socialData[skill.slug] ?? { upvoteCount: 0, commentCount: 0, isUpvoted: false, isBookmarked: false }}
             />
           ))}
         </div>
