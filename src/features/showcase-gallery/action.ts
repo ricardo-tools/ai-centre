@@ -1,5 +1,8 @@
 'use server';
 
+// Allow up to 60s for actions like generateThumbnail that call external screenshot services
+export const maxDuration = 60;
+
 import { after } from 'next/server';
 import { type Result, Ok, Err, ValidationError, NotFoundError, ForbiddenError } from '@/platform/lib/result';
 import { requireAuth, requirePermission, requireOwnerOrAdmin } from '@/platform/lib/guards';
@@ -448,7 +451,9 @@ export async function generateThumbnail(showcaseId: string): Promise<Result<{ th
     const screenshotApiUrl = `https://image.thum.io/get/width/1200/crop/630/${signedUrl}`;
     console.info('[showcase-gallery] generateThumbnail: capturing screenshot:', { showcaseId });
 
-    const response = await fetch(screenshotApiUrl);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 45_000);
+    const response = await fetch(screenshotApiUrl, { signal: controller.signal }).finally(() => clearTimeout(timer));
     if (!response.ok) {
       console.error('[showcase-gallery] generateThumbnail: screenshot fetch failed:', response.status);
       return Err(new ValidationError('screenshotFailed', `Screenshot service returned ${response.status}`));
