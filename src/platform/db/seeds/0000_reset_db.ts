@@ -18,13 +18,8 @@ export async function runResetIfNeeded(
 ): Promise<boolean> {
   // Create tracking table if it doesn't exist (survives across resets
   // because we check BEFORE dropping)
-  await query(`
-    CREATE TABLE IF NOT EXISTS "__pre_migrations__" (
-      id SERIAL PRIMARY KEY,
-      tag TEXT NOT NULL UNIQUE,
-      applied_at TIMESTAMP NOT NULL DEFAULT NOW()
-    )
-  `);
+  // Single-line SQL — Neon HTTP driver rejects multi-line as "multiple commands"
+  await query('CREATE TABLE IF NOT EXISTS "__pre_migrations__" (id SERIAL PRIMARY KEY, tag TEXT NOT NULL UNIQUE, applied_at TIMESTAMP NOT NULL DEFAULT NOW())');
 
   // Check if this reset has already run
   const applied = await query(
@@ -48,13 +43,7 @@ export async function runResetIfNeeded(
   }
 
   // Re-create tracking table (it was just dropped with public schema)
-  await query(`
-    CREATE TABLE IF NOT EXISTS "__pre_migrations__" (
-      id SERIAL PRIMARY KEY,
-      tag TEXT NOT NULL UNIQUE,
-      applied_at TIMESTAMP NOT NULL DEFAULT NOW()
-    )
-  `);
+  await query('CREATE TABLE IF NOT EXISTS "__pre_migrations__" (id SERIAL PRIMARY KEY, tag TEXT NOT NULL UNIQUE, applied_at TIMESTAMP NOT NULL DEFAULT NOW())');
 
   // Record that this reset ran
   await query('INSERT INTO "__pre_migrations__" (tag) VALUES ($1)', [RESET_TAG]);
