@@ -1,5 +1,6 @@
 'use server';
 
+import { after } from 'next/server';
 import { type Result, Ok, Err, ValidationError, NotFoundError, ForbiddenError } from '@/platform/lib/result';
 import { requireAuth, requirePermission, requireOwnerOrAdmin } from '@/platform/lib/guards';
 import { getDb, hasDatabase } from '@/platform/db/client';
@@ -60,7 +61,7 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
 
   try {
     const { showcaseUploads, users } = await import('@/platform/db/schema');
-    const { eq, desc } = await import('drizzle-orm');
+    const { eq, desc, and } = await import('drizzle-orm');
     const db = getDb();
     const rows = await db
       .select({
@@ -82,6 +83,7 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
       })
       .from(showcaseUploads)
       .leftJoin(users, eq(showcaseUploads.userId, users.id))
+      .where(eq(showcaseUploads.archived, false))
       .orderBy(desc(showcaseUploads.createdAt));
 
     return Ok(rows.map((r: Record<string, unknown>) => ({
@@ -296,14 +298,15 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
 
     const insertedId = (inserted as Record<string, unknown>).id as string;
 
-    // Fire-and-forget deployment for ZIP uploads
+    // Deploy after response — after() keeps the function alive on Vercel
     if (fileType === 'zip' && process.env.VERCEL_SHOWCASE_TOKEN) {
-      import('./deploy').then(({ triggerDeploy }) => {
-        triggerDeploy(insertedId).catch((err) => {
-          console.error('[showcase-gallery] triggerDeploy fire-and-forget error:', err);
-        });
-      }).catch((err) => {
-        console.error('[showcase-gallery] failed to import deploy module:', err);
+      after(async () => {
+        try {
+          const { triggerDeploy } = await import('./deploy');
+          await triggerDeploy(insertedId);
+        } catch (err) {
+          console.error('[showcase-gallery] triggerDeploy error:', err);
+        }
       });
     } else if (fileType === 'zip' && !process.env.VERCEL_SHOWCASE_TOKEN) {
       console.warn('[showcase-gallery] VERCEL_SHOWCASE_TOKEN not set — skipping deployment for showcase:', insertedId);
@@ -531,15 +534,16 @@ export async function updateShowcase(showcaseId: string, formData: FormData): Pr
       ...deployFieldUpdates,
     }).where(eq(showcaseUploads.id, showcaseId));
 
-    // Fire-and-forget triggerDeploy for new ZIP uploads
+    // Deploy after response — after() keeps the function alive on Vercel
     if (fileUpdates && fileUpdates.fileType === 'zip' && process.env.VERCEL_SHOWCASE_TOKEN) {
       console.info('[showcase-gallery] updateShowcase: triggering re-deploy:', { showcaseId });
-      import('./deploy').then(({ triggerDeploy }) => {
-        triggerDeploy(showcaseId).catch((err) => {
-          console.error('[showcase-gallery] updateShowcase: triggerDeploy fire-and-forget error:', err);
-        });
-      }).catch((err) => {
-        console.error('[showcase-gallery] updateShowcase: failed to import deploy module:', err);
+      after(async () => {
+        try {
+          const { triggerDeploy } = await import('./deploy');
+          await triggerDeploy(showcaseId);
+        } catch (err) {
+          console.error('[showcase-gallery] updateShowcase: triggerDeploy error:', err);
+        }
       });
     } else if (fileUpdates && fileUpdates.fileType === 'zip' && !process.env.VERCEL_SHOWCASE_TOKEN) {
       console.warn('[showcase-gallery] updateShowcase: VERCEL_SHOWCASE_TOKEN not set — skipping re-deployment for showcase:', showcaseId);
@@ -571,6 +575,7 @@ export async function checkDeployStatus(showcaseId: string): Promise<Result<{ de
         deployUrl: showcaseUploads.deployUrl,
         deploymentId: showcaseUploads.deploymentId,
         deployError: showcaseUploads.deployError,
+        createdAt: showcaseUploads.createdAt,
       })
       .from(showcaseUploads)
       .where(eq(showcaseUploads.id, showcaseId))
@@ -583,14 +588,30 @@ export async function checkDeployStatus(showcaseId: string): Promise<Result<{ de
     const currentError = row.deployError ?? null;
     const deploymentId = row.deploymentId ?? null;
 
-    // If not actively building, or no deploymentId to check, return DB status as-is
-    if ((currentStatus !== 'building' && currentStatus !== 'pending') || !deploymentId) {
+    // Stale deploy detection: if pending/building with no deploymentId for >10 min, mark failed
+    const STALE_TIMEOUT_MS = 10 * 60 * 1000;
+    if ((currentStatus === 'building' || currentStatus === 'pending') && !deploymentId) {
+      const age = Date.now() - new Date(row.createdAt).getTime();
+      if (age > STALE_TIMEOUT_MS) {
+        console.warn('[showcase-gallery] checkDeployStatus: stale deploy detected, marking as failed:', { showcaseId, age, currentStatus });
+        await db
+          .update(showcaseUploads)
+          .set({ deployStatus: 'failed', deployError: 'Deploy timed out — no response from Vercel. Try again.' })
+          .where(eq(showcaseUploads.id, showcaseId));
+        return Ok({ deployStatus: 'failed', deployUrl: null, deployError: 'Deploy timed out — no response from Vercel. Try again.', deployStep: null });
+      }
+      // Still within timeout window, return current status (deploy may still be starting)
       return Ok({ deployStatus: currentStatus, deployUrl: currentUrl, deployError: currentError, deployStep: null });
     }
 
-    // Check Vercel API for the latest deployment status
+    // If not actively building, return DB status as-is
+    if (currentStatus !== 'building' && currentStatus !== 'pending') {
+      return Ok({ deployStatus: currentStatus, deployUrl: currentUrl, deployError: currentError, deployStep: null });
+    }
+
+    // Check Vercel API for the latest deployment status (deploymentId is guaranteed non-null here)
     const { getDeploymentStatus } = await import('@/platform/lib/vercel-deploy');
-    const statusResult = await getDeploymentStatus(deploymentId);
+    const statusResult = await getDeploymentStatus(deploymentId!);
 
     if (!statusResult.ok) {
       // Vercel API failed — return DB status as fallback
@@ -662,13 +683,14 @@ export async function triggerMigrationDeploy(showcaseId: string): Promise<Result
 
     console.info('[showcase-migration] triggering lazy deploy for pre-migration showcase:', { showcaseId });
 
-    // Fire-and-forget triggerDeploy
-    import('./deploy').then(({ triggerDeploy }) => {
-      triggerDeploy(showcaseId).catch((err) => {
-        console.error('[showcase-migration] triggerDeploy fire-and-forget error:', err);
-      });
-    }).catch((err) => {
-      console.error('[showcase-migration] failed to import deploy module:', err);
+    // Deploy after response — after() keeps the function alive on Vercel
+    after(async () => {
+      try {
+        const { triggerDeploy } = await import('./deploy');
+        await triggerDeploy(showcaseId);
+      } catch (err) {
+        console.error('[showcase-migration] triggerDeploy error:', err);
+      }
     });
 
     return Ok(undefined);
@@ -715,8 +737,9 @@ export async function retryDeploy(showcaseId: string): Promise<Result<void, Forb
       return Err(new NotFoundError('Showcase', showcaseId));
     }
 
-    if (row.deployStatus !== 'failed') {
-      console.warn('[showcase-gallery] retryDeploy: showcase not in failed state:', { showcaseId, deployStatus: row.deployStatus });
+    const retryableStatuses = ['failed', 'pending', 'building'];
+    if (!retryableStatuses.includes(row.deployStatus)) {
+      console.warn('[showcase-gallery] retryDeploy: showcase not in retryable state:', { showcaseId, deployStatus: row.deployStatus });
       return Err(new NotFoundError('Showcase', showcaseId));
     }
 
@@ -739,14 +762,15 @@ export async function retryDeploy(showcaseId: string): Promise<Result<void, Forb
 
     console.info('[showcase-gallery] retryDeploy: status reset to pending:', { showcaseId });
 
-    // Fire-and-forget triggerDeploy
+    // Deploy after response — after() keeps the function alive on Vercel
     if (process.env.VERCEL_SHOWCASE_TOKEN) {
-      import('./deploy').then(({ triggerDeploy }) => {
-        triggerDeploy(showcaseId).catch((err) => {
-          console.error('[showcase-gallery] retryDeploy: triggerDeploy fire-and-forget error:', err);
-        });
-      }).catch((err) => {
-        console.error('[showcase-gallery] retryDeploy: failed to import deploy module:', err);
+      after(async () => {
+        try {
+          const { triggerDeploy } = await import('./deploy');
+          await triggerDeploy(showcaseId);
+        } catch (err) {
+          console.error('[showcase-gallery] retryDeploy: triggerDeploy error:', err);
+        }
       });
     } else {
       console.warn('[showcase-gallery] retryDeploy: VERCEL_SHOWCASE_TOKEN not set — skipping deployment');
@@ -756,6 +780,42 @@ export async function retryDeploy(showcaseId: string): Promise<Result<void, Forb
     return Ok(undefined);
   } catch (err) {
     console.error('[showcase-gallery] retryDeploy.error:', err);
+    return Err(new NotFoundError('Showcase', showcaseId));
+  }
+}
+
+export async function archiveShowcase(showcaseId: string): Promise<Result<void, ForbiddenError | NotFoundError>> {
+  const authResult = await requirePermission('showcase:upload');
+  if (!authResult.ok) return authResult;
+
+  if (!hasDb) return Err(new NotFoundError('Showcase', showcaseId));
+
+  try {
+    const { showcaseUploads } = await import('@/platform/db/schema');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+
+    const [row] = await db
+      .select({ id: showcaseUploads.id, userId: showcaseUploads.userId })
+      .from(showcaseUploads)
+      .where(eq(showcaseUploads.id, showcaseId))
+      .limit(1);
+
+    if (!row) return Err(new NotFoundError('Showcase', showcaseId));
+
+    const session = authResult.value;
+    const ownerCheck = requireOwnerOrAdmin(session, row.userId);
+    if (!ownerCheck.ok) return ownerCheck;
+
+    await db
+      .update(showcaseUploads)
+      .set({ archived: true })
+      .where(eq(showcaseUploads.id, showcaseId));
+
+    console.info('[showcase-gallery] archived:', { showcaseId });
+    return Ok(undefined);
+  } catch (err) {
+    console.error('[showcase-gallery] archiveShowcase.error:', err);
     return Err(new NotFoundError('Showcase', showcaseId));
   }
 }

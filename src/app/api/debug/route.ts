@@ -50,6 +50,8 @@ export async function GET(request: NextRequest) {
       ADMIN_EMAIL: process.env.ADMIN_EMAIL ?? '(not set)',
       OPENROUTER_KEY_SET: !!process.env.OPENROUTER_API_KEY,
       ANTHROPIC_KEY_SET: !!process.env.ANTHROPIC_API_KEY,
+      VERCEL_SHOWCASE_TOKEN_SET: !!process.env.VERCEL_SHOWCASE_TOKEN,
+      SHOWCASE_JWT_SECRET_SET: !!process.env.SHOWCASE_JWT_SECRET,
     },
   });
 }

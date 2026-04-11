@@ -77,6 +77,11 @@ vi.mock('drizzle-orm', () => ({
   eq: (col: unknown, val: unknown) => ({ col, val }),
 }));
 
+// Mock next/server after() to execute callbacks immediately
+vi.mock('next/server', () => ({
+  after: (fn: () => Promise<void>) => { fn(); },
+}));
+
 // ── Helpers ────────────────────────────────────────────────────────
 
 function createFormData(overrides: Record<string, string | File> = {}): FormData {

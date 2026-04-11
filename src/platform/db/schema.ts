@@ -150,6 +150,7 @@ export const showcaseUploads = pgTable('showcase_uploads', {
   deployUrl: text('deploy_url'),
   deploymentId: text('deployment_id'),
   deployError: text('deploy_error'),
+  archived: boolean('archived').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

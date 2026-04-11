@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle, Archive } from '@phosphor-icons/react';
 
 import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
-import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy } from '@/features/showcase-gallery/action';
+import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy, archiveShowcase } from '@/features/showcase-gallery/action';
 import { useDeployPolling } from '@/features/showcase-gallery/hooks/useDeployPolling';
 import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
 import { trackShowcaseView, getShowcaseViewCount } from '@/features/social/action';
@@ -360,12 +360,23 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
           {deleteError && <span style={{ fontSize: 12, color: 'var(--color-danger)' }}>{deleteError}</span>}
 
           {canDelete && !confirmDelete && (
-            <button
-              onClick={() => { setConfirmDelete(true); setDeleteError(null); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-            >
-              <Trash size={12} /> Delete
-            </button>
+            <>
+              <button
+                onClick={async () => {
+                  const result = await archiveShowcase(showcase.id);
+                  if (result.ok) router.push('/gallery');
+                }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-muted)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                <Archive size={12} /> Archive
+              </button>
+              <button
+                onClick={() => { setConfirmDelete(true); setDeleteError(null); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-danger)', background: 'transparent', color: 'var(--color-danger)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                <Trash size={12} /> Delete
+              </button>
+            </>
           )}
 
           {canDelete && confirmDelete && (
@@ -619,6 +630,30 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--color-text-muted)' }}>
               <DeployStepIndicator step={deployStep} deployStatus={deployStatus} />
             </div>
+            {canDelete && (
+              <button
+                onClick={handleRetryDeploy}
+                disabled={retrying}
+                style={{
+                  marginTop: 20,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '6px 16px',
+                  borderRadius: 6,
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--color-text-body)',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  cursor: retrying ? 'not-allowed' : 'pointer',
+                  opacity: retrying ? 0.6 : 1,
+                  fontFamily: 'inherit',
+                }}
+              >
+                {retrying ? 'Retrying...' : 'Stuck? Retry Deploy'}
+              </button>
+            )}
           </div>
         ) : deployStatus === 'failed' ? (
           <div

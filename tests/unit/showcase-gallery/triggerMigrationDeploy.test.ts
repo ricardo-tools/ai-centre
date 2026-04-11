@@ -45,6 +45,11 @@ vi.mock('@/features/showcase-gallery/deploy', () => ({
   triggerDeploy: (...args: unknown[]) => mockTriggerDeploy(...args),
 }));
 
+// Mock next/server after() to execute callbacks immediately
+vi.mock('next/server', () => ({
+  after: (fn: () => Promise<void>) => { fn(); },
+}));
+
 // ── Tests ──────────────────────────────────────────────────────────
 
 describe('showcase-gallery/action — triggerMigrationDeploy', () => {
