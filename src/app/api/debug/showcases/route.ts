@@ -80,6 +80,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, showcase: row });
     }
 
+    if (action === 'thumbnail') {
+      const { getDb } = await import('@/platform/db/client');
+      const { showcaseUploads } = await import('@/platform/db/schema');
+      const { eq } = await import('drizzle-orm');
+      const db = getDb();
+
+      const [row] = await db
+        .select({ deployStatus: showcaseUploads.deployStatus, deployUrl: showcaseUploads.deployUrl })
+        .from(showcaseUploads)
+        .where(eq(showcaseUploads.id, showcaseId))
+        .limit(1);
+
+      if (!row || row.deployStatus !== 'ready' || !row.deployUrl) {
+        return NextResponse.json({ error: 'Showcase not ready' }, { status: 400 });
+      }
+
+      const { signShowcaseUrl } = await import('@/platform/lib/showcase-token');
+      const signedUrl = await signShowcaseUrl(row.deployUrl);
+      const screenshotApiUrl = `https://image.thum.io/get/width/1200/crop/630/${signedUrl}`;
+
+      const imgResp = await fetch(screenshotApiUrl);
+      if (!imgResp.ok) {
+        return NextResponse.json({ error: `Screenshot fetch failed: ${imgResp.status}` }, { status: 502 });
+      }
+
+      const imageBuffer = Buffer.from(await imgResp.arrayBuffer());
+      const contentType = imgResp.headers.get('content-type') ?? 'image/png';
+      const ext = contentType.includes('jpeg') ? 'jpg' : 'png';
+
+      let thumbnailUrl: string;
+      if (process.env.BLOB_READ_WRITE_TOKEN) {
+        const { put } = await import('@vercel/blob');
+        const blob = await put(`showcases/thumbs/${showcaseId}-${Date.now()}.${ext}`, imageBuffer, { access: 'private', contentType });
+        thumbnailUrl = blob.url;
+      } else {
+        thumbnailUrl = `(local-only)`;
+      }
+
+      await db.update(showcaseUploads).set({ thumbnailUrl }).where(eq(showcaseUploads.id, showcaseId));
+      return NextResponse.json({ ok: true, thumbnailUrl });
+    }
+
     return NextResponse.json({ error: 'unknown action' }, { status: 400 });
   } catch (err) {
     console.error('[debug/showcases] error:', err);
