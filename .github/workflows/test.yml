@@ -12,6 +12,7 @@ jobs:
           node-version: 22
           cache: 'npm'
       - run: npm ci
+      - run: npx tsx scripts/prebuild-skills.ts
       - run: npx tsc --noEmit
 
   unit:
@@ -23,6 +24,7 @@ jobs:
           node-version: 22
           cache: 'npm'
       - run: npm ci
+      - run: npx tsx scripts/prebuild-skills.ts
       - run: npx vitest run
 
   build:
