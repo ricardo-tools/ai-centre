@@ -8,8 +8,12 @@ import { existsSync } from 'fs';
  */
 export async function runPreMigrationResets(): Promise<void> {
   const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl) return;
+  if (!dbUrl) {
+    console.log('[pre-migrate] No DATABASE_URL — skipping');
+    return;
+  }
 
+  console.log('[pre-migrate] Starting pre-migration checks...');
   const isLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
   const { runResetIfNeeded } = await import('@/platform/db/seeds/0000_reset_db');
 

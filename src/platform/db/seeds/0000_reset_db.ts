@@ -16,17 +16,22 @@ export async function runResetIfNeeded(
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>,
   isLocal: boolean,
 ): Promise<boolean> {
+  console.log(`[pre-migrate] Checking reset tag: ${RESET_TAG}`);
+
   // Create tracking table if it doesn't exist (survives across resets
   // because we check BEFORE dropping)
   // Single-line SQL — Neon HTTP driver rejects multi-line as "multiple commands"
   await query('CREATE TABLE IF NOT EXISTS "__pre_migrations__" (id SERIAL PRIMARY KEY, tag TEXT NOT NULL UNIQUE, applied_at TIMESTAMP NOT NULL DEFAULT NOW())');
+  console.log('[pre-migrate] Tracking table ready');
 
   // Check if this reset has already run
   const applied = await query(
     'SELECT tag FROM "__pre_migrations__" WHERE tag = $1',
     [RESET_TAG],
   );
+  console.log(`[pre-migrate] Tag lookup result: ${(applied as unknown[]).length} row(s)`);
   if ((applied as unknown[]).length > 0) {
+    console.log('[pre-migrate] Reset already applied — skipping');
     return false; // Already applied
   }
 
