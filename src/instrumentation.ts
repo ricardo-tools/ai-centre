@@ -4,7 +4,16 @@ export async function register() {
     const { installLogCapture } = await import('@/platform/lib/server-logs');
     installLogCapture();
 
-    // 1. Run pending database migrations (blocking — tables must exist before anything else)
+    // 1a. Run one-shot pre-migration resets (e.g. schema drops for clean rebuild)
+    try {
+      const { runPreMigrationResets } = await import('@/platform/lib/migrate');
+      await runPreMigrationResets();
+    } catch (err) {
+      console.error('[instrumentation] Pre-migration reset failed:', err);
+      // Continue — migrations may still work if reset wasn't needed
+    }
+
+    // 1b. Run pending database migrations (blocking — tables must exist before anything else)
     try {
       const { runMigrations } = await import('@/platform/lib/migrate');
       await runMigrations();
