@@ -29,18 +29,17 @@ async function run(db: SeedDb): Promise<void> {
   for (const skill of allSkills) {
     if (!skill.content) continue;
 
-    // Skip if already exists
-    const existing = await (db as any).select({ id: skills.id }).from(skills).where(eq(skills.slug, skill.slug)).limit(1);
-    if (existing.length > 0) continue;
-
-    // Create skill
+    // Upsert skill — onConflictDoNothing handles concurrent cold starts racing
     const [newSkill] = await (db as any).insert(skills).values({
       slug: skill.slug,
       title: skill.title,
       description: skill.description,
       authorId: adminUser.id,
       isOfficial: true,
-    }).returning();
+    }).onConflictDoNothing({ target: skills.slug }).returning();
+
+    // Already existed — skip version + audit
+    if (!newSkill) continue;
 
     // Create published version
     const [version] = await (db as any).insert(skillVersions).values({

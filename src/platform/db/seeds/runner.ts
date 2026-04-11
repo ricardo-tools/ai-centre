@@ -31,14 +31,8 @@ const SEEDS: Seed[] = [
 ];
 
 export async function runSeeds(db: SeedDb, query: (sql: string, params?: unknown[]) => Promise<unknown[]>): Promise<void> {
-  // Ensure tracking table exists
-  await query(`
-    CREATE TABLE IF NOT EXISTS "__seed_migrations__" (
-      id SERIAL PRIMARY KEY,
-      tag TEXT NOT NULL UNIQUE,
-      applied_at TIMESTAMP NOT NULL DEFAULT NOW()
-    )
-  `);
+  // Ensure tracking table exists (single-line for Neon HTTP driver compatibility)
+  await query('CREATE TABLE IF NOT EXISTS "__seed_migrations__" (id SERIAL PRIMARY KEY, tag TEXT NOT NULL UNIQUE, applied_at TIMESTAMP NOT NULL DEFAULT NOW())');
 
   // Get already-applied seeds
   const applied = await query('SELECT tag FROM "__seed_migrations__" ORDER BY id');
