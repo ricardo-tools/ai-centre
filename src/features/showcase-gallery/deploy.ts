@@ -63,7 +63,9 @@ export async function triggerDeploy(showcaseId: string): Promise<void> {
       const fileData = await fs.readFile(filePath);
       zipBuffer = fileData.buffer.slice(fileData.byteOffset, fileData.byteOffset + fileData.byteLength);
     } else {
-      const response = await fetch(row.blobUrl);
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      const headers: Record<string, string> = blobToken ? { Authorization: `Bearer ${blobToken}` } : {};
+      const response = await fetch(row.blobUrl, { headers });
       if (!response.ok) {
         throw new Error(`ZIP fetch failed: ${response.status} ${response.statusText}`);
       }
