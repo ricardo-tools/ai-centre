@@ -409,6 +409,89 @@ export async function getSignedShowcaseUrl(showcaseId: string): Promise<string |
   return signShowcaseUrl(showcase.deployUrl);
 }
 
+export async function generateThumbnail(showcaseId: string): Promise<Result<{ thumbnailUrl: string }, ForbiddenError | NotFoundError | ValidationError>> {
+  const authResult = await requireAuth();
+  if (!authResult.ok) return authResult;
+  const session = authResult.value;
+
+  if (!hasDb) return Err(new NotFoundError('Showcase', showcaseId));
+
+  try {
+    const { showcaseUploads } = await import('@/platform/db/schema');
+    const { eq } = await import('drizzle-orm');
+    const db = getDb();
+
+    const [row] = await db
+      .select({
+        userId: showcaseUploads.userId,
+        deployStatus: showcaseUploads.deployStatus,
+        deployUrl: showcaseUploads.deployUrl,
+      })
+      .from(showcaseUploads)
+      .where(eq(showcaseUploads.id, showcaseId))
+      .limit(1);
+
+    if (!row) return Err(new NotFoundError('Showcase', showcaseId));
+
+    const ownerCheck = requireOwnerOrAdmin(session, row.userId);
+    if (!ownerCheck.ok) return ownerCheck;
+
+    if (row.deployStatus !== 'ready' || !row.deployUrl) {
+      return Err(new ValidationError('notReady', 'Showcase must be deployed before generating a thumbnail'));
+    }
+
+    // Sign the URL so the screenshot service can access the JWT-protected page
+    const { signShowcaseUrl } = await import('@/platform/lib/showcase-token');
+    const signedUrl = await signShowcaseUrl(row.deployUrl);
+
+    // Capture screenshot via thum.io (free, no API key needed)
+    const screenshotApiUrl = `https://image.thum.io/get/width/1200/crop/630/${signedUrl}`;
+    console.info('[showcase-gallery] generateThumbnail: capturing screenshot:', { showcaseId });
+
+    const response = await fetch(screenshotApiUrl);
+    if (!response.ok) {
+      console.error('[showcase-gallery] generateThumbnail: screenshot fetch failed:', response.status);
+      return Err(new ValidationError('screenshotFailed', `Screenshot service returned ${response.status}`));
+    }
+
+    const imageBuffer = Buffer.from(await response.arrayBuffer());
+    const contentType = response.headers.get('content-type') ?? 'image/png';
+    const ext = contentType.includes('jpeg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
+
+    // Upload to blob storage
+    let thumbnailUrl: string;
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      const { put } = await import('@vercel/blob');
+      const blob = await put(
+        `showcases/thumbs/${showcaseId}-${Date.now()}.${ext}`,
+        imageBuffer,
+        { access: 'private', contentType },
+      );
+      thumbnailUrl = blob.url;
+    } else {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const uploadsDir = path.resolve(process.cwd(), 'public', 'uploads', 'thumbs');
+      await fs.mkdir(uploadsDir, { recursive: true });
+      const fileName = `${showcaseId}-${Date.now()}.${ext}`;
+      await fs.writeFile(path.join(uploadsDir, fileName), imageBuffer);
+      thumbnailUrl = `/uploads/thumbs/${fileName}`;
+    }
+
+    // Update DB
+    await db
+      .update(showcaseUploads)
+      .set({ thumbnailUrl })
+      .where(eq(showcaseUploads.id, showcaseId));
+
+    console.info('[showcase-gallery] generateThumbnail: done:', { showcaseId, thumbnailUrl });
+    return Ok({ thumbnailUrl });
+  } catch (err) {
+    console.error('[showcase-gallery] generateThumbnail.error:', err);
+    return Err(new ValidationError('thumbnailFailed', err instanceof Error ? err.message : 'Failed to generate thumbnail'));
+  }
+}
+
 export async function updateShowcase(showcaseId: string, formData: FormData): Promise<Result<void, ValidationError | ForbiddenError | NotFoundError>> {
   const authResult = await requireAuth();
   if (!authResult.ok) return authResult;

@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle, Archive } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle, Archive, Camera } from '@phosphor-icons/react';
 
 import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
-import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy, archiveShowcase } from '@/features/showcase-gallery/action';
+import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy, archiveShowcase, generateThumbnail } from '@/features/showcase-gallery/action';
 import { useDeployPolling } from '@/features/showcase-gallery/hooks/useDeployPolling';
 import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
 import { trackShowcaseView, getShowcaseViewCount } from '@/features/social/action';
@@ -85,6 +85,8 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
 
   // Retry deploy state
   const [retrying, setRetrying] = useState(false);
+  // Thumbnail generation state
+  const [generatingThumb, setGeneratingThumb] = useState(false);
 
   // Track the signed deploy URL — starts from prop, updated when polling detects ready
   const [resolvedSignedUrl, setResolvedSignedUrl] = useState(signedDeployUrl ?? null);
@@ -361,6 +363,25 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
 
           {canDelete && !confirmDelete && (
             <>
+              {deployStatus === 'ready' && (
+                <button
+                  onClick={async () => {
+                    setGeneratingThumb(true);
+                    try {
+                      const result = await generateThumbnail(showcase.id);
+                      if (!result.ok) console.error('[showcase-viewer] generateThumbnail failed:', result.error.message);
+                    } catch (err) {
+                      console.error('[showcase-viewer] generateThumbnail error:', err);
+                    }
+                    setGeneratingThumb(false);
+                  }}
+                  disabled={generatingThumb}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: generatingThumb ? 'not-allowed' : 'pointer', opacity: generatingThumb ? 0.6 : 1, fontFamily: 'inherit' }}
+                >
+                  {generatingThumb ? <SpinnerGap size={12} style={{ animation: 'deploy-spin 1s linear infinite' }} /> : <Camera size={12} />}
+                  {generatingThumb ? 'Capturing...' : 'Thumbnail'}
+                </button>
+              )}
               <button
                 onClick={async () => {
                   const result = await archiveShowcase(showcase.id);
