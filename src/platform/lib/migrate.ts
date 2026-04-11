@@ -84,22 +84,7 @@ export async function runMigrations(): Promise<void> {
       // Ensure pgvector extension is available (needed for feedback RAG embeddings)
       await sql('CREATE EXTENSION IF NOT EXISTS vector');
 
-      // Neon HTTP driver: each cold start runs independently with no session.
-      // Multiple Vercel functions can cold-start simultaneously after a deploy,
-      // racing on migrations. If one fails with "already exists", another instance
-      // already applied that migration — wait for its journal entry, then retry.
-      try {
-        await migrate(db, { migrationsFolder });
-      } catch (migrateErr) {
-        const msg = migrateErr instanceof Error ? migrateErr.message : String(migrateErr);
-        if (msg.includes('already exists')) {
-          console.log('[migrate] Race condition detected — another instance is migrating. Retrying in 3s...');
-          await new Promise(r => setTimeout(r, 3000));
-          await migrate(db, { migrationsFolder });
-        } else {
-          throw migrateErr;
-        }
-      }
+      await migrate(db, { migrationsFolder });
     }
 
     console.log(`[migrate] Migrations complete (${Date.now() - started}ms)`);

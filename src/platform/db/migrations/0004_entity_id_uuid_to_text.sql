@@ -5,7 +5,7 @@
 ALTER TABLE "bookmarks" DROP CONSTRAINT IF EXISTS "bookmark_unique";--> statement-breakpoint
 ALTER TABLE "reactions" DROP CONSTRAINT IF EXISTS "reaction_unique";--> statement-breakpoint
 
--- Alter columns
+-- Alter columns (idempotent — SET DATA TYPE text on a text column is a no-op)
 ALTER TABLE "activity_events" ALTER COLUMN "entity_id" SET DATA TYPE text USING "entity_id"::text;--> statement-breakpoint
 ALTER TABLE "bookmarks" ALTER COLUMN "entity_id" SET DATA TYPE text USING "entity_id"::text;--> statement-breakpoint
 ALTER TABLE "comments" ALTER COLUMN "entity_id" SET DATA TYPE text USING "entity_id"::text;--> statement-breakpoint
@@ -14,5 +14,5 @@ ALTER TABLE "reactions" ALTER COLUMN "entity_id" SET DATA TYPE text USING "entit
 ALTER TABLE "audit_log" ALTER COLUMN "entity_id" SET DATA TYPE text USING "entity_id"::text;--> statement-breakpoint
 
 -- Recreate unique constraints
-ALTER TABLE "bookmarks" ADD CONSTRAINT "bookmark_unique" UNIQUE("user_id","entity_type","entity_id");--> statement-breakpoint
-ALTER TABLE "reactions" ADD CONSTRAINT "reaction_unique" UNIQUE("entity_type","entity_id","user_id","emoji");
+DO $$ BEGIN ALTER TABLE "bookmarks" ADD CONSTRAINT "bookmark_unique" UNIQUE("user_id","entity_type","entity_id"); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN ALTER TABLE "reactions" ADD CONSTRAINT "reaction_unique" UNIQUE("entity_type","entity_id","user_id","emoji"); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
