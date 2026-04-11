@@ -24,7 +24,7 @@ const phases = [
     color: 'var(--color-secondary)',
     description: 'Follow the active plan template methodology',
     actions: [
-      { label: 'Template-driven', desc: 'PLAN_TEMPLATE_DEV.md or PLAN_TEMPLATE_TOOLING.md' },
+      { label: 'Template-driven', desc: 'plan-template-dev.md or plan-template-tooling.md' },
       { label: 'Testing per template', desc: 'TDD, EDD, design gates as template prescribes' },
       { label: 'No doc updates', desc: 'Write docs after delivery, never mid-implementation' },
     ],
@@ -70,12 +70,13 @@ const proportionalScale = [
 ];
 
 const commands = [
-  { cmd: '/continue', trigger: 'Start of session', desc: 'Read LOG.md, check for parked position, resume or start next chapter', color: 'var(--color-primary)' },
-  { cmd: '/plan <topic>', trigger: 'User asks to plan', desc: 'Determine plan type (dev/tooling), research, debate, produce plan file', color: 'var(--color-secondary)' },
-  { cmd: '/status', trigger: 'Mid-session check', desc: 'Read-only summary: current plan, chapter, progress, test counts, blockers', color: 'var(--color-brand)' },
-  { cmd: '/research <topic>', trigger: 'Standalone research', desc: 'Triage complexity, dispatch research agents, report with confidence levels', color: 'var(--color-success)' },
-  { cmd: '/audit [scope]', trigger: 'Quality check', desc: 'Parallel audit subagents: observability, security, a11y, code quality, UX', color: 'var(--color-warning)' },
-  { cmd: '/park', trigger: 'End of session', desc: 'Write parked block to LOG.md with position, decisions, warnings', color: 'var(--color-error)' },
+  { cmd: '/flow-continue', trigger: 'Start of session', desc: 'Read LOG.md, absorb parked session (7 sections, tick checkpoints live), archive park to .plans/.park/, output status report, wait for confirmation', color: 'var(--color-primary)' },
+  { cmd: '/flow-plan <topic>', trigger: 'User asks to plan', desc: 'Determine plan type (dev/tooling), research, debate, produce plan file under .plans/', color: 'var(--color-secondary)' },
+  { cmd: '/flow-status', trigger: 'Mid-session check', desc: 'Read-only summary: current plan, chapter, progress, test counts, blockers, prerequisites', color: 'var(--color-brand)' },
+  { cmd: '/flow-research <topic>', trigger: 'Standalone research', desc: 'Triage complexity, dispatch research agents, report with confidence levels', color: 'var(--color-success)' },
+  { cmd: '/flow-audit [scope]', trigger: 'Quality check', desc: 'Parallel audit subagents: observability, security, a11y, code quality, UX', color: 'var(--color-warning)' },
+  { cmd: '/flow-execute-plan', trigger: 'Implement chapters', desc: 'Execute plan chapters one by one via subagents. Follows each chapter\'s defined methodology. Accepts plan ref + instructions.', color: 'var(--color-text-heading)' },
+  { cmd: '/flow-park', trigger: 'End of session', desc: 'Write 7-section park entry to LOG.md with checkpoints. Archived to .plans/.park/ on next resume.', color: 'var(--color-error)' },
 ];
 
 const opinions = [

@@ -146,6 +146,10 @@ export const showcaseUploads = pgTable('showcase_uploads', {
   thumbnailUrl: text('thumbnail_url'),
   fileName: text('file_name').notNull(),
   fileSizeBytes: integer('file_size_bytes').notNull(),
+  deployStatus: text('deploy_status').notNull().default('none'),
+  deployUrl: text('deploy_url'),
+  deploymentId: text('deployment_id'),
+  deployError: text('deploy_error'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

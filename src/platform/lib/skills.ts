@@ -229,7 +229,7 @@ const SKILL_DEFINITIONS: SkillDefinition[] = [
   {
     slug: 'flow',
     title: 'Flow',
-    description: 'Core workflow router for human-AI paired work. Defines the three phases (PLANNING → IMPLEMENTATION → POST-DELIVERY) and safety guardrails. Does not define HOW to implement — plan templates define methodology.',
+    description: 'Core workflow router for human-AI paired work. Defines phases (PLANNING, IMPLEMENTATION, POST-DELIVERY), safety guardrails, and session commands. Does not define HOW to implement — plan templates define methodology.',
     isOfficial: true,
     version: '2.0.0',
     tags: { type: 'principle', domain: ['global'], layer: 'workflow' },

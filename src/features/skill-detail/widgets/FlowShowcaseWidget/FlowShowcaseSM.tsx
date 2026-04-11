@@ -15,7 +15,7 @@ const highlights = [
   },
   {
     title: 'Command Reference',
-    description: '/continue resumes from LOG.md. /plan creates structured plan. /status gives read-only summary. /research does standalone investigation. /audit runs quality gates. /park ends session.',
+    description: '/flow-continue resumes from park. /flow-plan creates plan. /flow-status gives summary. /flow-research investigates. /flow-audit runs quality gates. /flow-execute-plan implements chapters via subagents. /flow-park ends session.',
     accent: 'var(--color-success)',
   },
   {

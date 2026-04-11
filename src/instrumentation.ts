@@ -9,8 +9,16 @@ export async function register() {
       const { runMigrations } = await import('@/platform/lib/migrate');
       await runMigrations();
     } catch (err) {
-      console.error('[instrumentation] Migration failed — skill sync will be skipped:', err);
+      console.error('[instrumentation] Migration failed — seed will be skipped:', err);
       return;
+    }
+
+    // 2. Run pending data seeds (roles, permissions, skills — versioned and tracked)
+    try {
+      const { runSeedsFromInstrumentation } = await import('@/platform/lib/migrate');
+      await runSeedsFromInstrumentation();
+    } catch (err) {
+      console.error('[instrumentation] Seed failed:', err);
     }
 
     // 2. Sentry (future)

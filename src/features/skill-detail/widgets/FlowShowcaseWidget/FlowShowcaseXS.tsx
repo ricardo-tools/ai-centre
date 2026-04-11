@@ -8,7 +8,7 @@ const takeaways = [
   'Plan before acting: explore, design, get approval before writing code',
   'Never take destructive actions without authorisation — each action needs fresh consent',
   'Proportional: one-line fix = one-line answer, feature = full plan with chapters',
-  'Commands: /continue, /plan, /status, /research, /audit, /park',
+  'Commands: /flow-continue, /flow-plan, /flow-status, /flow-research, /flow-audit, /flow-execute-plan, /flow-park',
   '10 opinion skills available: TDD, EDD, research, planning, observability, and more',
   'Templates define methodology — flow defines when, templates define how',
 ];

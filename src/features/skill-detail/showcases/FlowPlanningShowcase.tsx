@@ -310,9 +310,9 @@ export function FlowPlanningShowcase() {
       <Section title="Plan Templates (references/)">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {[
-            { name: 'PLAN_TEMPLATE_DEV.md', desc: 'Features, schema, UI, API endpoints, auth. Full methodology pipeline.', color: 'var(--color-primary)' },
-            { name: 'PLAN_TEMPLATE_TOOLING.md', desc: 'CI, testing setup, skills, process, developer tooling.', color: 'var(--color-warning)' },
-            { name: 'PLAN_TEMPLATE_MASTER.md', desc: 'Multi-plan coordination, post-plan completion triggers.', color: 'var(--color-error)' },
+            { name: 'plan-template-dev.md', desc: 'Features, schema, UI, API endpoints, auth. Full methodology pipeline.', color: 'var(--color-primary)' },
+            { name: 'plan-template-tooling.md', desc: 'CI, testing setup, skills, process, developer tooling.', color: 'var(--color-warning)' },
+            { name: 'plan-template-master.md', desc: 'Multi-plan coordination, post-plan completion triggers.', color: 'var(--color-error)' },
           ].map((t) => (
             <div
               key={t.name}

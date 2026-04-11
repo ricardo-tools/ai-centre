@@ -4,10 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple } from '@phosphor-icons/react';
-import sdk from '@stackblitz/sdk';
+import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle } from '@phosphor-icons/react';
+
 import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
-import { deleteShowcase, updateShowcase } from '@/features/showcase-gallery/action';
+import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy } from '@/features/showcase-gallery/action';
+import { useDeployPolling } from '@/features/showcase-gallery/hooks/useDeployPolling';
 import { toggleReaction, getReactionCounts } from '@/features/social/reactions-action';
 import { trackShowcaseView, getShowcaseViewCount } from '@/features/social/action';
 import { toggleBookmark, isBookmarked as checkIsBookmarked } from '@/features/social/bookmarks-action';
@@ -26,114 +27,76 @@ function blobProxy(url: string): string {
 
 interface ShowcaseViewerWidgetProps {
   showcase: RawShowcaseUpload;
+  signedDeployUrl?: string | null;
 }
 
-type LoadingPhase = 'cached' | 'fetching' | 'extracting' | 'installing' | 'starting' | 'ready' | 'error';
-
-const PHASE_LABELS: Record<LoadingPhase, string> = {
-  cached: 'Loading from cache...',
-  fetching: 'Fetching project files...',
-  extracting: 'Extracting archive...',
-  installing: 'Installing dependencies...',
-  starting: 'Starting dev server...',
-  ready: '',
-  error: 'Failed to load preview',
-};
-
-const PHASE_PROGRESS: Record<LoadingPhase, number> = {
-  cached: 60,
-  fetching: 15,
-  extracting: 35,
-  installing: 55,
-  starting: 80,
-  ready: 100,
-  error: 0,
-};
-
-// ── IndexedDB cache for extracted ZIP files ──
-
-const IDB_NAME = 'ai-centre-showcase-cache';
-const IDB_STORE = 'extracted-files';
-const IDB_VERSION = 1;
-
-function openCacheDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE);
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function getCachedFiles(key: string): Promise<Record<string, string> | null> {
-  try {
-    const db = await openCacheDb();
-    return new Promise((resolve) => {
-      const tx = db.transaction(IDB_STORE, 'readonly');
-      const store = tx.objectStore(IDB_STORE);
-      const req = store.get(key);
-      req.onsuccess = () => resolve(req.result ?? null);
-      req.onerror = () => resolve(null);
-    });
-  } catch {
-    return null;
-  }
-}
-
-async function setCachedFiles(key: string, files: Record<string, string>): Promise<void> {
-  try {
-    const db = await openCacheDb();
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).put(files, key);
-  } catch {
-    // Cache write failure is non-critical
-  }
-}
 
 const NAV_HEIGHT = 56;
 const BAR_HEIGHT = 44;
 
-/** Fullscreen view for StackBlitz: reads the iframe src from the container and renders it fullscreen */
-function StackBlitzFullscreen({ containerRef, title }: { containerRef: React.RefObject<HTMLDivElement | null>; title: string }) {
-  const [src, setSrc] = useState<string | null>(null);
+const DEPLOY_STEPS = [
+  { key: 'queued', label: 'Queued', matches: ['QUEUED'] },
+  { key: 'initializing', label: 'Installing dependencies', matches: ['INITIALIZING'] },
+  { key: 'building', label: 'Building project', matches: ['BUILDING'] },
+  { key: 'deploying', label: 'Deploying to edge', matches: ['READY'] },
+] as const;
 
-  useEffect(() => {
-    // StackBlitz creates an iframe inside our container div — find it
-    const iframe = containerRef.current?.querySelector('iframe');
-    if (iframe?.src) {
-      setSrc(iframe.src);
-    }
-  }, [containerRef]);
-
-  if (!src) {
-    return (
-      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: 14 }}>
-        Loading fullscreen preview...
-      </div>
-    );
-  }
+function DeployStepIndicator({ step, deployStatus }: { step: string | null; deployStatus: string }) {
+  const activeIdx = step
+    ? DEPLOY_STEPS.findIndex(s => (s.matches as readonly string[]).includes(step))
+    : deployStatus === 'pending' ? -1 : 0;
 
   return (
-    <iframe
-      src={src}
-      title={title}
-      style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-    />
+    <>
+      {DEPLOY_STEPS.map((s, i) => {
+        const isDone = i < activeIdx || (step === 'READY');
+        const isActive = i === activeIdx && step !== 'READY';
+        return (
+          <div key={s.key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: isDone ? 'var(--color-success)' : isActive ? 'var(--color-primary)' : 'var(--color-border)',
+              boxShadow: isActive ? '0 0 0 3px var(--color-primary-muted)' : undefined,
+            }} />
+            <span style={{
+              color: isDone ? 'var(--color-success)' : isActive ? 'var(--color-text-heading)' : 'var(--color-text-muted)',
+              fontWeight: isActive ? 600 : 400,
+            }}>
+              {s.label}{isDone ? ' \u2713' : isActive ? '...' : ''}
+            </span>
+          </div>
+        );
+      })}
+    </>
   );
 }
 
-export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
-  const iframeRef = useRef<HTMLDivElement>(null);
-  const [phase, setPhase] = useState<LoadingPhase>(showcase.fileType === 'html' ? 'ready' : 'fetching');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseViewerWidgetProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Deploy status polling for ZIP projects
+  const { deployStatus, deployUrl: polledDeployUrl, deployError, deployStep, resetStatus } = useDeployPolling(
+    showcase.id,
+    showcase.deployStatus,
+    showcase.deployUrl,
+  );
+
+  // Retry deploy state
+  const [retrying, setRetrying] = useState(false);
+
+  // Track the signed deploy URL — starts from prop, updated when polling detects ready
+  const [resolvedSignedUrl, setResolvedSignedUrl] = useState(signedDeployUrl ?? null);
+
+  // When deploy transitions to ready, fetch a signed URL for the iframe
+  useEffect(() => {
+    if (deployStatus === 'ready' && polledDeployUrl && !resolvedSignedUrl) {
+      getSignedShowcaseUrl(showcase.id).then((url) => {
+        if (url) setResolvedSignedUrl(url);
+      });
+    }
+  }, [deployStatus, polledDeployUrl, resolvedSignedUrl, showcase.id]);
 
   const session = useSession();
   const router = useRouter();
@@ -208,6 +171,22 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
       });
     }
   }, [editing]);
+
+  const handleRetryDeploy = useCallback(async () => {
+    setRetrying(true);
+    try {
+      const result = await retryDeploy(showcase.id);
+      if (result.ok) {
+        console.info('[showcase-viewer] retryDeploy succeeded, restarting polling');
+        resetStatus('pending');
+      } else {
+        console.error('[showcase-viewer] retryDeploy failed:', result.error.message);
+      }
+    } catch (err) {
+      console.error('[showcase-viewer] retryDeploy error:', err);
+    }
+    setRetrying(false);
+  }, [showcase.id, resetStatus]);
 
   const handleShare = useCallback(() => {
     navigator.clipboard.writeText(window.location.href).then(() => {
@@ -285,80 +264,6 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
   const FileIcon = showcase.fileType === 'html' ? FileHtml : FileZip;
   const typeLabel = showcase.fileType === 'html' ? 'HTML' : 'Next.js';
 
-  // Boot StackBlitz for ZIP projects (with IndexedDB cache)
-  useEffect(() => {
-    if (showcase.fileType !== 'zip' || !iframeRef.current) return;
-
-    let cancelled = false;
-    const cacheKey = `${showcase.id}:${showcase.blobUrl}`;
-
-    async function boot() {
-      try {
-        // Try IndexedDB cache first
-        const cached = await getCachedFiles(cacheKey);
-        let files: Record<string, string>;
-
-        if (cached) {
-          setPhase('cached');
-          files = cached;
-        } else {
-          setPhase('fetching');
-          const res = await fetch(blobProxy(showcase.blobUrl));
-          if (!res.ok) throw new Error('Failed to fetch project');
-          const blob = await res.blob();
-
-          if (cancelled) return;
-          setPhase('extracting');
-          const JSZip = (await import('jszip')).default;
-          const zip = await JSZip.loadAsync(blob);
-
-          files = {};
-          for (const [path, zipEntry] of Object.entries(zip.files)) {
-            if (!zipEntry.dir) {
-              files[path] = await zipEntry.async('string');
-            }
-          }
-
-          // Cache for next visit
-          setCachedFiles(cacheKey, files);
-        }
-
-        if (cancelled) return;
-        setPhase('installing');
-
-        await sdk.embedProject(
-          iframeRef.current!,
-          {
-            title: showcase.title,
-            description: showcase.description ?? '',
-            template: 'node',
-            files,
-          },
-          {
-            height: '100%',
-            width: '100%',
-            view: 'preview',
-            hideNavigation: true,
-            hideDevTools: true,
-            terminalHeight: 0,
-          },
-        );
-
-        if (!cancelled) {
-          setPhase('starting');
-          setTimeout(() => { if (!cancelled) setPhase('ready'); }, 5000);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setPhase('error');
-          setErrorMsg(err instanceof Error ? err.message : 'Unknown error');
-        }
-      }
-    }
-
-    boot();
-    return () => { cancelled = true; };
-  }, [showcase]);
 
   /*
    * position:fixed to escape all parent containers.
@@ -518,17 +423,17 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             {copied ? <><Check size={12} /> Copied!</> : <><LinkSimple size={12} /> Share</>}
           </button>
 
-          {/* Fullscreen — available for both HTML and ZIP (once loaded) */}
+          {/* Fullscreen — available for HTML and deployed ZIP */}
           <button
             onClick={() => setIsFullscreen(true)}
-            disabled={showcase.fileType === 'zip' && phase !== 'ready'}
+            disabled={showcase.fileType === 'zip' && !resolvedSignedUrl}
             style={{
               display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4,
               border: '1px solid var(--color-border)', background: 'var(--color-surface)',
-              color: (showcase.fileType === 'zip' && phase !== 'ready') ? 'var(--color-text-muted)' : 'var(--color-text-body)',
+              color: (showcase.fileType === 'zip' && !resolvedSignedUrl) ? 'var(--color-text-muted)' : 'var(--color-text-body)',
               fontSize: 12, fontWeight: 500, fontFamily: 'inherit',
-              cursor: (showcase.fileType === 'zip' && phase !== 'ready') ? 'not-allowed' : 'pointer',
-              opacity: (showcase.fileType === 'zip' && phase !== 'ready') ? 0.5 : 1,
+              cursor: (showcase.fileType === 'zip' && !resolvedSignedUrl) ? 'not-allowed' : 'pointer',
+              opacity: (showcase.fileType === 'zip' && !resolvedSignedUrl) ? 0.5 : 1,
             }}
           >
             <ArrowsOut size={12} /> Fullscreen
@@ -679,70 +584,179 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
             sandbox="allow-scripts allow-same-origin"
           />
-        ) : (
-          <>
-            <div ref={iframeRef} style={{ width: '100%', height: '100%' }} />
-            {phase !== 'ready' && (
-              <div
+        ) : resolvedSignedUrl ? (
+          <iframe
+            src={resolvedSignedUrl}
+            title={showcase.title}
+            data-testid="showcase-preview-iframe"
+            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+          />
+        ) : (deployStatus === 'pending' || deployStatus === 'building') ? (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              background: 'var(--color-bg)',
+            }}
+            data-testid="deploy-status-message"
+          >
+            <style>{`@keyframes deploy-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            <SpinnerGap
+              size={32}
+              weight="bold"
+              style={{ color: 'var(--color-primary)', animation: 'deploy-spin 1s linear infinite', marginBottom: 16 }}
+              data-testid="deploy-spinner"
+            />
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)', marginBottom: 8 }}>
+              Deploying your project...
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 12 }}>
+              This usually takes 30{'\u2013'}60 seconds
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              <DeployStepIndicator step={deployStep} deployStatus={deployStatus} />
+            </div>
+          </div>
+        ) : deployStatus === 'failed' ? (
+          <div
+            data-testid="deploy-failed"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              background: 'var(--color-bg)',
+              gap: 8,
+            }}
+          >
+            <WarningCircle size={32} weight="bold" style={{ color: 'var(--color-danger)', marginBottom: 8 }} />
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)' }}>
+              Deploy failed
+            </div>
+            <div
+              data-testid="deploy-error-message"
+              style={{ fontSize: 13, color: 'var(--color-text-muted)', maxWidth: 500, textAlign: 'center' }}
+            >
+              {deployError ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <span>Build failed. You can retry or download the ZIP to run locally.</span>
+                  <code style={{
+                    display: 'block',
+                    padding: '8px 12px',
+                    borderRadius: 4,
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                    textAlign: 'left',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    maxHeight: 120,
+                    overflow: 'auto',
+                    color: 'var(--color-danger)',
+                  }}>{deployError}</code>
+                </div>
+              ) : (
+                'Something went wrong while deploying this project. You can retry the deployment or download the ZIP to run it locally.'
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <button
+                data-testid="deploy-retry-btn"
+                onClick={handleRetryDeploy}
+                disabled={retrying}
                 style={{
-                  position: 'absolute',
-                  inset: 0,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'var(--color-bg)',
-                  zIndex: 10, /* local stacking within fixed container */
+                  gap: 6,
+                  padding: '8px 20px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: 'var(--color-primary)',
+                  color: '#FFFFFF',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: retrying ? 'not-allowed' : 'pointer',
+                  opacity: retrying ? 0.6 : 1,
+                  fontFamily: 'inherit',
                 }}
               >
-                {phase === 'error' ? (
-                  <>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-danger)', marginBottom: 8 }}>Failed to load preview</div>
-                    <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 }}>{errorMsg}</div>
-                    <a href={blobProxy(showcase.blobUrl)} download={showcase.fileName} style={{ padding: '8px 16px', borderRadius: 6, background: 'var(--color-primary)', color: '#FFFFFF', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>
-                      Download ZIP instead
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <SpinnerGap size={32} weight="bold" style={{ color: 'var(--color-primary)', animation: 'spin 1s linear infinite', marginBottom: 16 }} />
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-heading)', marginBottom: 4 }}>{PHASE_LABELS[phase]}</div>
-                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 16 }}>
-                      {phase === 'cached' ? 'Using cached files — this will be quick' : 'First load may take 20-30 seconds'}
-                    </div>
-                    {/* Progress bar */}
-                    <div style={{ width: 240, height: 4, borderRadius: 2, background: 'var(--color-border)', overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%',
-                        borderRadius: 2,
-                        background: 'var(--color-primary)',
-                        width: `${PHASE_PROGRESS[phase]}%`,
-                        transition: 'width 600ms ease',
-                      }} />
-                    </div>
-                    {/* Phase steps */}
-                    <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 11, color: 'var(--color-text-muted)' }}>
-                      {(['fetching', 'extracting', 'installing', 'starting'] as const).map((p) => {
-                        const phases = ['fetching', 'extracting', 'installing', 'starting'] as const;
-                        const ci = phases.indexOf(phase === 'cached' ? 'installing' : phase as typeof phases[number]);
-                        const ti = phases.indexOf(p);
-                        const isDone = ti < ci;
-                        const isCurrent = ti === ci;
-                        return (
-                          <span key={p} style={{
-                            color: isDone ? 'var(--color-success)' : isCurrent ? 'var(--color-primary)' : 'var(--color-text-muted)',
-                            fontWeight: isCurrent ? 600 : 400,
-                          }}>
-                            {isDone ? '\u2713 ' : ''}{p.charAt(0).toUpperCase() + p.slice(1)}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </>
+                {retrying && (
+                  <SpinnerGap
+                    size={14}
+                    weight="bold"
+                    style={{ animation: 'deploy-spin 1s linear infinite' }}
+                  />
                 )}
-              </div>
-            )}
-          </>
+                {retrying ? 'Retrying...' : 'Retry Deploy'}
+              </button>
+              <a
+                data-testid="deploy-download-fallback"
+                href={blobProxy(showcase.blobUrl)}
+                download={showcase.fileName}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 20px',
+                  borderRadius: 6,
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-surface)',
+                  color: 'var(--color-text-body)',
+                  textDecoration: 'none',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                }}
+              >
+                <DownloadSimple size={14} />
+                Download ZIP instead
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              background: 'var(--color-bg)',
+              gap: 8,
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)' }}>
+              No preview available
+            </div>
+            <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+              This project has not been deployed yet.
+            </div>
+            <a
+              href={blobProxy(showcase.blobUrl)}
+              download={showcase.fileName}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                marginTop: 12,
+                padding: '8px 20px',
+                borderRadius: 6,
+                background: 'var(--color-primary)',
+                color: '#FFFFFF',
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              <DownloadSimple size={14} />
+              Download ZIP
+            </a>
+          </div>
         )}
       </div>
       </div>
@@ -764,9 +778,17 @@ export function ShowcaseViewerWidget({ showcase }: ShowcaseViewerWidgetProps) {
               style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
               sandbox="allow-scripts allow-same-origin"
             />
+          ) : resolvedSignedUrl ? (
+            <iframe
+              src={resolvedSignedUrl}
+              title={showcase.title}
+              data-testid="showcase-fullscreen-iframe"
+              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+            />
           ) : (
-            // For ZIP/StackBlitz: find the iframe StackBlitz created and clone its src into a fullscreen iframe
-            <StackBlitzFullscreen containerRef={iframeRef} title={showcase.title} />
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: 14 }}>
+              No preview available
+            </div>
           )}
           <button
             onClick={() => setIsFullscreen(false)}

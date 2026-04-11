@@ -68,31 +68,66 @@ The platform also serves as a **skill marketplace** — browse, search, filter, 
 
 ---
 
+## Environments
+
+Three environments, each with its own database and deploy target:
+
+| | Local | Development | Production |
+|---|---|---|---|
+| **URL** | `localhost:3000` | Vercel preview deploys | `ai.ezycollect.tools` |
+| **Database** | Docker Postgres (port 5433) | Neon (`aicentre` branch) | Neon (`main` branch) |
+| **File storage** | `public/uploads/` directory | Vercel Blob | Vercel Blob |
+| **Auth** | Bypassed (`SKIP_AUTH=true`) | Email OTP | Email OTP |
+| **Showcase deploys** | Vercel Development env | Vercel Development env | Vercel Production env |
+| **Migrations** | Auto on server start | Auto on server start | Auto on server start |
+
+### Local setup
+
+```bash
+docker compose up -d   # Start Postgres (port 5433, user/pass/db: aicentre)
+npm run dev            # Migrations auto-apply, then seed with npm run db:seed
+```
+
+### Showcase deploy infrastructure
+
+ZIP showcases are deployed to a **separate Vercel project** (`ai-centre-showcases`). Each deploy gets JWT-secured middleware + CSP headers injected automatically. The main app generates signed iframe URLs.
+
+| Env var | Where | Purpose |
+|---|---|---|
+| `VERCEL_SHOWCASE_TOKEN` | Main app | Vercel API token (scope: `ai-centre-showcases` project) |
+| `SHOWCASE_JWT_SECRET` | Main app | Signs 5-min JWT tokens for iframe URLs |
+| `JWT_SECRET` | Showcase project | Verifies JWT tokens (same value as `SHOWCASE_JWT_SECRET`) |
+| `ALLOWED_ORIGINS` | Showcase project | CSP `frame-ancestors` — comma-separated origins |
+
+Showcase project has two environments: **Production** (`ALLOWED_ORIGINS=https://ai.ezycollect.tools`) and **Development** (`ALLOWED_ORIGINS=http://localhost:3000,https://*.vercel.app`).
+
 ## Development
 
 ```bash
-npm run dev          # Next.js dev server
+npm run dev          # Next.js dev server (auto-migrates DB)
 npm run build        # Production build
 npm run db:generate  # Generate Drizzle migrations
-npm run db:migrate   # Run migrations
+npm run db:migrate   # Run migrations manually (drizzle-kit)
 npm run db:studio    # Drizzle Studio
 npm run db:seed      # Seed skills into database
 ```
 
 ### Environment Variables (.env.local)
 ```
-DATABASE_URL=              # Neon connection string
-BLOB_READ_WRITE_TOKEN=     # Vercel Blob token
+DATABASE_URL=              # Local: postgresql://aicentre:aicentre@localhost:5433/aicentre
+BLOB_READ_WRITE_TOKEN=     # Vercel Blob token (optional locally — falls back to public/uploads/)
 AUTH_SECRET=               # JWT signing secret (32+ chars)
 MAILGUN_API_KEY=           # Mailgun API key for OTP email delivery
 MAILGUN_DOMAIN=            # Mailgun sending domain
 MAILGUN_FROM_EMAIL=        # (optional) Sender address — defaults to noreply@MAILGUN_DOMAIN
 MAILGUN_EU=                # (optional) Set to 'true' for EU endpoint
 ANTHROPIC_API_KEY=         # Showcase generation
+VERCEL_SHOWCASE_TOKEN=     # Vercel API token for showcase deploys
+VERCEL_WEBHOOK_SECRET=     # (optional) Vercel webhook secret for deploy status callbacks
+SHOWCASE_JWT_SECRET=       # JWT secret shared with ai-centre-showcases project
 ADMIN_EMAIL=              # (optional) Auto-promote this email to admin on first login
 SKIP_AUTH=                # (optional) Set to 'true' ONLY in local dev — bypasses auth. NEVER set in production.
 DEBUG_API_KEY=            # (optional) Enables prod log capture + /api/logs and /api/debug access via x-debug-key header
-SENTRY_DSN=               # (optional) Sentry error tracking — future
 ```
 
 ### Server Actions vs API Routes

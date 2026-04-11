@@ -191,15 +191,25 @@ Pure `resolveComposition()` function produces a flat, deduplicated skill slug ar
 - Browse at `/gallery` — adaptive layout based on item count (0/1/2-3/4+ items)
 - Upload at `/gallery/upload` — form with title, description, skill tags, file upload
 - View at `/gallery/[id]` — dedicated viewer page
-- File types: HTML files (iframe preview with sandboxing) and Next.js project ZIPs (StackBlitz WebContainers for live in-browser preview)
+- File types: HTML files (iframe preview with sandboxing) and Next.js project ZIPs (deployed via Vercel for live preview)
 - File size limit: 10MB
 - Search by title/description
 - Fullscreen mode (portaled overlay, ESC to exit)
 - Share link (copy URL), download, update (owner), delete (owner + admin)
 - Skill tags on showcases link back to skill detail pages
 - **Dev mode fallback:** When `DATABASE_URL` is not set, uses `public/uploads/` directory + `manifest.json` for local storage. When `BLOB_READ_WRITE_TOKEN` is not set, writes files to `public/uploads/` instead of Vercel Blob.
-- Server actions in `src/features/showcase-gallery/action.ts`: `fetchAllShowcases`, `fetchShowcaseById`, `uploadShowcase`, `deleteShowcase`, `updateShowcase`
-- Auth: `uploadShowcase` requires `showcase:upload` permission; `deleteShowcase` and `updateShowcase` require owner or admin
+- Server actions in `src/features/showcase-gallery/action.ts`: `fetchAllShowcases`, `fetchShowcaseById`, `uploadShowcase`, `deleteShowcase`, `updateShowcase`, `checkDeployStatus`, `getSignedShowcaseUrl`, `retryDeploy`
+- Auth: `uploadShowcase` and `retryDeploy` require `showcase:upload` permission; `deleteShowcase` and `updateShowcase` require owner or admin
+- **Delete cleanup:** `deleteShowcase` also fire-and-forgets `deleteDeployment` when the showcase has a `deploymentId`, and deletes the thumbnail blob if `thumbnailUrl` exists. Vercel delete failure does not block DB deletion.
+- **Deploy columns:** `deploy_status` (text, default `'none'`), `deploy_url` (text, nullable), `deployment_id` (text, nullable), and `deploy_error` (text, nullable) on `showcase_uploads` — tracks Vercel deployment state per showcase. Migrations: `0006_add_deploy_columns.sql`, `0007_add_deployment_id.sql`, `0008_add_deploy_error.sql`.
+- **Vercel deploy module:** `src/platform/lib/vercel-deploy.ts` — typed wrapper around Vercel API (`deployProject`, `deleteDeployment`, `getDeploymentStatus`). Uses `VERCEL_SHOWCASE_TOKEN` env var. Returns `Result<T, Error>`. Status mapping: QUEUED/BUILDING -> 'building', READY -> 'ready', ERROR/CANCELED -> 'failed'.
+- **Deploy on upload:** `src/features/showcase-gallery/deploy.ts` — `triggerDeploy(showcaseId)` is fired-and-forget from `uploadShowcase` for ZIP files. Fetches ZIP from blob storage (local filesystem for `/uploads/` paths, fetch for remote URLs), extracts with JSZip (in-memory), sanitizes paths, auto-detects framework from `package.json` (Next.js, Nuxt, Vite, Angular, or static), detects `src/` directory structure and injects middleware at `src/middleware.ts` or root accordingly, injects `jose` dependency into `package.json`, removes any existing middleware/vercel.json from ZIP. All deploys go to the `ai-centre-showcases` Vercel project as production target. Deployment names are tagged with environment prefix (e.g., `dev-credit-app-writeback-abc12345`). Stores `deploymentId` in DB. Skips silently when `VERCEL_SHOWCASE_TOKEN` is not set.
+- **Deploy status polling:** `checkDeployStatus` server action reads DB status; if `building`/`pending` with a `deploymentId`, calls `getDeploymentStatus()` on Vercel API (returns raw `vercelState` like QUEUED/BUILDING/INITIALIZING) and updates DB when status changes. Client-side `useDeployPolling` hook polls every 5s, auto-stops at terminal states. Hook returns `{ deployStatus, deployUrl, deployError, deployStep, resetStatus }`. The `ShowcaseViewerWidget` shows a step-by-step progress indicator (Queued → Installing dependencies → Building project → Deploying to edge) during deploy, error details with retry button on failure, and auto-transitions to iframe when ready.
+- **Vercel deploy webhook:** `src/app/api/webhooks/vercel-deploy/route.ts` — handles `deployment.created`, `deployment.succeeded`, `deployment.error`, and `deployment.canceled` events. Verifies HMAC-SHA1 signature via `VERCEL_WEBHOOK_SECRET`. On success: updates DB status to `ready`, fetches deployment screenshot from Vercel API and sets as `thumbnailUrl` (if not already set by user). On failure: stores error in `deployError`. On canceled: marks as failed.
+- **Retry deploy:** `retryDeploy(showcaseId)` server action requires `showcase:upload` permission, verifies the showcase is a ZIP with `failed` status, deletes old deployment if `deploymentId` exists, resets status to `pending`, and fire-and-forgets `triggerDeploy`. The viewer widget calls `resetStatus('pending')` after successful retry to restart client-side polling.
+- **Re-deploy on update:** `updateShowcase` detects file changes and manages deployments: when a new ZIP is uploaded, deletes the old Vercel deployment (fire-and-forget), resets `deploy_status` to `'pending'`, clears `deploy_url`/`deployment_id`, and fire-and-forgets `triggerDeploy`. When switching from ZIP to HTML, deletes old deployment and sets status to `'none'`. Metadata-only updates (no new file) do not touch deploy fields.
+- **Lazy migration for pre-existing showcases:** `triggerMigrationDeploy(showcaseId)` server action (no auth required — viewing is public) handles ZIP showcases uploaded before the Vercel deploy system existed (`deployStatus === 'none'`). Sets status to `'pending'` and fire-and-forgets `triggerDeploy`. HTML showcases and already-deploying/deployed showcases are no-ops. Called from `GalleryViewerSlot` on first view — the client overrides `deployStatus` to `'pending'` immediately so the polling hook takes over. Logged with `[showcase-migration]` prefix.
+- **Showcase template files:** `src/platform/lib/showcase-template.ts` — `getTemplateFiles(hasSrcDir)` returns middleware and `vercel.json` as string constants. When `hasSrcDir` is true, middleware is placed at `src/middleware.ts`; otherwise at root `middleware.ts`. Middleware uses `jose` to verify JWT from `?token=` query param against `JWT_SECRET` env var, sets `Content-Security-Policy: frame-ancestors` from `ALLOWED_ORIGINS`, removes `X-Frame-Options`, sets `Cache-Control: private, no-store` and `x-showcase-auth: verified` header. Returns 403 HTML page for blocked requests. Fails closed (blocks all if `JWT_SECRET` not set).
 
 ---
 
@@ -312,8 +322,10 @@ User fills form (title, description, skill tags, file)
   → dev without BLOB_READ_WRITE_TOKEN: write to public/uploads/ directory
   → prod: upload to Vercel Blob (path: showcases/<timestamp>-<filename>)
   → dev without DATABASE_URL: append to public/uploads/manifest.json
-  → prod: insert showcase_uploads record
-  → return { id }
+  → prod: insert showcase_uploads record (deploy_status='pending' for ZIPs)
+  → ZIP uploads: fire-and-forget triggerDeploy(id) → extracts ZIP, injects security middleware, calls Vercel Deployments API
+  → return { id } immediately (deploy continues in background)
+  → viewer page polls checkDeployStatus until 'ready', then renders iframe with signed JWT URL
 ```
 
 ### Permission Check
@@ -362,7 +374,7 @@ Further edits after publish
 | Vercel Blob | ZIPs, showcase files | `BLOB_READ_WRITE_TOKEN` | Partially — falls back to `public/uploads/` in dev; throws in prod |
 | Mailgun | OTP email delivery | `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM_EMAIL` (opt), `MAILGUN_EU` (opt) | Yes — logs to console if `MAILGUN_API_KEY` missing |
 | Claude API (`@anthropic-ai/sdk`) | Showcase HTML generation | `ANTHROPIC_API_KEY` | Partially — showcase falls back to null |
-| StackBlitz SDK | In-browser Next.js preview for ZIP showcases | (client-side, no key) | Yes — falls back to download |
+
 | Vercel | Hosting + Edge runtime for middleware | — | N/A |
 
 ---
@@ -409,7 +421,7 @@ Further edits after publish
 | `/archetypes` | Legacy archetype browse (backward compat) | Required (prod) |
 | `/generate` | Composition wizard + project generation | Required (prod) |
 | `/gallery` | Showcase gallery (browse, search) | Required (prod) |
-| `/gallery/[id]` | Showcase viewer (iframe/StackBlitz) | Required (prod) |
+| `/gallery/[id]` | Showcase viewer (iframe/deployed preview) | Required (prod) |
 | `/gallery/upload` | Showcase upload form | Required (prod) |
 | `/admin` | Admin dashboard (users, roles, permissions, audit) | Admin only |
 | `/robots.txt` | SEO robots file | Public |
@@ -477,3 +489,5 @@ These are non-obvious constraints that would silently regress if changed:
 19. **`requireOwnerOrAdmin` uses `canAccessResource` from permissions.ts** — This checks `session.roleSlug === 'admin'` OR `session.userId === resource.authorId`. It does NOT check the `role_permissions` table — it's a direct role slug check for the admin bypass.
 
 20. **invitations table tracks user invites** — Invite records have status (pending/accepted/expired) and expiry. The invite flow creates a verification token that maps to the invited role. Don't bypass this — it's how new users get their initial role assignment.
+
+21. **`VERCEL_SHOWCASE_TOKEN` is required for showcase deployment** — The `vercel-deploy` module reads this env var lazily (only when a deploy function is called). It must be a Vercel API token with deployment permissions. Never log the token value.

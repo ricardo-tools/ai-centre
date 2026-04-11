@@ -10,13 +10,7 @@ export async function runMigrations(): Promise<void> {
   const dbUrl = process.env.DATABASE_URL;
   const isLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
 
-  // Local Postgres: schema is pushed by drizzle-kit push in dev script — skip migrations
-  if (isLocal) {
-    console.log('[migrate] Local Postgres detected — schema managed by drizzle-kit push');
-    return;
-  }
-
-  // Remote (Neon): run migrations using the Neon HTTP driver
+  // Remote (Neon) or Local Postgres: run migrations
   const started = Date.now();
   console.log('[migrate] Running pending migrations...');
 
@@ -35,31 +29,55 @@ export async function runMigrations(): Promise<void> {
   console.log(`[migrate] Using migrations from: ${migrationsFolder}`);
 
   try {
-    const { neon } = await import('@neondatabase/serverless');
-    const { drizzle } = await import('drizzle-orm/neon-http');
-    const { migrate } = await import('drizzle-orm/neon-http/migrator');
+    if (isLocal) {
+      const { Pool } = await import('pg');
+      const { drizzle } = await import('drizzle-orm/node-postgres');
+      const { migrate } = await import('drizzle-orm/node-postgres/migrator');
+      const pool = new Pool({ connectionString: dbUrl });
+      const db = drizzle(pool);
+      await migrate(db, { migrationsFolder });
+      await pool.end();
+    } else {
+      const { neon } = await import('@neondatabase/serverless');
+      const { drizzle } = await import('drizzle-orm/neon-http');
+      const { migrate } = await import('drizzle-orm/neon-http/migrator');
 
-    const sql = neon(dbUrl);
-    const db = drizzle(sql);
+      const sql = neon(dbUrl);
+      const db = drizzle(sql);
 
-    // Ensure pgvector extension is available (needed for feedback RAG embeddings)
-    await sql('CREATE EXTENSION IF NOT EXISTS vector');
+      // Ensure pgvector extension is available (needed for feedback RAG embeddings)
+      await sql('CREATE EXTENSION IF NOT EXISTS vector');
 
-    await migrate(db, { migrationsFolder });
-
-    // Log migration status for visibility
-    try {
-      const rows = await sql('SELECT hash, created_at FROM __drizzle_migrations__ ORDER BY created_at DESC LIMIT 5');
-      console.log(`[migrate] Migrations complete (${Date.now() - started}ms) — ${rows.length} applied, latest: ${rows[0]?.hash ?? 'none'}`);
-    } catch {
-      console.log(`[migrate] Migrations complete (${Date.now() - started}ms) — status table not readable`);
+      await migrate(db, { migrationsFolder });
     }
+
+    console.log(`[migrate] Migrations complete (${Date.now() - started}ms)`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes('already exists')) {
-      console.log('[migrate] Tables already exist — skipping');
-      return;
-    }
     console.error('[migrate] Migration failed:', msg);
+    throw err;
+  }
+}
+
+export async function runSeedsFromInstrumentation(): Promise<void> {
+  const dbUrl = process.env.DATABASE_URL;
+  if (!dbUrl) return;
+
+  const isLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+  const { runSeeds } = await import('@/platform/db/seeds/runner');
+
+  if (isLocal) {
+    const { Pool } = await import('pg');
+    const { drizzle } = await import('drizzle-orm/node-postgres');
+    const pool = new Pool({ connectionString: dbUrl });
+    const db = drizzle(pool);
+    await runSeeds(db, (q, p) => pool.query(q, p).then(r => r.rows));
+    await pool.end();
+  } else {
+    const { neon } = await import('@neondatabase/serverless');
+    const { drizzle } = await import('drizzle-orm/neon-http');
+    const sql = neon(dbUrl);
+    const db = drizzle(sql);
+    await runSeeds(db, (q, p) => sql(q, p as unknown[]) as Promise<unknown[]>);
   }
 }
