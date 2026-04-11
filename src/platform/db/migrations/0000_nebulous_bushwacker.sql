@@ -1,8 +1,8 @@
-CREATE TYPE "public"."audit_action" AS ENUM('created', 'updated', 'published', 'archived', 'deleted');--> statement-breakpoint
-CREATE TYPE "public"."entity_type" AS ENUM('skill', 'archetype', 'showcase', 'user', 'role', 'invitation');--> statement-breakpoint
-CREATE TYPE "public"."invitation_status" AS ENUM('pending', 'accepted', 'expired');--> statement-breakpoint
-CREATE TYPE "public"."showcase_file_type" AS ENUM('html', 'zip');--> statement-breakpoint
-CREATE TYPE "public"."version_status" AS ENUM('draft', 'published', 'archived');--> statement-breakpoint
+DO $$ BEGIN CREATE TYPE "public"."audit_action" AS ENUM('created', 'updated', 'published', 'archived', 'deleted'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN CREATE TYPE "public"."entity_type" AS ENUM('skill', 'archetype', 'showcase', 'user', 'role', 'invitation'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN CREATE TYPE "public"."invitation_status" AS ENUM('pending', 'accepted', 'expired'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN CREATE TYPE "public"."showcase_file_type" AS ENUM('html', 'zip'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
+DO $$ BEGIN CREATE TYPE "public"."version_status" AS ENUM('draft', 'published', 'archived'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;--> statement-breakpoint
 CREATE TABLE "archetype_versions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"archetype_id" uuid NOT NULL,

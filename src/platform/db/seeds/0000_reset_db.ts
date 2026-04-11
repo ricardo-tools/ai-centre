@@ -10,7 +10,7 @@
  * seed with a different tag.
  */
 
-export const RESET_TAG = '0002_reset_db_v3';
+export const RESET_TAG = '0003_reset_db_v4';
 
 export async function runResetIfNeeded(
   query: (sql: string, params?: unknown[]) => Promise<unknown[]>,
