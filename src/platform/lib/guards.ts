@@ -43,12 +43,25 @@ async function getPermissionsForRole(roleId: string): Promise<Set<string>> {
   return perms;
 }
 
-/** Require a valid session. Returns the session or an AuthError. */
+/** Require a valid session with a user that still exists in the DB. */
 export async function requireAuth(): Promise<Result<Session, AuthError>> {
   const session = await getSession();
   if (!session) {
     return Err(new AuthError('unauthenticated', 'You must be logged in'));
   }
+
+  // Verify user still exists (guards against stale JWTs after DB reset)
+  if (process.env.DATABASE_URL) {
+    const { getDb } = await import('@/platform/db/client');
+    const { eq } = await import('drizzle-orm');
+    const { users } = await import('@/platform/db/schema');
+    const db = getDb();
+    const [user] = await db.select({ id: users.id }).from(users).where(eq(users.id, session.userId)).limit(1);
+    if (!user) {
+      return Err(new AuthError('unauthenticated', 'Session expired — please log in again'));
+    }
+  }
+
   return Ok(session);
 }
 
