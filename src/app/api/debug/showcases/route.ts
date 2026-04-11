@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         deployUrl: showcaseUploads.deployUrl,
         deploymentId: showcaseUploads.deploymentId,
         deployError: showcaseUploads.deployError,
+        thumbnailUrl: showcaseUploads.thumbnailUrl,
         archived: showcaseUploads.archived,
         createdAt: showcaseUploads.createdAt,
       })
