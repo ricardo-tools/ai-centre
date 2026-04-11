@@ -70,7 +70,18 @@ async function runResetIfNeeded(
   }
 
   await query('CREATE TABLE IF NOT EXISTS "__pre_migrations__" (id SERIAL PRIMARY KEY, tag TEXT NOT NULL UNIQUE, applied_at TIMESTAMP NOT NULL DEFAULT NOW())');
-  await query('INSERT INTO "__pre_migrations__" (tag) VALUES ($1)', [RESET_TAG]);
+
+  // Record ALL historical tags so stale old function instances (from previous
+  // deploys still running) see their tag and skip the reset.
+  const ALL_TAGS = [
+    '0000_reset_db',
+    '0001_reset_db_v2',
+    '0002_reset_db_v3',
+    RESET_TAG,
+  ];
+  for (const tag of ALL_TAGS) {
+    await query('INSERT INTO "__pre_migrations__" (tag) VALUES ($1) ON CONFLICT DO NOTHING', [tag]);
+  }
 
   console.log(`[pre-migrate] ${RESET_TAG} complete — all tables dropped, migrations will re-apply`);
   return true;
