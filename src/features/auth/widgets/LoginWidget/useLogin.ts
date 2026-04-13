@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { requestOtp, verifyOtp } from '@/features/auth/action';
 
 type Step = 'email' | 'verify';
@@ -22,6 +22,8 @@ interface UseLoginResult {
 
 export function useLogin(): UseLoginResult {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isOAuth = searchParams.get('oauth') === 'true';
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -58,8 +60,13 @@ export function useLogin(): UseLoginResult {
     try {
       const result = await verifyOtp(email, code);
       if (result.ok) {
-        router.push('/');
-        router.refresh();
+        if (isOAuth) {
+          // OAuth flow: redirect to callback to issue authorization code
+          window.location.href = '/api/auth/callback';
+        } else {
+          router.push('/');
+          router.refresh();
+        }
       } else {
         setError(result.error.code ?? 'unknown');
         // Extract attempts remaining from error message if present
@@ -73,7 +80,7 @@ export function useLogin(): UseLoginResult {
     } finally {
       setIsLoading(false);
     }
-  }, [email, code, router]);
+  }, [email, code, router, isOAuth]);
 
   const handleBack = useCallback(() => {
     setStep('email');

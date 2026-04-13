@@ -90,9 +90,15 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-### `/flow-continue`
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`.
 
-**Trigger:** Start of session, or user types `/flow-continue`.
+If no action is given, list the available actions with a one-line description of each.
+
+---
+
+### `/flow continue`
+
+**Trigger:** Start of session, or user types `/flow continue`.
 
 **Flow:**
 
@@ -139,9 +145,9 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `/flow-plan <topic>`
+### `/flow plan <topic>`
 
-**Trigger:** User types `/flow-plan <topic>` or asks to plan work.
+**Trigger:** User types `/flow plan <topic>` or asks to plan work.
 
 **Flow:**
 
@@ -156,13 +162,13 @@ Activated per project in CLAUDE.md.
 
 **References:** `flow-planning`, `flow-research`
 
-**Done when:** A plan file exists under `.plans/`, the user has reviewed and approved it, and execution can begin with `/flow-continue`.
+**Done when:** A plan file exists under `.plans/`, the user has reviewed and approved it, and execution can begin with `/flow continue`.
 
 ---
 
-### `/flow-status`
+### `/flow status`
 
-**Trigger:** User types `/flow-status` mid-session.
+**Trigger:** User types `/flow status` mid-session.
 
 **Flow:**
 
@@ -186,9 +192,9 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `/flow-research <topic>`
+### `/flow research <topic>`
 
-**Trigger:** User types `/flow-research <topic>` or asks to research something outside a planning cycle.
+**Trigger:** User types `/flow research <topic>` or asks to research something outside a planning cycle.
 
 **Flow:**
 
@@ -205,9 +211,9 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `/flow-audit [scope]`
+### `/flow audit [scope]`
 
-**Trigger:** User types `/flow-audit` or asks to audit current work.
+**Trigger:** User types `/flow audit` or asks to audit current work.
 
 **Flow:**
 
@@ -229,9 +235,9 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `/flow-park`
+### `/flow park`
 
-**Trigger:** User types `/flow-park` or says they're ending the session.
+**Trigger:** User types `/flow park` or says they're ending the session.
 
 **Flow:**
 
@@ -254,13 +260,13 @@ Activated per project in CLAUDE.md.
 
 **References:** `flow-planning/references/park-template.md`, `flow-plan-log`, `flow-strategic-context`
 
-**Done when:** The park entry is written to LOG.md with all 7 sections and checkpoints, and the user has seen the summary. The next session's `/flow-continue` will consume this entry.
+**Done when:** The park entry is written to LOG.md with all 7 sections and checkpoints, and the user has seen the summary. The next session's `/flow continue` will consume this entry.
 
 ---
 
-### `/flow-execute-plan [plan-ref] [instructions]`
+### `/flow execute-plan [plan-ref] [instructions]`
 
-**Trigger:** User types `/flow-execute-plan` or says "implement all chapters" / "execute the plan".
+**Trigger:** User types `/flow execute-plan` or says "implement all chapters" / "execute the plan".
 
 **Flow:**
 
@@ -287,17 +293,17 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `flow-bootstrap`
+### `/flow bootstrap`
 
-**Trigger:** User types `flow-bootstrap` or asks to set up a new project with Flow.
+**Trigger:** User types `/flow bootstrap` or asks to set up a new project with Flow.
 
 **Flow:**
 
 1. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
 2. Ask: "What are you building? Describe your project in a sentence or two."
-3. Fetch skill catalog: `GET {AI_CENTRE_URL}/api/skills/catalog`
+3. Fetch skill catalog: `GET https://ai.ezycollect.tools/api/skills/catalog`
 4. Present skills grouped by category (type/domain). User selects which to include.
-5. For each selected skill, download content: `GET {AI_CENTRE_URL}/api/skills/{slug}/content` (requires auth — run `flow-login` first if needed).
+5. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`. If the request returns 401, tell the user authentication is required and run `/flow login` before retrying.
 6. Create `.flow/` directory structure:
    - `.flow/project.json` — project metadata + selected skills with versions and checksums
    - `.flow/plans/` — empty directory for future plans
@@ -305,15 +311,17 @@ Activated per project in CLAUDE.md.
 8. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
 9. Add `.flow/credentials.json` to `.gitignore` if not already present.
 
+**Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come.
+
 **References:** `skills/flow/references/auth-client.md` (for authenticated API calls)
 
 **Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, and the user sees a summary of what was created.
 
 ---
 
-### `flow-login`
+### `/flow login`
 
-**Trigger:** User types `flow-login` or asks to authenticate with AI Centre.
+**Trigger:** User types `/flow login` or asks to authenticate with AI Centre.
 
 **Flow:**
 
@@ -328,9 +336,9 @@ Activated per project in CLAUDE.md.
 
 ---
 
-### `flow-logout`
+### `/flow logout`
 
-**Trigger:** User types `flow-logout` or asks to log out of AI Centre.
+**Trigger:** User types `/flow logout` or asks to log out of AI Centre.
 
 **Flow:**
 
@@ -352,4 +360,4 @@ Activated per project in CLAUDE.md.
 - Updating docs mid-implementation → write after delivery
 - Prescribing implementation methodology in this skill → that belongs in the plan template
 - Writing a park entry without the full template structure → use all 7 sections
-- Skipping the status report on `/flow-continue` → always report before acting
+- Skipping the status report on `/flow continue` → always report before acting
