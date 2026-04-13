@@ -660,6 +660,7 @@ export async function checkDeployStatus(showcaseId: string): Promise<Result<{ de
         deployUrl: showcaseUploads.deployUrl,
         deploymentId: showcaseUploads.deploymentId,
         deployError: showcaseUploads.deployError,
+        thumbnailUrl: showcaseUploads.thumbnailUrl,
         createdAt: showcaseUploads.createdAt,
       })
       .from(showcaseUploads)
@@ -672,6 +673,7 @@ export async function checkDeployStatus(showcaseId: string): Promise<Result<{ de
     const currentUrl = row.deployUrl ?? null;
     const currentError = row.deployError ?? null;
     const deploymentId = row.deploymentId ?? null;
+    const currentThumbnail = row.thumbnailUrl ?? null;
 
     // Stale deploy detection: if pending/building with no deploymentId for >10 min, mark failed
     const STALE_TIMEOUT_MS = 10 * 60 * 1000;
@@ -722,6 +724,44 @@ export async function checkDeployStatus(showcaseId: string): Promise<Result<{ de
         .where(eq(showcaseUploads.id, showcaseId));
 
       console.info('[showcase-gallery] checkDeployStatus: updated status:', { showcaseId, from: currentStatus, to: vercelStatus });
+
+      // Auto-generate thumbnail when deploy transitions to ready (if none exists)
+      if (vercelStatus === 'ready' && !currentThumbnail && deployUrl) {
+        after(async () => {
+          try {
+            console.info('[showcase-gallery] auto-thumbnail: starting for newly ready showcase:', { showcaseId });
+            const { signShowcaseUrl } = await import('@/platform/lib/showcase-token');
+            const signedUrl = await signShowcaseUrl(deployUrl);
+            const screenshotApiUrl = `https://image.thum.io/get/width/1200/crop/630/${signedUrl}`;
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 45_000);
+            const response = await fetch(screenshotApiUrl, { signal: controller.signal }).finally(() => clearTimeout(timer));
+            if (!response.ok) {
+              console.warn('[showcase-gallery] auto-thumbnail: screenshot fetch failed:', response.status);
+              return;
+            }
+
+            const imageBuffer = Buffer.from(await response.arrayBuffer());
+            const contentType = response.headers.get('content-type') ?? 'image/png';
+            const ext = contentType.includes('jpeg') ? 'jpg' : contentType.includes('gif') ? 'gif' : 'png';
+
+            if (process.env.BLOB_READ_WRITE_TOKEN) {
+              const { put } = await import('@vercel/blob');
+              const blob = await put(
+                `showcases/thumbs/${showcaseId}-${Date.now()}.${ext}`,
+                imageBuffer,
+                { access: 'private', contentType },
+              );
+              await db.update(showcaseUploads).set({ thumbnailUrl: blob.url }).where(eq(showcaseUploads.id, showcaseId));
+              console.info('[showcase-gallery] auto-thumbnail: saved:', { showcaseId, thumbnailUrl: blob.url });
+            }
+          } catch (err) {
+            console.error('[showcase-gallery] auto-thumbnail: error:', err instanceof Error ? err.message : err);
+          }
+        });
+      }
+
       return Ok({ deployStatus: vercelStatus, deployUrl, deployError, deployStep });
     }
 

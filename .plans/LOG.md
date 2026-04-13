@@ -20,3 +20,16 @@
 | C | Closing | **Done** | PROJECT_REFERENCE.md updated with complete deploy pipeline data flow. All 11 chapters complete. |
 
 **Plan 01 complete.** 194 tests across 26 files. @stackblitz/sdk removed. Vercel deploy pipeline fully wired: upload→deploy→poll→view→retry→update→delete→migrate.
+
+---
+
+**Session resumed 2026-04-13 from parked Post-Plan 01 production fixes.** Archive: `.plans/.park/park-2026-04-13-session01.md`
+
+### Post-Plan 01 continuation — 2026-04-13
+
+| Item | Status | Notes |
+|---|---|---|
+| Update PROJECT_REFERENCE.md | **Done** | Added archive, thumbnail, debug API, after() pattern, stale timeout, blob auth, auto-thumbnail docs. Added 3 new Do Not Break rules (#22-24). |
+| Archive duplicate showcases | **Done** | User archived 4 duplicates manually via production. Confirmed via debug API. |
+| Webhook investigation | **Done** | No code change needed — webhook gracefully skips non-showcase deployments. Dashboard config fix (low priority). |
+| Auto-thumbnail on deploy ready | **Done** | `checkDeployStatus` now triggers thumbnail generation via `after()` when status transitions to `ready` and no thumbnail exists. |
