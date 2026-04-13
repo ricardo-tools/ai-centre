@@ -22,13 +22,14 @@ For the execution methodology inside each chapter, see: `PLAN_TEMPLATE_DEV.md`
 
 ## Core Principles
 
-1. **Vertical slices** — every chapter delivers visible, testable UI. No backend-only chapters.
+1. **Vertical slices** — every chapter delivers a user-testable result. No backend-only or API-only chapters.
 2. **One concern per chapter** — if the description needs "and" between two verbs, split it.
-3. **Polish is built-in** — animations, feedback, keyboard, empty states are acceptance criteria in every chapter.
-4. **Prove the pattern first** — the Foundation chapter builds the pattern on one data source end-to-end. Subsequent chapters extend it.
-5. **Research scales to risk** — Foundation chapters get full research. Extensions get none.
-6. **Incremental journey** — each chapter extends the same E2E journey test. No separate journey gate.
-7. **Per-chapter audit** — proportional to what changed. No separate audit gate for simple plans.
+3. **Manually testable** — the user must be able to verify the chapter's result without reading code. This means a UI, a CLI command, or a working flow they can run. If a chapter would only produce an API endpoint or library code, merge it with the chapter that consumes it.
+4. **Polish is built-in** — animations, feedback, keyboard, empty states are acceptance criteria in every chapter.
+5. **Prove the pattern first** — the Foundation chapter builds the pattern on one data source end-to-end. Subsequent chapters extend it.
+6. **Research scales to risk** — Foundation chapters get full research. Extensions get none.
+7. **Incremental journey** — each chapter extends the same E2E journey test. No separate journey gate.
+8. **Per-chapter audit** — proportional to what changed. No separate audit gate for simple plans.
 
 ---
 
@@ -54,10 +55,11 @@ After triage, before any research. The coordinator shapes the plan into vertical
 
 1. List the functional increments — what can the user see or do after each?
 2. Apply the one-concern rule — split anything with "and"
-3. Order by dependency — each chapter builds on the last
-4. Verify: every chapter has UI, every chapter has polish criteria
-5. Classify each chapter's complexity tier
-6. Define the E2E journey — what each chapter adds to it
+3. Apply the merge test — combine producer and consumer if the producer has no user-facing result
+4. Order by dependency — each chapter builds on the last
+5. Verify: every chapter has a manually testable result (UI, CLI command, or runnable flow)
+6. Classify each chapter's complexity tier
+7. Define the E2E journey — what each chapter adds to it
 
 ### Chapter Complexity Tiers
 
@@ -70,6 +72,14 @@ After triage, before any research. The coordinator shapes the plan into vertical
 ### Sizing Test
 
 Can a single subagent implement the chapter in one dispatch without needing a Context Builder? If it needs a Context Builder, the chapter is too large — split it.
+
+### Minimality Test
+
+Each chapter should be as small as possible while still delivering its goal — a manually testable result. "Small" doesn't mean trivially small; it means no unnecessary scope. Look for creative ways to split large chapters into smaller ones that each still deliver a testable result. Prefer many focused chapters over few large ones. The total number of chapters is not a concern — what matters is that each one is the right size for its goal.
+
+### Merge Test
+
+Would this chapter produce only an API endpoint, library function, or internal module with no way for the user to manually verify it works? If yes, merge it with the chapter that consumes it. Every chapter must end with something the user can see, click, or run. This is the counterbalance to the minimality test — don't split so aggressively that a chapter loses its testable result.
 
 ### Output
 
@@ -177,6 +187,7 @@ Step 4 — Cross-Chapter Review:
 Before finalising each plan, verify:
 
 - Every chapter includes its schema changes alongside the UI that uses them
+- Every chapter delivers a manually testable result — no API-only or library-only chapters
 - Every chapter ships with polish in its acceptance criteria
 - Extension chapters reference the Foundation chapter, with no new research
 - Chapter Shaping runs before any research begins

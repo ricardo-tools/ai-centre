@@ -33,3 +33,36 @@
 | Archive duplicate showcases | **Done** | User archived 4 duplicates manually via production. Confirmed via debug API. |
 | Webhook investigation | **Done** | No code change needed — webhook gracefully skips non-showcase deployments. Dashboard config fix (low priority). |
 | Auto-thumbnail on deploy ready | **Done** | `checkDeployStatus` now triggers thumbnail generation via `after()` when status transitions to `ready` and no thumbnail exists. |
+
+---
+
+## Plan 02 — Flow-First Platform
+
+**Status:** Planning
+**Created:** 2026-04-13
+**Plan file:** `.plans/02-flow-first-platform_2026-04-13/plan.md`
+
+19 chapters + closing. OAuth → workspace → bootstrap → skills → showcases → infrastructure → cleanup.
+
+| Ch | Name | Status | Notes |
+|---|---|---|---|
+| 0 | OAuth + Flow Login | Not started | Foundation |
+| 1 | Workspace + Admin Quotas | Not started | |
+| 2 | Flow Bootstrap | Not started | |
+| 3 | RAG Skill Matching | Not started | |
+| 4 | Vibe Mode Templates | Not started | |
+| 5 | Skill Publishing | Not started | |
+| 6 | Skill Rollback | Not started | |
+| 7 | Skill Update & Fork | Not started | |
+| 8 | Showcase Publishing | Not started | |
+| 9 | Showcase History + Rollback | Not started | |
+| 10 | Turso DB in Bootstrap | Not started | |
+| 11 | Migration & Seed Refs | Not started | |
+| 12 | Email + Mailpit + Docker | Not started | |
+| 13 | OTP Auth Ref Files | Not started | |
+| 14 | File Storage Ref Files | Not started | |
+| 15 | Flow Status + Quotas | Not started | |
+| 16 | Community Upvotes | Not started | |
+| 17 | Remove Toolkit & Generate | Not started | |
+| 18 | Showcase Migration | Not started | |
+| C | Closing | Not started | |
