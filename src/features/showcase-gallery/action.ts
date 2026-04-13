@@ -1,8 +1,5 @@
 'use server';
 
-// Allow up to 60s for actions like generateThumbnail that call external screenshot services
-export const maxDuration = 60;
-
 import { after } from 'next/server';
 import { type Result, Ok, Err, ValidationError, NotFoundError, ForbiddenError } from '@/platform/lib/result';
 import { requireAuth, requirePermission, requireOwnerOrAdmin } from '@/platform/lib/guards';
