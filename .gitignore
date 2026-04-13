@@ -52,3 +52,6 @@ src/platform/lib/skills-bundle.generated.json
 
 # Dev-mode showcase uploads
 public/uploads/
+
+# Test subprojects
+_test-project/

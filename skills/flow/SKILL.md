@@ -287,6 +287,63 @@ Activated per project in CLAUDE.md.
 
 ---
 
+### `flow-bootstrap`
+
+**Trigger:** User types `flow-bootstrap` or asks to set up a new project with Flow.
+
+**Flow:**
+
+1. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
+2. Ask: "What are you building? Describe your project in a sentence or two."
+3. Fetch skill catalog: `GET {AI_CENTRE_URL}/api/skills/catalog`
+4. Present skills grouped by category (type/domain). User selects which to include.
+5. For each selected skill, download content: `GET {AI_CENTRE_URL}/api/skills/{slug}/content` (requires auth — run `flow-login` first if needed).
+6. Create `.flow/` directory structure:
+   - `.flow/project.json` — project metadata + selected skills with versions and checksums
+   - `.flow/plans/` — empty directory for future plans
+7. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
+8. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
+9. Add `.flow/credentials.json` to `.gitignore` if not already present.
+
+**References:** `skills/flow/references/auth-client.md` (for authenticated API calls)
+
+**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, and the user sees a summary of what was created.
+
+---
+
+### `flow-login`
+
+**Trigger:** User types `flow-login` or asks to authenticate with AI Centre.
+
+**Flow:**
+
+1. Read `skills/flow/references/login-client.md` — this contains the complete PKCE login implementation.
+2. Copy the code to `.flow/lib/login.ts` in the user's project.
+3. Also ensure `.flow/lib/auth.ts` exists (from `skills/flow/references/auth-client.md`) — the login module depends on it.
+4. Run the login flow: opens browser → user completes OTP → tokens saved to `.flow/credentials.json`.
+
+**References:** `skills/flow/references/login-client.md`, `skills/flow/references/auth-client.md`
+
+**Done when:** `.flow/credentials.json` exists with valid tokens and the user sees "Successfully authenticated!"
+
+---
+
+### `flow-logout`
+
+**Trigger:** User types `flow-logout` or asks to log out of AI Centre.
+
+**Flow:**
+
+1. Read `skills/flow/references/logout-client.md` — this contains the complete logout implementation.
+2. Copy the code to `.flow/lib/logout.ts` in the user's project.
+3. Run the logout flow: revokes refresh token on server, deletes `.flow/credentials.json`.
+
+**References:** `skills/flow/references/logout-client.md`, `skills/flow/references/auth-client.md`
+
+**Done when:** `.flow/credentials.json` is deleted and the server token is revoked.
+
+---
+
 ## Banned Patterns
 
 - Starting implementation without a plan → plan first

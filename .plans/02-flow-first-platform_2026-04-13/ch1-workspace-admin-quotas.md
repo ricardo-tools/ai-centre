@@ -1,6 +1,6 @@
 # Chapter 1: Workspace Admin Quotas
 
-**Status:** Not started
+**Status:** Done
 **Tier:** New Capability
 **Depends on:** Chapter 0
 **User can:** Open the admin dashboard "Workspaces" tab, see per-user quota usage (skills published, databases, storage), and adjust limits.

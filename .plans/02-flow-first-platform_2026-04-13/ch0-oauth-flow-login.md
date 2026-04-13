@@ -1,6 +1,6 @@
 # Chapter 0: OAuth Flow Login
 
-**Status:** Not started
+**Status:** Done
 **Tier:** Foundation
 **Depends on:** None
 **User can:** Run `flow-login` in Claude Code, a browser opens to the authorize page, they approve, and a token is saved to `.flow/credentials.json`. `flow-logout` clears it.

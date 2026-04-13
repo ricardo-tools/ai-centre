@@ -8,11 +8,13 @@ import { AdminRoles } from './AdminRoles';
 import { AdminPermissions } from './AdminPermissions';
 import { AdminAuditLog } from './AdminAuditLog';
 import { AdminAnalytics } from './AdminAnalytics';
+import { AdminWorkspaces } from './AdminWorkspaces';
 
 const TABS = [
   { key: 'users', label: 'Users' },
   { key: 'roles', label: 'Roles' },
   { key: 'permissions', label: 'Permissions' },
+  { key: 'workspaces', label: 'Workspaces' },
   { key: 'audit', label: 'Audit Log' },
   { key: 'analytics', label: 'Analytics' },
 ];
@@ -39,6 +41,9 @@ export default function AdminPage() {
         </div>
         <div style={{ gridArea: '1 / 1', visibility: activeTab === 'permissions' ? 'visible' : 'hidden' }}>
           <AdminPermissions />
+        </div>
+        <div style={{ gridArea: '1 / 1', visibility: activeTab === 'workspaces' ? 'visible' : 'hidden' }}>
+          <AdminWorkspaces />
         </div>
         <div style={{ gridArea: '1 / 1', visibility: activeTab === 'audit' ? 'visible' : 'hidden' }}>
           <AdminAuditLog />

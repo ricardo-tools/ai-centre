@@ -126,6 +126,7 @@ VERCEL_SHOWCASE_TOKEN=     # Vercel API token for showcase deploys
 VERCEL_WEBHOOK_SECRET=     # (optional) Vercel webhook secret for deploy status callbacks
 SHOWCASE_JWT_SECRET=       # JWT secret shared with ai-centre-showcases project
 ADMIN_EMAIL=              # (optional) Auto-promote this email to admin on first login
+AI_CENTRE_URL=            # (optional) Override base URL for OAuth flow testing. Defaults to https://ai.ezycollect.tools. Set to http://localhost:3000 for local dev.
 SKIP_AUTH=                # (optional) Set to 'true' ONLY in local dev — bypasses auth. NEVER set in production.
 DEBUG_API_KEY=            # (optional) Enables prod log capture + /api/logs and /api/debug access via x-debug-key header
 ```

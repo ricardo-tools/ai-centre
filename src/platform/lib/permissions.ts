@@ -32,10 +32,13 @@ export type Permission =
   | 'role:create'
   | 'role:edit'
   | 'role:delete'
+  // Workspace
+  | 'workspace:view'
+  | 'workspace:edit-quotas'
   // Audit
   | 'audit:view';
 
-export type PermissionCategory = 'Skills' | 'Archetypes' | 'Showcases' | 'Projects' | 'Users' | 'Roles' | 'Audit';
+export type PermissionCategory = 'Skills' | 'Archetypes' | 'Showcases' | 'Projects' | 'Users' | 'Roles' | 'Workspace' | 'Audit';
 
 export interface PermissionMeta {
   key: Permission;
@@ -64,6 +67,8 @@ export const PERMISSION_REGISTRY: PermissionMeta[] = [
   { key: 'role:create', label: 'Create roles', description: 'Create custom roles', category: 'Roles' },
   { key: 'role:edit', label: 'Edit roles', description: 'Edit custom role permissions', category: 'Roles' },
   { key: 'role:delete', label: 'Delete roles', description: 'Delete custom roles (not system roles)', category: 'Roles' },
+  { key: 'workspace:view', label: 'View workspaces', description: 'View workspace quotas and usage', category: 'Workspace' },
+  { key: 'workspace:edit-quotas', label: 'Edit quotas', description: 'Adjust user workspace quota limits', category: 'Workspace' },
   { key: 'audit:view', label: 'View audit log', description: 'View the system audit log', category: 'Audit' },
 ];
 

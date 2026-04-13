@@ -38,7 +38,7 @@
 
 ## Plan 02 — Flow-First Platform
 
-**Status:** Planning
+**Status:** In progress
 **Created:** 2026-04-13
 **Plan file:** `.plans/02-flow-first-platform_2026-04-13/plan.md`
 
@@ -46,9 +46,9 @@
 
 | Ch | Name | Status | Notes |
 |---|---|---|---|
-| 0 | OAuth + Flow Login | Not started | Foundation |
-| 1 | Workspace + Admin Quotas | Not started | |
-| 2 | Flow Bootstrap | Not started | |
+| 0 | OAuth + Flow Login | **Done** | Schema (oauth_codes, oauth_tokens), migration 0010, oauth.ts (PKCE, JWT, token rotation), 4 API routes, 3 skill ref files, 13 unit tests passing. |
+| 1 | Workspace + Admin Quotas | **Done** | user_quotas table (migration 0011), workspace actions + 3 API routes, WorkspaceListWidget with QuotaBar + QuotaEditDialog, Workspaces tab in admin. 2 new permissions (workspace:view, workspace:edit-quotas). |
+| 2 | Flow Bootstrap | **Done** | Catalog API (public), content download API (auth required), flow-bootstrap command in SKILL.md, bootstrap-client.md reference file. Slug validation, no path traversal. |
 | 3 | RAG Skill Matching | Not started | |
 | 4 | Vibe Mode Templates | Not started | |
 | 5 | Skill Publishing | Not started | |

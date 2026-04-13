@@ -1,6 +1,6 @@
 # Chapter 2: Flow Bootstrap
 
-**Status:** Not started
+**Status:** Done
 **Tier:** New Capability
 **Depends on:** Chapter 0
 **User can:** Run `flow-bootstrap` in a new or existing directory. Flow asks what they're building, presents skills to choose from, downloads selected skills, creates `.flow/project.json` and `CLAUDE.md`.
@@ -163,8 +163,9 @@ User runs flow-bootstrap:
        project.json    -- { id, name, description, mode, skills, createdAt }
        credentials.json -- (from Ch 0, gitignored)
        plans/          -- empty, for future plans
-  10. Generate CLAUDE.md from selected skills
-  11. Add .flow/credentials.json to .gitignore
+  10. Write skills to .claude/skills/{slug}/SKILL.md (standard Claude Code skills directory)
+  11. Generate CLAUDE.md from selected skills
+  12. Add .flow/credentials.json to .gitignore
 ```
 
 **API endpoints needed:**

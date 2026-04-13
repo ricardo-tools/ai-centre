@@ -310,6 +310,43 @@ export const chatFeedback = pgTable('chat_feedback', {
 
 // ── Skill Gaps ─────────────────────────────────────────────────────
 
+// ── OAuth ──────────────────────────────────────────────────────────
+
+export const oauthCodes = pgTable('oauth_codes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  codeHash: text('code_hash').notNull(),
+  codeChallenge: text('code_challenge').notNull(),
+  redirectUri: text('redirect_uri').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const oauthTokens = pgTable('oauth_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  accessTokenHash: text('access_token_hash').notNull(),
+  refreshTokenHash: text('refresh_token_hash').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  revokedAt: timestamp('revoked_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── User Quotas ───────────────────────────────────────────────────
+
+export const userQuotas = pgTable('user_quotas', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id).unique(),
+  skillLimit: integer('skill_limit').notNull().default(5000),
+  schemaLimit: integer('schema_limit').notNull().default(20),
+  storageLimitBytes: integer('storage_limit_bytes').notNull().default(2147483648), // 2GB
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// ── Skill Gaps ─────────────────────────────────────────────────────
+
 export const skillGaps = pgTable('skill_gaps', {
   id: uuid('id').primaryKey().defaultRandom(),
   description: text('description').notNull(), // what the user needed
