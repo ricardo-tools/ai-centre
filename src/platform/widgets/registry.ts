@@ -57,6 +57,7 @@ import { CompositionWizardWidget } from '@/features/generate-project/widgets/Com
 
 // ── Feature: auth ────────────────────────────────────────────────────
 import { LoginWidget } from '@/features/auth/widgets/LoginWidget/LoginWidget';
+import { OAuthConsentWidget } from '@/features/auth/widgets/OAuthConsentWidget/OAuthConsentWidget';
 
 // ── Feature: user-management ────────────────────────────────────────
 import { UserListWidget } from '@/features/user-management/widgets/UserListWidget/UserListWidget';
@@ -75,6 +76,7 @@ export const widgetRegistry: Record<string, React.ComponentType<any>> = {
   'top-nav': TopNavWidget,
   'theme-switcher': ThemeSwitcherWidget,
   'login': LoginWidget,
+  'oauth-consent': OAuthConsentWidget,
   'user-list': UserListWidget,
   'audit-log': AuditLogWidget,
   // Original 8 showcases
