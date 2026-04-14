@@ -19,7 +19,7 @@ import { createServer } from 'http';
 import { randomBytes, createHash } from 'crypto';
 import { saveCredentials } from './auth';
 
-const AI_CENTRE_URL = process.env.AI_CENTRE_URL || 'https://ai.ezycollect.tools';
+const AI_CENTRE_URL = 'https://ai.ezycollect.tools';
 
 /** Generate a PKCE code verifier (43-128 chars, RFC 7636) */
 function generateCodeVerifier(): string {
@@ -113,6 +113,34 @@ export async function login(): Promise<void> {
   console.log('Successfully authenticated!');
 }
 
+function renderPage(title: string, message: string, success: boolean): string {
+  const color = success ? '#10B981' : '#EF4444';
+  const icon = success
+    ? '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+    : '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title} — AI Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Jost',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F8F9FA;color:#333}
+  .card{max-width:420px;width:100%;margin:24px;background:#fff;border-radius:16px;border:1px solid #DADBE6;box-shadow:0 8px 40px rgba(0,0,0,0.08);padding:40px;text-align:center}
+  .icon{margin-bottom:24px}
+  h1{font-size:22px;font-weight:600;color:#121948;margin-bottom:8px}
+  p{font-size:14px;color:#6B7280;line-height:1.5}
+  .bar{width:48px;height:4px;border-radius:2px;margin:24px auto 0;background:${color}}
+  .footer{font-size:11px;color:#6B7280;opacity:0.6;margin-top:24px}
+</style></head>
+<body><div class="card">
+  <div class="icon">${icon}</div>
+  <h1>${title}</h1>
+  <p>${message}</p>
+  <div class="bar"></div>
+  <p class="footer">ezyCollect by Sidetrade — AI Centre</p>
+</div></body></html>`;
+}
+
 function waitForCallback(port: number): Promise<{ code: string; receivedState: string }> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -134,7 +162,7 @@ function waitForCallback(port: number): Promise<{ code: string; receivedState: s
 
       if (error) {
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end('<h1>Authentication failed</h1><p>You can close this window.</p>');
+        res.end(renderPage('Authentication Failed', 'Something went wrong during authentication. You can close this window and try again.', false));
         clearTimeout(timeout);
         server.close();
         reject(new Error(`Authentication error: ${error}`));
@@ -143,12 +171,12 @@ function waitForCallback(port: number): Promise<{ code: string; receivedState: s
 
       if (!code || !receivedState) {
         res.writeHead(400, { 'Content-Type': 'text/html' });
-        res.end('<h1>Invalid callback</h1><p>Missing code or state parameter.</p>');
+        res.end(renderPage('Invalid Callback', 'Missing code or state parameter. Please try again.', false));
         return;
       }
 
       res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<h1>Authentication successful!</h1><p>You can close this window and return to your editor.</p>');
+      res.end(renderPage('Authentication Successful', 'You can close this window and return to your editor.', true));
       clearTimeout(timeout);
       server.close();
       resolve({ code, receivedState });

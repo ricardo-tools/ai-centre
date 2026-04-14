@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface UseConsentResult {
   isAllowing: boolean;
@@ -11,7 +10,6 @@ interface UseConsentResult {
 }
 
 export function useConsent(): UseConsentResult {
-  const router = useRouter();
   const [isAllowing, setIsAllowing] = useState(false);
   const [isDenying, setIsDenying] = useState(false);
 
@@ -23,8 +21,10 @@ export function useConsent(): UseConsentResult {
 
   const handleDeny = useCallback(() => {
     setIsDenying(true);
-    router.push('/');
-  }, [router]);
+    // Redirect to deny endpoint — reads oauth-params cookie and redirects
+    // to CLI's localhost callback with error=access_denied
+    window.location.href = '/api/auth/deny';
+  }, []);
 
   return { isAllowing, isDenying, handleAllow, handleDeny };
 }

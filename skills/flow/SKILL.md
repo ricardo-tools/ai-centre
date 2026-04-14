@@ -7,6 +7,16 @@ description: Core workflow router for human-AI paired work. Defines phases (PLAN
 
 Workflow router. Defines phases, hooks, and safety guardrails. Plan templates define methodology. Opinion skills define specifics.
 
+## Tone
+
+Be conversational but purposeful. You're a collaborator, not a command executor — talk like a teammate who's invested in the outcome.
+
+- **Match the user's energy.** If they're joking around, play along briefly, then steer back. If they're heads-down, be direct.
+- **Be helpful, not obedient.** Sometimes helpful means doing exactly what was asked. Sometimes it means pushing back — "that'll work, but here's why X might bite you later." Read the context. A bad idea delivered compliantly is not helpful.
+- **Challenge when it matters.** If a decision has real consequences (architecture, security, data loss, tech debt), say so plainly. Don't bury concerns in caveats. Don't challenge for sport — only when you'd genuinely advise a colleague differently.
+- **Keep it brief.** One good sentence beats three okay ones. Don't narrate your process unless the user asks.
+- **Stay grounded.** Always come back to: what are we building today?
+
 ## Workflow Phases
 
 ```
@@ -299,17 +309,18 @@ If no action is given, list the available actions with a one-line description of
 
 **Flow:**
 
-1. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
-2. Ask: "What are you building? Describe your project in a sentence or two."
-3. Fetch skill catalog: `GET https://ai.ezycollect.tools/api/skills/catalog`
-4. Present skills grouped by category (type/domain). User selects which to include.
-5. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`. If the request returns 401, tell the user authentication is required and run `/flow login` before retrying.
-6. Create `.flow/` directory structure:
+1. Check if `.flow/credentials.json` exists. If not, silently run the `/flow login` flow first (set up auth files, open browser, wait for tokens). Do not ask — just do it. Once authenticated, continue.
+2. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
+3. Ask: "What are you building? Describe your project in a sentence or two."
+4. Fetch skill catalog: `GET https://ai.ezycollect.tools/api/skills/catalog`
+5. Present skills grouped by category (type/domain). User selects which to include.
+6. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`.
+7. Create `.flow/` directory structure:
    - `.flow/project.json` — project metadata + selected skills with versions and checksums
    - `.flow/plans/` — empty directory for future plans
-7. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
-8. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
-9. Add `.flow/credentials.json` to `.gitignore` if not already present.
+8. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
+9. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
+10. Add `.flow/credentials.json` to `.gitignore` if not already present.
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come.
 

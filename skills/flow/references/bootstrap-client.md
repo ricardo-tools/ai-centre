@@ -20,7 +20,7 @@ import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { authenticatedFetch } from './auth';
 
-const AI_CENTRE_URL = process.env.AI_CENTRE_URL || 'https://ai.ezycollect.tools';
+const AI_CENTRE_URL = 'https://ai.ezycollect.tools';
 
 interface CatalogSkill {
   slug: string;
