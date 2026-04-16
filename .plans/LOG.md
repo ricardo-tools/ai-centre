@@ -52,7 +52,7 @@
 | 3 | RAG Skill Matching | **Done** | skill_embeddings table (migration 0012), embeddings.ts lib (pure cosine/keyword/serialise), /api/skills/search route with keyword fallback. OpenRouter via OpenAI SDK (text-embedding-3-small). Seed upserts embeddings when OPENROUTER_API_KEY set. flow SKILL.md bootstrap updated to call search API first. 29 new tests, 237/238 total passing (1 pre-existing `deploy-polling` failure unrelated to Ch 3). |
 | 4 | Vibe Mode Templates | **Done** | plan-template-vibe.md (DRAFT→REVIEW→REFINE→DELIVER), plan-template-vibe-visual.md (design gates). Bootstrap detects mode (standard/vibe/vibe-visual) from description. flow plan command supports all 4 template types. Skill-only chapter, no server changes. |
 | 5 | Skill Publishing | **Done** | community_skills + community_skill_versions tables (migration 0013), POST /api/skills/publish with quota enforcement + versioning, GET /api/skills/community/[slug]/versions, Community badge on skill cards (violet, aria-labelled), /flow publish command in SKILL.md. |
-| 6 | Skill Rollback | Not started | |
+| 6 | Skill Rollback | **Done** | POST /api/skills/community/[slug]/rollback — append-only (creates new version from target content). Owner-only auth, edge cases handled (no-op on current, 404 on missing, 400 on single version). /flow rollback command in SKILL.md. |
 | 7 | Skill Update & Fork | Not started | |
 | 8 | Showcase Publishing | Not started | |
 | 9 | Showcase History + Rollback | Not started | |

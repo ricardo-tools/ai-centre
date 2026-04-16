@@ -100,7 +100,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -396,6 +396,28 @@ If no action is given, list the available actions with a one-line description of
 **Do not** publish the `flow` skill itself or any `flow-*` skills — those are platform skills, not user content.
 
 **Done when:** The server confirms the skill was published and the user sees the version number.
+
+---
+
+### `/flow rollback`
+
+**Trigger:** User types `/flow rollback` or asks to roll back a published skill.
+
+**Flow:**
+
+1. Check if `.flow/credentials.json` exists. If not, run `/flow login` first.
+2. Ask: "Which skill do you want to roll back?" List the user's published skills.
+3. GET `https://ai.ezycollect.tools/api/skills/community/{slug}/versions?userId={userId}` with Bearer token.
+4. Present version history with commit messages and dates.
+5. User picks a version to restore.
+6. POST `https://ai.ezycollect.tools/api/skills/community/{slug}/rollback` with Bearer token and body: `{ "targetVersion": <number> }`.
+7. On success: report "Restored {name} to v{target} (now v{new})".
+8. On 404: version doesn't exist or skill not found.
+9. On 400 (only one version): inform user there's nothing to roll back to.
+
+Rollback is **append-only** — it creates a new version with the old content. No history is deleted.
+
+**Done when:** The server confirms the rollback and the user sees the new version number.
 
 ---
 
