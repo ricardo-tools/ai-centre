@@ -378,6 +378,7 @@ Further edits after publish
 | Vercel Blob | ZIPs, showcase files | `BLOB_READ_WRITE_TOKEN` | Partially — falls back to `public/uploads/` in dev; throws in prod |
 | Mailgun | OTP email delivery | `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAILGUN_FROM_EMAIL` (opt), `MAILGUN_EU` (opt) | Yes — logs to console if `MAILGUN_API_KEY` missing |
 | Claude API (`@anthropic-ai/sdk`) | Showcase HTML generation | `ANTHROPIC_API_KEY` | Partially — showcase falls back to null |
+| Turso Platform API | Per-user database provisioning | `TURSO_ORG`, `TURSO_API_TOKEN` | Yes — returns 503 if not configured |
 
 | Vercel | Hosting + Edge runtime for middleware | — | N/A |
 
@@ -409,6 +410,7 @@ Further edits after publish
 | CI/CD pipeline | ❌ Not built |
 | Health check endpoint (`/api/health`) | ✅ Complete |
 | Security headers (next.config.ts) | ✅ Complete |
+| Turso DB provisioning (per-user databases, quota enforcement) | ✅ Complete |
 | Sentry error tracking | ❌ Instrumentation stub ready, no DSN |
 
 ---
@@ -429,6 +431,7 @@ Further edits after publish
 | `/gallery/upload` | Showcase upload form | Required (prod) |
 | `/admin` | Admin dashboard (users, roles, permissions, audit) | Admin only |
 | `/robots.txt` | SEO robots file | Public |
+| `/api/workspace/databases` | Provision (POST) or list (GET) per-user Turso databases | Bearer token |
 | `/api/debug/showcases` | List/retry/thumbnail showcases (debug) | Debug key |
 
 ---

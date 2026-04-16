@@ -126,7 +126,7 @@ async function ensureQuotaRow(userId: string): Promise<void> {
 
 export async function getWorkspaceForUser(userId: string): Promise<WorkspaceQuota> {
   const { eq, count } = await import('drizzle-orm');
-  const { users, userQuotas, skills } = await import('@/platform/db/schema');
+  const { users, userQuotas, skills, userDatabases } = await import('@/platform/db/schema');
   const db = getDb();
 
   // Get user info
@@ -150,6 +150,12 @@ export async function getWorkspaceForUser(userId: string): Promise<WorkspaceQuot
     .from(skills)
     .where(eq(skills.authorId, userId));
 
+  // Count databases by user
+  const [dbCount] = await db
+    .select({ count: count() })
+    .from(userDatabases)
+    .where(eq(userDatabases.userId, userId));
+
   return {
     userId: user.id,
     email: user.email,
@@ -158,7 +164,7 @@ export async function getWorkspaceForUser(userId: string): Promise<WorkspaceQuot
       skillLimit: quota.skillLimit,
       skillsUsed: skillCount?.count ?? 0,
       schemaLimit: quota.schemaLimit,
-      schemasUsed: 0, // No user_databases table yet — future chapters
+      schemasUsed: dbCount?.count ?? 0,
       storageLimitBytes: quota.storageLimitBytes,
       storageUsedBytes: 0, // No per-user storage tracking yet — future chapters
     },

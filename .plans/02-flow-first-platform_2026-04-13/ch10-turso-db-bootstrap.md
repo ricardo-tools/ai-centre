@@ -1,6 +1,6 @@
 # Chapter 10: Turso DB Bootstrap
 
-**Status:** Not started
+**Status:** Done
 **Tier:** New Capability
 **Depends on:** Chapters 1, 2
 **User can:** Bootstrap a project that needs a database, get a Turso database provisioned, and connect to it with Drizzle.

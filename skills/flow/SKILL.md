@@ -333,12 +333,24 @@ If no action is given, list the available actions with a one-line description of
 9. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
 10. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
 11. Add `.flow/credentials.json` to `.gitignore` if not already present.
+12. **Database provisioning:** If the user's project needs a database (they mention "database", "data storage", "persistence", "users table", "CRUD", or `db-turso-drizzle` is among selected skills):
+    a. Call `POST https://ai.ezycollect.tools/api/workspace/databases` with Bearer token and body `{ "name": "<project-slug>" }`.
+    b. If successful, write the returned `dbUrl` and `authToken` to the project's `.env.local`:
+       ```
+       DATABASE_URL=<dbUrl>
+       DATABASE_AUTH_TOKEN=<authToken>
+       ```
+    c. Ensure `db-turso-drizzle` is in the selected skills (add it if not already).
+    d. Read `skills/db-turso-drizzle/references/templates.md` and copy the template files (`drizzle.config.ts`, `src/db/client.ts`, `src/db/schema.ts`) into the project.
+    e. Add `@libsql/client` and `drizzle-orm` to dependencies, `drizzle-kit` to devDependencies.
+    f. If provisioning returns 503 (not configured), inform the user that database provisioning is not yet available and they can set up Turso manually using the `db-turso-drizzle` skill templates.
+    g. If provisioning returns 429 (quota exceeded), inform the user of their limit and suggest contacting admin.
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
-**References:** `skills/flow/references/auth-client.md` (for authenticated API calls)
+**References:** `skills/flow/references/auth-client.md` (for authenticated API calls), `skills/db-turso-drizzle/references/templates.md` (for database project templates)
 
-**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, and the user sees a summary of what was created.
+**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, and the user sees a summary of what was created.
 
 ---
 

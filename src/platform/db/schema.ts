@@ -392,6 +392,20 @@ export const communitySkillVersions = pgTable('community_skill_versions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ── User Databases (Turso) ────────────────────────────────────────
+
+export const userDatabases = pgTable('user_databases', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  dbName: text('db_name').notNull(),
+  dbUrl: text('db_url').notNull(),
+  tursoDbId: text('turso_db_id').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  unique('user_database_name_unique').on(table.userId, table.dbName),
+  index('idx_user_databases_user').on(table.userId),
+]);
+
 // ── Skill Gaps ─────────────────────────────────────────────────────
 
 export const skillGaps = pgTable('skill_gaps', {
