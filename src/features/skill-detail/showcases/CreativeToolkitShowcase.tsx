@@ -323,14 +323,16 @@ export function CreativeToolkitShowcase() {
       </Section>
 
       {/* ---- Data Visualization ---- */}
-      <Section title="Data Visualization — Nivo">
-        <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8 }}>SVG-based, theme-aware charts. Use the brand theme object — never hardcode colors in individual charts.</p>
+      <Section title="Data Visualization — ECharts (primary) · Nivo (fallback)">
+        <p style={{ fontSize: 14, color: 'var(--color-text-muted)', marginBottom: 8 }}>
+          ECharts is the default charting library — canvas-based, huge chart variety, excellent performance, built-in theme system. Use Nivo only when you need SVG output (print, inline SVG) or a chart type ECharts doesn&apos;t cover. The chart examples below use Nivo for illustration; the same design principles apply to ECharts.
+        </p>
 
-        {/* Nivo limitation callout */}
-        <div style={{ padding: 12, borderRadius: 6, background: 'var(--color-warning-muted, rgba(255,184,0,0.1))', border: '1px solid var(--color-border)', marginBottom: 16 }}>
+        {/* Library rule callout */}
+        <div style={{ padding: 12, borderRadius: 6, background: 'var(--color-primary-muted)', border: '1px solid var(--color-border)', marginBottom: 16 }}>
           <p style={{ fontSize: 12, color: 'var(--color-text-body)', margin: 0 }}>
-            <strong>Known limitation:</strong> Nivo accepts plain JS objects with hex strings, not <code style={{ background: 'var(--color-bg-alt)', padding: '1px 4px', borderRadius: 3 }}>var(--color-*)</code> tokens.
-            The brand theme in <code style={{ background: 'var(--color-bg-alt)', padding: '1px 4px', borderRadius: 3 }}>chart-theme.ts</code> must be manually synced when brand tokens change.
+            <strong>Rule:</strong> Always register a brand theme once and apply it via <code style={{ background: 'var(--color-bg-alt)', padding: '1px 4px', borderRadius: 3 }}>theme=&quot;brand&quot;</code> (ECharts) or <code style={{ background: 'var(--color-bg-alt)', padding: '1px 4px', borderRadius: 3 }}>getNivoTheme()</code> (Nivo).
+            See the <strong>charts reference</strong> for the full ECharts theme config.
           </p>
         </div>
 
@@ -486,7 +488,7 @@ export function CreativeToolkitShowcase() {
             { failure: 'Jarring animation', cause: 'Duration too long or wrong easing', fix: '150\u2013300ms, ease-out' },
             { failure: 'Oversized Rive file', cause: 'Complex illustration exported as .riv', fix: 'Keep .riv < 50KB' },
             { failure: 'Mismatched chart colors', cause: 'Hardcoded hex not from palette', fix: 'Use CHART_COLORS constant' },
-            { failure: 'Nivo theme out of sync', cause: 'Brand tokens changed', fix: 'Update chart-theme.ts, grep old hex' },
+            { failure: 'Chart theme out of sync', cause: 'Brand tokens changed', fix: 'Update chart-theme.ts, grep old hex' },
             { failure: 'Too many series', cause: 'Chart is unreadable', fix: 'Max 6 series, gray out the rest' },
             { failure: 'Blurry PNG illustrations', cause: 'Raster instead of vector', fix: 'Use SVG format only' },
           ].map((row, i) => (

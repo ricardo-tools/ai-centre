@@ -1,12 +1,6 @@
 ---
 name: creative-toolkit
-description: >
-  Opinionated library choices for visual assets, animation, and data
-  visualization. Illustrations (unDraw, Humaaans), photography (Unsplash,
-  Pexels), video (Pexels, Mixkit), animation (Motion primary, GSAP complex,
-  Rive assets), and charts (Nivo). Apply when adding illustrations, photos,
-  video, animation, or charts to any UI. For the Nivo brand theme object
-  and chart colour sequences, see creative-toolkit-charts-reference.
+description: Opinionated library choices for visual assets, animation, and data visualization. Charts (ECharts primary, Nivo fallback), illustrations (unDraw, Humaaans), photography (Unsplash, Pexels), animation (Motion, GSAP, Rive). See creative-toolkit-charts-reference for the ECharts brand theme.
 ---
 
 # Creative Toolkit
@@ -46,7 +40,8 @@ Do NOT use this skill for:
 | **Animation engine** | Motion (primary) | Declarative React animation, spring physics |
 | **Complex animation** | GSAP | Timeline sequencing, scroll-triggered, complex choreography |
 | **Animation assets** | Rive | Lightweight interactive animations (.riv files) |
-| **Charts** | Nivo | SVG-based, theme-aware, React-native, rich chart types |
+| **Charts (primary)** | ECharts (`echarts` + `echarts-for-react`) | Canvas-based, huge chart variety, built-in themes, SSR-capable, excellent performance with large datasets |
+| **Charts (fallback)** | Nivo (`@nivo/*`) | SVG-based, React-native — use when you specifically need SVG output (print, inline SVG manipulation) or a chart type ECharts doesn't cover |
 
 ### 2. Assets are a primary design tool, not decoration
 
@@ -187,20 +182,19 @@ For animation principles (duration, easing, purpose), see **interaction-motion**
 
 ---
 
-## Data Visualisation — Nivo
+## Data Visualisation — ECharts (Primary)
 
-Nivo is the charting library. SVG-based, theme-aware, React-native.
+ECharts is the charting library. Canvas-based (with optional SVG renderer), huge chart variety, excellent performance.
 
 ```bash
-npm install @nivo/core @nivo/bar @nivo/line @nivo/pie
-# Install only the chart types you need
+npm install echarts echarts-for-react
 ```
 
-### Known Limitation
+### When to use Nivo instead
 
-Nivo's theme API accepts hex strings, not CSS custom properties. The brand theme object (`getNivoTheme`) hardcodes hex values that duplicate semantic tokens. When brand colours change, update both `globals.css` and the chart theme.
+Use Nivo only when you specifically need SVG output (for print, inline SVG manipulation, or a chart type ECharts doesn't cover). Install only the Nivo packages you need: `@nivo/bar`, `@nivo/line`, etc.
 
-For the full Nivo theme object, colour sequences, and usage patterns, see **creative-toolkit-charts-reference**.
+For the ECharts brand theme, colour sequences, and usage patterns, see **creative-toolkit-charts-reference**.
 
 ### Chart Rules
 
@@ -208,9 +202,9 @@ For the full Nivo theme object, colour sequences, and usage patterns, see **crea
 2. **One insight per chart.** Title states the insight: "Revenue grew 34% after launch" not "Revenue by Quarter."
 3. **Border radius on bars.** `borderRadius: 4` — matches the brand's rounded aesthetic.
 4. **No 3D effects.** No gradients on data, no shadows on bars, no perspective on pies.
-5. **Animate on entry.** `motionConfig="gentle"` for smooth, restrained entry.
-6. **Tooltips inherit the theme.** Brand tooltip style is in the theme object — don't override per chart.
-7. **Generous margins.** Default `{ top: 24, right: 24, bottom: 48, left: 64 }`.
+5. **Animate on entry.** Use ECharts' built-in `animationDuration: 600` with `animationEasing: 'cubicOut'`.
+6. **Tooltips inherit the theme.** Brand tooltip style is in the theme — don't override per chart.
+7. **Generous grid.** Default `grid: { top: 24, right: 24, bottom: 48, left: 64 }`.
 8. **Pie/donut sparingly.** Prefer bar charts for comparisons. Pie only for parts-of-whole with ≤ 5 segments.
 9. **Max 6 series.** More colours becomes noise. Group or filter beyond 6.
 10. **Accessible.** Don't rely on colour alone — use labels, patterns, or annotation alongside colour.
@@ -225,9 +219,9 @@ For the full Nivo theme object, colour sequences, and usage patterns, see **crea
 - ❌ PNG illustrations → always SVG (vector scales on retina)
 - ❌ Video without poster image → always set a poster frame
 - ❌ Rive files > 50KB → optimise in editor before export
-- ❌ Hardcoded colours in individual charts → use `getNivoTheme()` and `CHART_COLORS` from the chart reference
+- ❌ Hardcoded colours in individual charts → use the brand theme and `CHART_COLORS` from the chart reference
 - ❌ More than 6 chart series → group or filter
-- ❌ Introducing alternative libraries (Chart.js, Recharts, Lottie) without documented reason → use the chosen stack
+- ❌ Introducing alternative libraries (Chart.js, Recharts, Lottie) without documented reason → use ECharts (or Nivo for SVG-specific needs)
 - ❌ Ignoring `prefers-reduced-motion` for animations → disable autoplay, provide instant fallbacks
 
 ---
@@ -243,7 +237,7 @@ Before delivering, verify:
 - [ ] Animation engine matches the need (Motion for UI, GSAP for complex, Rive for assets)
 - [ ] `prefers-reduced-motion` respected in all animations
 - [ ] Rive files < 50KB
-- [ ] Charts use `getNivoTheme()` and `CHART_COLORS` — no per-chart colour overrides
+- [ ] Charts use the brand ECharts theme and `CHART_COLORS` — no per-chart colour overrides
 - [ ] Chart titles state insights, not labels
 - [ ] Max 6 series per chart
 - [ ] Charts accessible — not relying on colour alone

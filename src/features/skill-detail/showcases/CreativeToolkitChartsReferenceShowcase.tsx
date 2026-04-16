@@ -33,31 +33,9 @@ const CHART_COLOR_LABELS = ['Accent (primary)', 'Electric Blue', 'Sky Blue', 'Am
 const DIVERGING = { positive: '#34C759', negative: '#EF4444', neutral: '#6B7280' };
 
 const THEME_TEXT = [
-  { property: 'fontSize', value: '12' },
   { property: 'fontFamily', value: "'Jost', sans-serif" },
-  { property: 'fill (light)', value: '#1A1B2E' },
-  { property: 'fill (dark)', value: '#E8E9F0' },
-];
-
-const THEME_AXIS_TICKS = [
-  { property: 'fontSize', value: '11' },
-  { property: 'fontFamily', value: "'Jost', sans-serif" },
-  { property: 'fontWeight', value: '500' },
-  { property: 'fill (light)', value: '#4B5563' },
-  { property: 'fill (dark)', value: 'rgba(255,255,255,0.55)' },
-];
-
-const THEME_AXIS_LEGEND = [
-  { property: 'fontSize', value: '12' },
-  { property: 'fontWeight', value: '600' },
-  { property: 'fill (light)', value: '#1A1B2E' },
-  { property: 'fill (dark)', value: 'rgba(255,255,255,0.7)' },
-];
-
-const THEME_GRID = [
-  { property: 'stroke (light)', value: 'rgba(18,25,72,0.04)' },
-  { property: 'stroke (dark)', value: 'rgba(255,255,255,0.04)' },
-  { property: 'strokeWidth', value: '1' },
+  { property: 'color (light)', value: '#1A1B2E' },
+  { property: 'color (dark)', value: '#E8E9F0' },
 ];
 
 const THEME_TOOLTIP = [
@@ -66,44 +44,56 @@ const THEME_TOOLTIP = [
   { property: 'fontWeight', value: '500' },
   { property: 'background (light)', value: '#FFFFFF' },
   { property: 'background (dark)', value: '#1A1B2E' },
-  { property: 'borderRadius', value: '8px' },
-  { property: 'padding', value: '8px 12px' },
+  { property: 'borderRadius', value: '8' },
+  { property: 'padding', value: '[8, 12]' },
   { property: 'shadow (light)', value: '0 8px 32px rgba(0,0,0,0.08)' },
   { property: 'shadow (dark)', value: '0 8px 32px rgba(0,0,0,0.4)' },
 ];
 
-const THEME_CROSSHAIR = [
-  { property: 'stroke (light)', value: 'rgba(18,25,72,0.3)' },
-  { property: 'stroke (dark)', value: 'rgba(255,255,255,0.3)' },
-  { property: 'strokeDasharray', value: '4 4' },
+const THEME_AXIS = [
+  { property: 'axisTick.show', value: 'false' },
+  { property: 'axisLabel.fontSize', value: '11' },
+  { property: 'axisLabel.fontWeight', value: '500' },
+  { property: 'axisLabel.color (light)', value: '#4B5563' },
+  { property: 'axisLabel.color (dark)', value: 'rgba(255,255,255,0.55)' },
+  { property: 'splitLine.color (light)', value: 'rgba(18,25,72,0.04)' },
+  { property: 'splitLine.color (dark)', value: 'rgba(255,255,255,0.04)' },
 ];
 
-const THEME_LABELS = [
-  { property: 'fontSize', value: '12' },
-  { property: 'fontWeight', value: '600' },
-  { property: 'fill (light)', value: '#1A1B2E' },
-  { property: 'fill (dark)', value: '#FFFFFF' },
+const THEME_SERIES = [
+  { property: 'bar.borderRadius', value: '[4, 4, 0, 0]' },
+  { property: 'bar.barMaxWidth', value: '40' },
+  { property: 'line.smooth', value: 'false' },
+  { property: 'line.symbol', value: "'circle'" },
+  { property: 'line.symbolSize', value: '6' },
+  { property: 'line.lineStyle.width', value: '2' },
+  { property: 'pie.borderRadius', value: '4' },
 ];
 
-const NIVO_PACKAGES = [
-  '@nivo/bar', '@nivo/line', '@nivo/pie', '@nivo/radar',
-  '@nivo/heatmap', '@nivo/treemap', '@nivo/waffle', '@nivo/funnel',
-  '@nivo/bump', '@nivo/sankey', '@nivo/choropleth', '@nivo/calendar',
-  '@nivo/stream', '@nivo/swarmplot',
+const ANIMATION_DEFAULTS = [
+  { prop: 'animationDuration', value: '600' },
+  { prop: 'animationEasing', value: "'cubicOut'" },
+  { prop: 'animationDelay', value: '(idx) => idx * 50' },
 ];
 
-const USAGE_DEFAULTS = [
-  { prop: 'margin', value: '{ top: 24, right: 24, bottom: 48, left: 64 }' },
-  { prop: 'padding (bar)', value: '0.3' },
-  { prop: 'borderRadius', value: '4' },
-  { prop: 'enableGridX', value: 'false' },
-  { prop: 'enableLabel', value: 'false' },
-  { prop: 'animate', value: 'true' },
-  { prop: 'motionConfig', value: "'gentle'" },
-  { prop: 'axisBottom.tickSize', value: '0' },
-  { prop: 'axisBottom.tickPadding', value: '12' },
-  { prop: 'axisLeft.tickSize', value: '0' },
-  { prop: 'axisLeft.tickPadding', value: '12' },
+const GRID_DEFAULTS = [
+  { prop: 'grid.top', value: '24' },
+  { prop: 'grid.right', value: '24' },
+  { prop: 'grid.bottom', value: '48' },
+  { prop: 'grid.left', value: '64' },
+];
+
+const CHART_TYPES = [
+  { type: 'bar', name: 'Bar', notes: 'Vertical default. Horizontal via yAxis category.' },
+  { type: 'line', name: 'Line / Area', notes: 'Add areaStyle: {} for area charts.' },
+  { type: 'pie', name: 'Pie / Donut', notes: "radius: ['40%', '70%'] for donut. Max 5 segments." },
+  { type: 'scatter', name: 'Scatter', notes: 'Correlations and distributions.' },
+  { type: 'heatmap', name: 'Heatmap', notes: 'Needs visualMap component.' },
+  { type: 'treemap', name: 'Treemap', notes: 'Hierarchical data.' },
+  { type: 'radar', name: 'Radar', notes: 'Needs radar coordinate system.' },
+  { type: 'funnel', name: 'Funnel', notes: 'Conversion flows.' },
+  { type: 'gauge', name: 'Gauge', notes: 'KPI displays.' },
+  { type: 'sankey', name: 'Sankey', notes: 'Flow diagrams.' },
 ];
 
 function ThemePropertyTable({ title, rows }: { title: string; rows: { property: string; value: string }[] }) {
@@ -150,7 +140,7 @@ export function CreativeToolkitChartsReferenceShowcase() {
       >
         <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-primary)', flexShrink: 0, marginTop: 7 }} />
         <p style={{ margin: 0, fontSize: 14, color: 'var(--color-text-body)', lineHeight: 1.6 }}>
-          This is a reference companion to <strong style={{ color: 'var(--color-text-heading)' }}>creative-toolkit</strong>. It contains lookup data — the Nivo theme object, colour sequences, and configuration templates. For chart design rules and guidelines, see the main skill.
+          This is a reference companion to <strong style={{ color: 'var(--color-text-heading)' }}>creative-toolkit</strong>. It contains the ECharts brand theme, colour sequences, and configuration templates. <strong>ECharts is the primary charting library.</strong> Nivo is available as a fallback for SVG-specific needs.
         </p>
       </div>
 
@@ -193,132 +183,37 @@ export function CreativeToolkitChartsReferenceShowcase() {
               </div>
             ))}
           </div>
-          <div style={{ padding: 16, border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-surface)', flex: '1 1 200px' }}>
-            <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-heading)', marginBottom: 8 }}>Emphasis Strategy</h4>
-            <p style={{ fontSize: 12, color: 'var(--color-text-body)', lineHeight: 1.5, margin: 0, marginBottom: 6 }}>
-              To highlight one series, render others in the de-emphasis color:
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-              <div style={{ width: 24, height: 24, borderRadius: 4, background: 'rgba(18,25,72,0.12)', border: '1px solid var(--color-border)' }} />
-              <code style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Light: rgba(18,25,72,0.12)</code>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 24, height: 24, borderRadius: 4, background: 'rgba(255,255,255,0.08)', border: '1px solid var(--color-border)' }} />
-              <code style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Dark: rgba(255,255,255,0.08)</code>
-            </div>
-          </div>
         </div>
       </Section>
 
-      {/* Section 2: Nivo Theme — Text & Axis */}
-      <Section title="Nivo Theme — Text & Axis Configuration">
+      {/* Section 2: ECharts Theme — Text & Tooltip */}
+      <Section title="ECharts Theme — Text & Tooltip">
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, marginTop: 0 }}>
-          Known limitation: Nivo accepts hex strings, not CSS variables. These values duplicate semantic tokens. When brand colours change, update both globals.css and the theme file.
+          Register the brand theme once via <code style={{ color: 'var(--color-secondary)' }}>echarts.registerTheme()</code>. All charts inherit it when you pass <code style={{ color: 'var(--color-secondary)' }}>theme=&quot;brand&quot;</code>.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
-          <ThemePropertyTable title="text" rows={THEME_TEXT} />
-          <ThemePropertyTable title="axis.ticks.text" rows={THEME_AXIS_TICKS} />
-          <ThemePropertyTable title="axis.legend.text" rows={THEME_AXIS_LEGEND} />
+          <ThemePropertyTable title="textStyle" rows={THEME_TEXT} />
+          <ThemePropertyTable title="tooltip" rows={THEME_TOOLTIP} />
         </div>
       </Section>
 
-      {/* Section 3: Nivo Theme — Grid, Crosshair, Labels */}
-      <Section title="Nivo Theme — Grid, Crosshair & Labels">
+      {/* Section 3: ECharts Theme — Axis */}
+      <Section title="ECharts Theme — Axis Configuration">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
-          <ThemePropertyTable title="grid.line" rows={THEME_GRID} />
-          <ThemePropertyTable title="crosshair.line" rows={THEME_CROSSHAIR} />
-          <ThemePropertyTable title="labels.text" rows={THEME_LABELS} />
+          <ThemePropertyTable title="categoryAxis / valueAxis" rows={THEME_AXIS} />
+          <ThemePropertyTable title="Series Defaults" rows={THEME_SERIES} />
         </div>
       </Section>
 
-      {/* Section 4: Nivo Theme — Tooltip */}
-      <Section title="Nivo Theme — Tooltip Container">
-        <ThemePropertyTable title="tooltip.container" rows={THEME_TOOLTIP} />
-      </Section>
-
-      {/* Section 5: Nivo Theme — Legends */}
-      <Section title="Nivo Theme — Legends">
-        <ThemePropertyTable title="legends.text" rows={[
-          { property: 'fontSize', value: '12' },
-          { property: 'fontFamily', value: "'Jost', sans-serif" },
-          { property: 'fontWeight', value: '500' },
-          { property: 'fill (light)', value: '#4B5563' },
-          { property: 'fill (dark)', value: 'rgba(255,255,255,0.55)' },
-        ]} />
-      </Section>
-
-      {/* Section 6: Full Theme Object Preview */}
-      <Section title="getNivoTheme() — Full Object Structure">
-        <pre
-          style={{
-            fontFamily: 'monospace',
-            fontSize: 12,
-            lineHeight: 1.6,
-            color: 'var(--color-text-body)',
-            background: 'var(--color-bg-alt)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 8,
-            padding: 20,
-            overflowX: 'auto',
-            margin: 0,
-          }}
-        >
-{`getNivoTheme(isDark: boolean): Theme {
-  return {
-    background: 'transparent',
-    text: { fontSize: 12, fontFamily: "'Jost'",
-            fill: isDark ? '#E8E9F0' : '#1A1B2E' },
-    axis: {
-      domain: { line: { stroke: isDark
-        ? 'rgba(255,255,255,0.08)'
-        : 'rgba(18,25,72,0.08)' } },
-      ticks: { line: { stroke: '...' },
-               text: { fontSize: 11, fontWeight: 500,
-                       fill: isDark ? 'rgba(…,0.55)' : '#4B5563' } },
-      legend: { text: { fontSize: 12, fontWeight: 600 } },
-    },
-    grid: { line: { stroke: isDark
-      ? 'rgba(255,255,255,0.04)'
-      : 'rgba(18,25,72,0.04)', strokeWidth: 1 } },
-    crosshair: { line: { strokeDasharray: '4 4' } },
-    tooltip: { container: {
-      fontSize: 13, fontWeight: 500,
-      borderRadius: '8px', padding: '8px 12px',
-      background: isDark ? '#1A1B2E' : '#FFFFFF',
-    } },
-    labels: { text: { fontSize: 12, fontWeight: 600 } },
-    legends: { text: { fontSize: 12, fontWeight: 500 } },
-  };
-}`}
-        </pre>
-      </Section>
-
-      {/* Section 7: Default Chart Props */}
-      <Section title="Recommended Default Chart Props">
-        <div style={{ overflowX: 'auto', border: '1px solid var(--color-border)', borderRadius: 8 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                <th style={headerCellStyle}>Prop</th>
-                <th style={headerCellStyle}>Default Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {USAGE_DEFAULTS.map((d) => (
-                <tr key={d.prop}>
-                  <td style={{ ...cellStyle, fontWeight: 600 }}>{d.prop}</td>
-                  <td style={cellStyle}><code style={{ fontSize: 12, color: 'var(--color-secondary)' }}>{d.value}</code></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Section 4: Animation & Grid */}
+      <Section title="Animation & Grid Defaults">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: 16 }}>
+          <ThemePropertyTable title="Animation" rows={ANIMATION_DEFAULTS.map(d => ({ property: d.prop, value: d.value }))} />
+          <ThemePropertyTable title="Grid (margins)" rows={GRID_DEFAULTS.map(d => ({ property: d.prop, value: d.value }))} />
         </div>
-        <p style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 12 }}>
-          Always wrap charts in a container with explicit height (e.g. 360px) and use the Responsive* wrapper variant.
-        </p>
       </Section>
 
-      {/* Section 8: Usage Pattern */}
+      {/* Section 5: Usage Pattern */}
       <Section title="Usage Pattern Template">
         <pre
           style={{
@@ -334,65 +229,73 @@ export function CreativeToolkitChartsReferenceShowcase() {
             margin: 0,
           }}
         >
-{`import { ResponsiveBar } from '@nivo/bar';
-import { getNivoTheme, CHART_COLORS }
+{`import ReactECharts from 'echarts-for-react';
+import { CHART_COLORS, BRAND_THEME_NAME }
   from '@/lib/chart-theme';
 
 function RevenueChart({ data, isDark }) {
+  const option = {
+    grid: { top: 24, right: 24,
+            bottom: 48, left: 64 },
+    xAxis: {
+      type: 'category',
+      data: data.map(d => d.quarter),
+    },
+    yAxis: {
+      type: 'value',
+      axisLabel: {
+        formatter: v => \`$\${v}k\`,
+      },
+    },
+    series: [{
+      type: 'bar',
+      data: data.map(d => d.revenue),
+      itemStyle: { color: CHART_COLORS[0] },
+    }],
+    animationDuration: 600,
+    animationEasing: 'cubicOut',
+  };
+
   return (
-    <div style={{ height: 360 }}>
-      <ResponsiveBar
-        data={data}
-        keys={['revenue']}
-        indexBy="quarter"
-        theme={getNivoTheme(isDark)}
-        colors={CHART_COLORS}
-        margin={{ top: 24, right: 24,
-                  bottom: 48, left: 64 }}
-        padding={0.3}
-        borderRadius={4}
-        enableGridX={false}
-        enableLabel={false}
-        animate={true}
-        motionConfig="gentle"
-        axisBottom={{ tickSize: 0,
-                      tickPadding: 12 }}
-        axisLeft={{ tickSize: 0,
-                    tickPadding: 12,
-                    format: v => \`$\${v}k\` }}
-      />
-    </div>
+    <ReactECharts
+      option={option}
+      theme={BRAND_THEME_NAME}
+      style={{ height: 360 }}
+      notMerge
+    />
   );
 }`}
         </pre>
       </Section>
 
-      {/* Section 9: Available Nivo Packages */}
-      <Section title="Available Nivo Chart Packages">
+      {/* Section 6: Available Chart Types */}
+      <Section title="Available ECharts Chart Types">
         <p style={{ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16, marginTop: 0 }}>
-          Install only what you need. All use the same getNivoTheme() and CHART_COLORS.
+          ECharts supports 20+ chart types. Use tree-shaking to import only what you need.
         </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {NIVO_PACKAGES.map((pkg) => (
-            <code
-              key={pkg}
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                padding: '6px 12px',
-                borderRadius: 6,
-                background: 'var(--color-bg-alt)',
-                border: '1px solid var(--color-border)',
-                color: 'var(--color-text-body)',
-              }}
-            >
-              {pkg}
-            </code>
-          ))}
+        <div style={{ overflowX: 'auto', border: '1px solid var(--color-border)', borderRadius: 8 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={headerCellStyle}>Series Type</th>
+                <th style={headerCellStyle}>Name</th>
+                <th style={headerCellStyle}>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {CHART_TYPES.map((ct) => (
+                <tr key={ct.type}>
+                  <td style={{ ...cellStyle, fontWeight: 600 }}><code style={{ color: 'var(--color-secondary)' }}>{ct.type}</code></td>
+                  <td style={cellStyle}>{ct.name}</td>
+                  <td style={{ ...cellStyle, color: 'var(--color-text-muted)' }}>{ct.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </Section>
 
-      {/* Section 10: Colour Sequence Visual Band */}
+      {/* Section 7: Colour Sequence Visual Band */}
       <Section title="Colour Sequence Visual Preview">
         <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-border)' }}>
           <div style={{ display: 'flex', height: 48 }}>
@@ -416,15 +319,31 @@ function RevenueChart({ data, isDark }) {
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>More becomes noise</div>
           </div>
           <div style={{ padding: 12, border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-surface)', flex: '1 1 160px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Accent Position</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-primary)' }}>#1</div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Always first in sequence</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Primary Library</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-primary)' }}>ECharts</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Nivo as SVG fallback</div>
           </div>
           <div style={{ padding: 12, border: '1px solid var(--color-border)', borderRadius: 8, background: 'var(--color-surface)', flex: '1 1 160px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Background</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-heading)' }}>transparent</div>
-            <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>Theme background setting</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>Renderer</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-heading)' }}>Canvas</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>SVG renderer optional</div>
           </div>
+        </div>
+      </Section>
+
+      {/* Section 8: Nivo Fallback Note */}
+      <Section title="Nivo Fallback">
+        <div
+          style={{
+            padding: '16px 20px',
+            background: 'var(--color-bg-alt)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 8,
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 14, color: 'var(--color-text-body)', lineHeight: 1.6 }}>
+            Use Nivo only when you specifically need <strong style={{ color: 'var(--color-text-heading)' }}>SVG output</strong> (print export, inline SVG manipulation) or a chart type ECharts doesn&apos;t cover. Install only the packages you need: <code style={{ color: 'var(--color-secondary)' }}>@nivo/bar</code>, <code style={{ color: 'var(--color-secondary)' }}>@nivo/line</code>, etc. The same brand colours and design rules apply.
+          </p>
         </div>
       </Section>
     </div>
