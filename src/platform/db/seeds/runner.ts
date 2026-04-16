@@ -23,11 +23,13 @@ export interface Seed {
 import { seed as seed0001 } from './0001_roles_and_admin';
 import { seed as seed0002 } from './0002_skills';
 import { seed as seed0003 } from './0003_dev_user';
+import { seed as seed0004 } from './0004_skill_embeddings';
 
 const SEEDS: Seed[] = [
   seed0001,
   seed0002,
   seed0003,
+  seed0004,
 ];
 
 export async function runSeeds(db: SeedDb, query: (sql: string, params?: unknown[]) => Promise<unknown[]>): Promise<void> {
