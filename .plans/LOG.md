@@ -57,7 +57,7 @@
 | 8 | Showcase Publishing | **Done** | showcase_versions table (migration 0014), POST /api/showcases/publish with FormData upload, Bearer auth, blob storage, version tracking, ZIP deploy via after(). /flow showcase command in SKILL.md. |
 | 9 | Showcase History + Rollback | **Done** | VersionHistoryPanel in showcase viewer (collapsible, owner-only restore). Server actions: getShowcaseVersions, restoreShowcaseVersion (append-only, re-deploys ZIPs). POST /api/showcases/[id]/rollback for CLI. |
 | 10 | Turso DB in Bootstrap | **Done** | user_databases table (migration 0015), turso.ts Platform API wrapper (create/token/delete/provision), POST+GET /api/workspace/databases with quota enforcement, db-turso-drizzle skill + templates, flow bootstrap updated with DB provisioning step. Workspace action now counts user databases for schemasUsed. |
-| 11 | Migration & Seed Refs | Not started | |
+| 11 | Migration & Seed Refs | **Done** | db-turso-drizzle/references/migrations.md with migrate.ts runner, seed.ts template, package.json scripts, idempotency rules, error table. SKILL.md updated with workflow and reference link. Bootstrap step 12 extended to copy migration files and add db:* scripts. |
 | 12 | Email + Mailpit + Docker | Not started | |
 | 13 | OTP Auth Ref Files | Not started | |
 | 14 | File Storage Ref Files | Not started | |

@@ -66,13 +66,21 @@ export const users = sqliteTable('users', {
 | Arrays | Not supported — use join table or JSON text | Native array types |
 | ALTER TABLE | Limited (no DROP COLUMN before 3.35) | Full support |
 
-### Migrations
+### Migrations & Seeds
+
+The bootstrapped project includes `src/db/migrate.ts` (runner) and `src/db/seed.ts` (seed template), plus `package.json` scripts for the standard workflow. See [migrations.md](references/migrations.md) for the full templates.
 
 ```bash
-npx drizzle-kit generate    # Generate migration SQL from schema changes
-npx drizzle-kit migrate     # Apply pending migrations
-npx drizzle-kit studio      # Visual DB browser
+npm run db:generate    # Generate migration SQL from schema changes
+npm run db:migrate     # Apply pending migrations to Turso
+npm run db:seed        # Run seed script (idempotent)
+npm run db:studio      # Visual DB browser (local.drizzle.studio)
 ```
+
+**Rules:**
+- Always use `.onConflictDoNothing()` or existence checks in seeds — they must be idempotent
+- Never edit `src/db/migrations/meta/_journal.json` manually — Drizzle Kit manages it
+- SQLite has limited `ALTER TABLE` — plan schema changes carefully (see table above)
 
 ### Client Usage
 
@@ -107,3 +115,4 @@ await db.transaction(async (tx) => {
 ## References
 
 - [Templates](references/templates.md) — copy-paste starter files for drizzle.config.ts, client.ts, schema.ts
+- [Migrations](references/migrations.md) — migrate.ts runner, seed.ts template, package.json scripts

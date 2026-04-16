@@ -342,13 +342,15 @@ If no action is given, list the available actions with a one-line description of
        ```
     c. Ensure `db-turso-drizzle` is in the selected skills (add it if not already).
     d. Read `skills/db-turso-drizzle/references/templates.md` and copy the template files (`drizzle.config.ts`, `src/db/client.ts`, `src/db/schema.ts`) into the project.
-    e. Add `@libsql/client` and `drizzle-orm` to dependencies, `drizzle-kit` to devDependencies.
-    f. If provisioning returns 503 (not configured), inform the user that database provisioning is not yet available and they can set up Turso manually using the `db-turso-drizzle` skill templates.
-    g. If provisioning returns 429 (quota exceeded), inform the user of their limit and suggest contacting admin.
+    e. Read `skills/db-turso-drizzle/references/migrations.md` and copy the migration runner (`src/db/migrate.ts`) and seed template (`src/db/seed.ts`) into the project.
+    f. Add `@libsql/client` and `drizzle-orm` to dependencies, `drizzle-kit`, `tsx`, and `dotenv` to devDependencies.
+    g. Add the `db:generate`, `db:migrate`, `db:seed`, `db:studio` scripts to the project's `package.json` (see `migrations.md`).
+    h. If provisioning returns 503 (not configured), inform the user that database provisioning is not yet available and they can set up Turso manually using the `db-turso-drizzle` skill templates.
+    i. If provisioning returns 429 (quota exceeded), inform the user of their limit and suggest contacting admin.
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
-**References:** `skills/flow/references/auth-client.md` (for authenticated API calls), `skills/db-turso-drizzle/references/templates.md` (for database project templates)
+**References:** `skills/flow/references/auth-client.md` (for authenticated API calls), `skills/db-turso-drizzle/references/templates.md` (for database project templates), `skills/db-turso-drizzle/references/migrations.md` (for migration and seed templates)
 
 **Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, and the user sees a summary of what was created.
 

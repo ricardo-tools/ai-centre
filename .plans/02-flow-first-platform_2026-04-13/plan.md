@@ -98,7 +98,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 8 | Showcase Publishing | New Capability | Run `flow-showcase publish`, see showcase in gallery with auto-detected skills | **Done** |
 | 9 | Showcase Version History + Rollback | Extension | See version history on showcase page, rollback to a previous version | **Done** |
 | 10 | Turso DB in Bootstrap | New Capability | Bootstrap a project needing a DB, get a working Turso connection via Drizzle | **Done** |
-| 11 | Migration & Seed Ref Files | Extension | Run migrations and seeds in a bootstrapped project | Not started |
+| 11 | Migration & Seed Ref Files | Extension | Run migrations and seeds in a bootstrapped project | **Done** |
 | 12 | Email + Mailpit + Docker | New Capability | Bootstrap with email, run `docker compose up`, send test email via Mailpit | Not started |
 | 13 | OTP Auth Ref Files | Extension | Bootstrap with auth, log in via OTP locally | Not started |
 | 14 | File Storage Ref Files | Extension | Bootstrap with file storage, upload a file locally and to Vercel Blob | Not started |
