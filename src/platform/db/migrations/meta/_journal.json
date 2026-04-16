@@ -99,6 +99,13 @@
       "when": 1776704400000,
       "tag": "0013_add_community_skills",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1776790800000,
+      "tag": "0014_add_showcase_versions",
+      "breakpoints": true
     }
   ]
 }

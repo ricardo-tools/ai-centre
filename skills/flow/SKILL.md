@@ -100,7 +100,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`, `showcase`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -443,6 +443,32 @@ Rollback is **append-only** — it creates a new version with the old content. N
 **Do not** attempt three-way merge. Binary choice: accept or fork.
 
 **Done when:** All non-forked skills are at latest version, or user has made accept/fork decisions.
+
+---
+
+### `/flow showcase`
+
+**Trigger:** User types `/flow showcase` or asks to publish a showcase.
+
+**Flow:**
+
+1. Check if `.flow/credentials.json` exists. If not, run `/flow login` first.
+2. Detect output type:
+   - Single `.html` file → read it directly.
+   - Project directory with built output → ZIP it.
+3. Read `.flow/project.json` for skill associations (if present).
+4. Ask for a title (first time only) and commit message.
+5. POST `https://ai.ezycollect.tools/api/showcases/publish` as FormData with Bearer token:
+   - `file`: the HTML or ZIP file
+   - `title`: showcase title
+   - `description`: optional
+   - `commitMessage`: what changed
+   - `skillSlugs`: JSON array from project.json (optional)
+   - `projectId`: from project.json (optional, for re-publish detection)
+6. On success: report "Published {title} v{version}".
+7. ZIPs are auto-deployed to the Vercel showcase project. HTML showcases are viewable immediately.
+
+**Done when:** The server confirms the showcase was published and the user sees the version number.
 
 ---
 

@@ -166,6 +166,17 @@ export const generatedProjects = pgTable('generated_projects', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ── Showcase Versions ───────────────────────────────────────────────
+
+export const showcaseVersions = pgTable('showcase_versions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  showcaseId: uuid('showcase_id').notNull().references(() => showcaseUploads.id, { onDelete: 'cascade' }),
+  versionNumber: integer('version_number').notNull(),
+  blobUrl: text('blob_url').notNull(),
+  commitMessage: text('commit_message').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // ── Social: Downloads & Views ───────────────────────────────────────
 
 export const skillDownloads = pgTable('skill_downloads', {
