@@ -92,6 +92,13 @@
       "when": 1776618000000,
       "tag": "0012_add_skill_embeddings",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1776704400000,
+      "tag": "0013_add_community_skills",
+      "breakpoints": true
     }
   ]
 }

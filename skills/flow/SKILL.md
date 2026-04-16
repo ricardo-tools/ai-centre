@@ -100,7 +100,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -372,6 +372,30 @@ If no action is given, list the available actions with a one-line description of
 **References:** `skills/flow/references/logout-client.md`, `skills/flow/references/auth-client.md`
 
 **Done when:** `.flow/credentials.json` is deleted and the server token is revoked.
+
+---
+
+### `/flow publish`
+
+**Trigger:** User types `/flow publish` or asks to publish a skill to AI Centre.
+
+**Flow:**
+
+1. Check if `.flow/credentials.json` exists. If not, run `/flow login` first.
+2. Ask: "Which skill do you want to publish?" List skills found in `.claude/skills/` (excluding `flow` itself).
+3. Read the skill's `SKILL.md` file and parse frontmatter (name, description).
+4. Ask for a commit message: "What changed in this version?"
+5. POST `https://ai.ezycollect.tools/api/skills/publish` with Bearer token and body:
+   ```json
+   { "slug": "<dir-name>", "name": "<from frontmatter>", "description": "<from frontmatter>", "content": "<full file content>", "commitMessage": "<user input>" }
+   ```
+6. On success: report "Published {name} v{version}".
+7. On 429 (quota exceeded): report the quota message from the server.
+8. On 401: token may be expired — run `/flow login` and retry once.
+
+**Do not** publish the `flow` skill itself or any `flow-*` skills — those are platform skills, not user content.
+
+**Done when:** The server confirms the skill was published and the user sees the version number.
 
 ---
 

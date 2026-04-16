@@ -58,7 +58,7 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
         <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-heading)', margin: 0 }}>
           {title}
         </h3>
-        {isOfficial && (
+        {isOfficial ? (
           <span
             style={{
               fontSize: 11,
@@ -70,6 +70,21 @@ export function SkillCard({ slug, title, description, isOfficial, version, tags,
             }}
           >
             {officialLabel}
+          </span>
+        ) : (
+          <span
+            data-testid="skill-badge-community"
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '2px 6px',
+              borderRadius: 4,
+              background: 'var(--color-comp-violet-muted)',
+              color: 'var(--color-comp-violet)',
+            }}
+            aria-label="Community skill"
+          >
+            Community
           </span>
         )}
       </div>

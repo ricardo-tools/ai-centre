@@ -355,6 +355,32 @@ export const userQuotas = pgTable('user_quotas', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
 
+// ── Community Skills ──────────────────────────────────────────────
+
+export const communitySkills = pgTable('community_skills', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  category: text('category'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  unique('community_skill_slug_user').on(table.slug, table.userId),
+  index('idx_community_skills_user').on(table.userId),
+]);
+
+export const communitySkillVersions = pgTable('community_skill_versions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  skillId: uuid('skill_id').notNull().references(() => communitySkills.id, { onDelete: 'cascade' }),
+  versionNumber: integer('version_number').notNull(),
+  content: text('content').notNull(),
+  commitMessage: text('commit_message').notNull(),
+  checksum: text('checksum').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // ── Skill Gaps ─────────────────────────────────────────────────────
 
 export const skillGaps = pgTable('skill_gaps', {
