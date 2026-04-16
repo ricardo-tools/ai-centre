@@ -55,7 +55,7 @@
 | 6 | Skill Rollback | **Done** | POST /api/skills/community/[slug]/rollback — append-only (creates new version from target content). Owner-only auth, edge cases handled (no-op on current, 404 on missing, 400 on single version). /flow rollback command in SKILL.md. |
 | 7 | Skill Update & Fork | **Done** | POST /api/skills/updates — compares installed versions + checksums against official catalog. Detects version mismatches and local modifications. /flow update command with accept/fork binary choice. Forked skills excluded from future checks. |
 | 8 | Showcase Publishing | **Done** | showcase_versions table (migration 0014), POST /api/showcases/publish with FormData upload, Bearer auth, blob storage, version tracking, ZIP deploy via after(). /flow showcase command in SKILL.md. |
-| 9 | Showcase History + Rollback | Not started | |
+| 9 | Showcase History + Rollback | **Done** | VersionHistoryPanel in showcase viewer (collapsible, owner-only restore). Server actions: getShowcaseVersions, restoreShowcaseVersion (append-only, re-deploys ZIPs). POST /api/showcases/[id]/rollback for CLI. |
 | 10 | Turso DB in Bootstrap | Not started | |
 | 11 | Migration & Seed Refs | Not started | |
 | 12 | Email + Mailpit + Docker | Not started | |

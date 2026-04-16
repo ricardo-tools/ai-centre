@@ -18,6 +18,7 @@ import { ReactionBar } from '@/platform/components/ReactionBar';
 import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { CommentThread } from '@/platform/components/CommentThread';
 import { Eye, ChatCircle } from '@phosphor-icons/react';
+import { VersionHistoryPanel } from '../VersionHistoryPanel';
 
 /** Convert a blob URL to an authenticated proxy URL for private Vercel Blob storage. */
 function blobProxy(url: string): string {
@@ -815,6 +816,11 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
           </div>
         )}
       </div>
+      </div>
+
+      {/* ── Version history panel ── */}
+      <div style={{ padding: '0 16px' }}>
+        <VersionHistoryPanel showcaseId={showcase.id} isOwner={!!isOwner} />
       </div>
 
       {/* ── Fullscreen overlay (portaled to body to escape overflow context) ── */}

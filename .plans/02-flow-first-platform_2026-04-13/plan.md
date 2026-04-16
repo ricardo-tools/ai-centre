@@ -96,7 +96,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 6 | Skill Rollback | Extension | Run `flow-skills rollback`, pick a previous version, see it restored | **Done** |
 | 7 | Skill Update & Fork | New Capability | Run `flow-update`, see diffs for modified skills, accept or fork | **Done** |
 | 8 | Showcase Publishing | New Capability | Run `flow-showcase publish`, see showcase in gallery with auto-detected skills | **Done** |
-| 9 | Showcase Version History + Rollback | Extension | See version history on showcase page, rollback to a previous version | Not started |
+| 9 | Showcase Version History + Rollback | Extension | See version history on showcase page, rollback to a previous version | **Done** |
 | 10 | Turso DB in Bootstrap | New Capability | Bootstrap a project needing a DB, get a working Turso connection via Drizzle | Not started |
 | 11 | Migration & Seed Ref Files | Extension | Run migrations and seeds in a bootstrapped project | Not started |
 | 12 | Email + Mailpit + Docker | New Capability | Bootstrap with email, run `docker compose up`, send test email via Mailpit | Not started |

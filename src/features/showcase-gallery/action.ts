@@ -944,3 +944,106 @@ export async function archiveShowcase(showcaseId: string): Promise<Result<void, 
     return Err(new NotFoundError('Showcase', showcaseId));
   }
 }
+
+// ── Version History ────────────────────────────────────────────────
+
+export interface ShowcaseVersion {
+  id: string;
+  versionNumber: number;
+  commitMessage: string;
+  createdAt: string;
+}
+
+export async function getShowcaseVersions(showcaseId: string): Promise<ShowcaseVersion[]> {
+  if (!hasDb) return [];
+
+  const { showcaseVersions } = await import('@/platform/db/schema');
+  const { eq: eqOp, desc } = await import('drizzle-orm');
+  const db = getDb();
+
+  const rows = await db.select({
+    id: showcaseVersions.id,
+    versionNumber: showcaseVersions.versionNumber,
+    commitMessage: showcaseVersions.commitMessage,
+    createdAt: showcaseVersions.createdAt,
+  }).from(showcaseVersions)
+    .where(eqOp(showcaseVersions.showcaseId, showcaseId))
+    .orderBy(desc(showcaseVersions.versionNumber));
+
+  return rows.map(r => ({
+    id: r.id,
+    versionNumber: r.versionNumber,
+    commitMessage: r.commitMessage,
+    createdAt: r.createdAt.toISOString(),
+  }));
+}
+
+export async function restoreShowcaseVersion(
+  showcaseId: string,
+  targetVersionNumber: number,
+): Promise<Result<{ version: number }, ValidationError | ForbiddenError | NotFoundError>> {
+  const authResult = await requireAuth();
+  if (!authResult.ok) return authResult;
+  const session = authResult.value;
+
+  if (!hasDb) return Err(new ValidationError('noDb', 'Database not available'));
+
+  const { showcaseUploads, showcaseVersions } = await import('@/platform/db/schema');
+  const { eq: eqOp, and } = await import('drizzle-orm');
+  const db = getDb();
+
+  // Verify ownership
+  const [showcase] = await db.select({ id: showcaseUploads.id, userId: showcaseUploads.userId, fileType: showcaseUploads.fileType })
+    .from(showcaseUploads)
+    .where(eqOp(showcaseUploads.id, showcaseId))
+    .limit(1);
+
+  if (!showcase) return Err(new NotFoundError('Showcase', showcaseId));
+  if (showcase.userId !== session.userId && session.roleSlug !== 'admin') {
+    return Err(new ForbiddenError('Only the owner can restore versions'));
+  }
+
+  // Find target version
+  const [target] = await db.select({ blobUrl: showcaseVersions.blobUrl })
+    .from(showcaseVersions)
+    .where(and(eqOp(showcaseVersions.showcaseId, showcaseId), eqOp(showcaseVersions.versionNumber, targetVersionNumber)))
+    .limit(1);
+
+  if (!target) return Err(new NotFoundError('Version', String(targetVersionNumber)));
+
+  // Get current max version
+  const versions = await db.select({ vn: showcaseVersions.versionNumber })
+    .from(showcaseVersions)
+    .where(eqOp(showcaseVersions.showcaseId, showcaseId));
+  const newVersionNumber = Math.max(...versions.map(v => v.vn)) + 1;
+
+  // Create new version with target's blob URL
+  await db.insert(showcaseVersions).values({
+    showcaseId,
+    versionNumber: newVersionNumber,
+    blobUrl: target.blobUrl,
+    commitMessage: `Restored from v${targetVersionNumber}`,
+  });
+
+  // Update showcase to use restored blob URL
+  await db.update(showcaseUploads).set({
+    blobUrl: target.blobUrl,
+    deployStatus: showcase.fileType === 'zip' ? 'pending' : 'none',
+    deployError: null,
+  }).where(eqOp(showcaseUploads.id, showcaseId));
+
+  // Trigger re-deploy for ZIPs
+  if (showcase.fileType === 'zip' && process.env.VERCEL_SHOWCASE_TOKEN) {
+    after(async () => {
+      try {
+        const { triggerDeploy } = await import('./deploy');
+        await triggerDeploy(showcaseId);
+      } catch (err) {
+        console.error('[showcase-gallery] restore deploy failed', err);
+      }
+    });
+  }
+
+  console.info('[showcase-gallery] restored version', { showcaseId, from: versions[0]?.vn, to: targetVersionNumber, newVersion: newVersionNumber });
+  return Ok({ version: newVersionNumber });
+}
