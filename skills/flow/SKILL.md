@@ -100,7 +100,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -418,6 +418,31 @@ If no action is given, list the available actions with a one-line description of
 Rollback is **append-only** — it creates a new version with the old content. No history is deleted.
 
 **Done when:** The server confirms the rollback and the user sees the new version number.
+
+---
+
+### `/flow update`
+
+**Trigger:** User types `/flow update` or asks to check for skill updates.
+
+**Flow:**
+
+1. Check if `.flow/credentials.json` exists. If not, run `/flow login` first.
+2. Read `.flow/project.json` for installed skills (slug, version, checksum, forked flag).
+3. Filter out forked skills — they don't receive updates.
+4. POST `https://ai.ezycollect.tools/api/skills/updates` with Bearer token and body:
+   `{ "skills": [{ "slug": "...", "version": "...", "checksum": "..." }] }`
+5. For each skill with updates:
+   - **No local changes**: auto-update — download new content via `/api/skills/{slug}/content`, overwrite `.claude/skills/{slug}/SKILL.md` + references, update `project.json`.
+   - **Local changes detected** (checksum mismatch): show the user what changed and ask:
+     - **Accept** → overwrite local with upstream, update version + checksum
+     - **Fork** → mark `forked: true` in `project.json`, stop future updates for this skill
+6. If all skills are current: "Everything is up to date."
+7. If a skill was removed from the catalog: warn the user but don't delete local files.
+
+**Do not** attempt three-way merge. Binary choice: accept or fork.
+
+**Done when:** All non-forked skills are at latest version, or user has made accept/fork decisions.
 
 ---
 

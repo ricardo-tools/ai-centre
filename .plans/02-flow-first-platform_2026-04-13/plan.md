@@ -94,7 +94,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 4 | Vibe Mode Templates | Extension | Bootstrap a creative project and get light methodology (DRAFT→REVIEW→REFINE→DELIVER) | **Done** |
 | 5 | Skill Publishing | New Capability | Run `flow-skills publish`, see the skill appear in the web library | **Done** |
 | 6 | Skill Rollback | Extension | Run `flow-skills rollback`, pick a previous version, see it restored | **Done** |
-| 7 | Skill Update & Fork | New Capability | Run `flow-update`, see diffs for modified skills, accept or fork | Not started |
+| 7 | Skill Update & Fork | New Capability | Run `flow-update`, see diffs for modified skills, accept or fork | **Done** |
 | 8 | Showcase Publishing | New Capability | Run `flow-showcase publish`, see showcase in gallery with auto-detected skills | Not started |
 | 9 | Showcase Version History + Rollback | Extension | See version history on showcase page, rollback to a previous version | Not started |
 | 10 | Turso DB in Bootstrap | New Capability | Bootstrap a project needing a DB, get a working Turso connection via Drizzle | Not started |

@@ -53,7 +53,7 @@
 | 4 | Vibe Mode Templates | **Done** | plan-template-vibe.md (DRAFT→REVIEW→REFINE→DELIVER), plan-template-vibe-visual.md (design gates). Bootstrap detects mode (standard/vibe/vibe-visual) from description. flow plan command supports all 4 template types. Skill-only chapter, no server changes. |
 | 5 | Skill Publishing | **Done** | community_skills + community_skill_versions tables (migration 0013), POST /api/skills/publish with quota enforcement + versioning, GET /api/skills/community/[slug]/versions, Community badge on skill cards (violet, aria-labelled), /flow publish command in SKILL.md. |
 | 6 | Skill Rollback | **Done** | POST /api/skills/community/[slug]/rollback — append-only (creates new version from target content). Owner-only auth, edge cases handled (no-op on current, 404 on missing, 400 on single version). /flow rollback command in SKILL.md. |
-| 7 | Skill Update & Fork | Not started | |
+| 7 | Skill Update & Fork | **Done** | POST /api/skills/updates — compares installed versions + checksums against official catalog. Detects version mismatches and local modifications. /flow update command with accept/fork binary choice. Forked skills excluded from future checks. |
 | 8 | Showcase Publishing | Not started | |
 | 9 | Showcase History + Rollback | Not started | |
 | 10 | Turso DB in Bootstrap | Not started | |
