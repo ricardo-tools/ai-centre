@@ -322,7 +322,7 @@ If no action is given, list the available actions with a one-line description of
 9. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
 10. Add `.flow/credentials.json` to `.gitignore` if not already present.
 
-**Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come.
+**Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
 **References:** `skills/flow/references/auth-client.md` (for authenticated API calls)
 

@@ -161,11 +161,16 @@ function waitForCallback(port: number): Promise<{ code: string; receivedState: s
       const error = url.searchParams.get('error');
 
       if (error) {
+        const isDenied = error === 'access_denied';
+        const title = isDenied ? 'Access Denied' : 'Authentication Failed';
+        const message = isDenied
+          ? 'You denied access to the CLI. Without authorization, the CLI cannot access your workspace or the skill library. You can close this window.'
+          : 'Something went wrong during authentication. You can close this window and try again.';
         res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(renderPage('Authentication Failed', 'Something went wrong during authentication. You can close this window and try again.', false));
+        res.end(renderPage(title, message, false));
         clearTimeout(timeout);
         server.close();
-        reject(new Error(`Authentication error: ${error}`));
+        reject(new Error(isDenied ? 'Access denied — CLI cannot access your workspace or skill library without authorization.' : `Authentication error: ${error}`));
         return;
       }
 
