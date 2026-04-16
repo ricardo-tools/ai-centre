@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { jwtVerify } from 'jose';
 import { verifySessionEdge } from '@/platform/lib/auth-edge';
 
 export async function middleware(request: NextRequest) {
@@ -38,6 +39,8 @@ export async function middleware(request: NextRequest) {
     pathname === '/robots.txt' ||
     pathname === '/api/health' ||
     pathname === '/api/debug' ||
+    pathname === '/api/skills/catalog' ||
+    pathname === '/api/skills/search' ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/webhooks/') ||
     pathname.startsWith('/_next/') ||
@@ -45,6 +48,24 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/logos/')
   ) {
     return NextResponse.next();
+  }
+
+  // OAuth Bearer token support for API routes (Flow CLI access).
+  // Access tokens are signed with AUTH_SECRET and carry { userId, type: 'access' }.
+  if (pathname.startsWith('/api/')) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const bearerToken = authHeader.slice('Bearer '.length).trim();
+      try {
+        const secret = new TextEncoder().encode(process.env.AUTH_SECRET);
+        const { payload } = await jwtVerify(bearerToken, secret);
+        if (payload.type === 'access' && typeof payload.userId === 'string') {
+          return NextResponse.next();
+        }
+      } catch {
+        // Invalid/expired bearer — fall through to cookie check
+      }
+    }
   }
 
   const token = request.cookies.get('auth-token')?.value;
