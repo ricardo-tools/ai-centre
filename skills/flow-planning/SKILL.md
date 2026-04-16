@@ -8,7 +8,12 @@ description: Planning methodology for chapter plans. Vertical-slice chapters wit
 Methodology for creating chapter plans. Produces plans where every chapter is a small vertical slice — schema through UI — with polish built into acceptance criteria.
 
 For research techniques (web search, source evaluation, CRAAP testing), see: `.claude/skills/flow-research/SKILL.md`
-For the execution methodology inside each chapter, see: `PLAN_TEMPLATE_DEV.md`
+
+Templates (select based on project mode):
+- **Dev** — `plan-template-dev.md` — TEST → BUILD → EVAL → RUN → AUDIT → LOG
+- **Tooling** — `plan-template-tooling.md` — infrastructure and CI changes
+- **Vibe** — `plan-template-vibe.md` — DRAFT → REVIEW → REFINE → DELIVER (creative/content)
+- **Vibe Visual** — `plan-template-vibe-visual.md` — design-forward with visual gates (presentations, brochures, graphics)
 
 ---
 

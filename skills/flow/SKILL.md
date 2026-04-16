@@ -161,7 +161,12 @@ If no action is given, list the available actions with a one-line description of
 
 **Flow:**
 
-1. Determine plan type (dev or tooling) and select the appropriate template (`plan-template-dev.md` or `plan-template-tooling.md`). Dev: changes affecting the production application (features, schema, UI, API endpoints, auth). Tooling: changes to development infrastructure (CI, testing setup, skills, process, developer tooling). If ambiguous, ask the user.
+1. Determine plan type and select the appropriate template:
+   - **Dev** (`plan-template-dev.md`) — changes affecting the production application (features, schema, UI, API endpoints, auth). Full methodology: TEST → BUILD → EVAL → RUN → AUDIT → LOG.
+   - **Tooling** (`plan-template-tooling.md`) — changes to development infrastructure (CI, testing setup, skills, process, developer tooling).
+   - **Vibe** (`plan-template-vibe.md`) — creative/content projects (copy, messaging, email sequences, blog posts, content strategy). Light methodology: DRAFT → REVIEW → REFINE → DELIVER.
+   - **Vibe Visual** (`plan-template-vibe-visual.md`) — design-forward projects (presentations, brochures, posters, brand assets, pitch decks, social graphics). Adds design gates to vibe methodology.
+   If ambiguous, ask the user. If the project is creative with no code, default to vibe or vibe-visual based on whether the deliverable is primarily text or visual.
 2. Execute the `flow-planning` methodology:
    - Triage topics into complexity tiers.
    - Dispatch research agents per `flow-research`.
@@ -312,17 +317,22 @@ If no action is given, list the available actions with a one-line description of
 1. Check if `.flow/credentials.json` exists. If not, silently run the `/flow login` flow first (set up auth files, open browser, wait for tokens). Do not ask — just do it. Once authenticated, continue.
 2. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
 3. Ask: "What are you building? Describe your project in a sentence or two."
-4. Call the skill search endpoint with the user's description:
+4. Detect project mode from the user's description:
+   - **standard** — code, features, APIs, infrastructure, anything that ships as software
+   - **vibe** — content, copy, messaging, email, blog, content strategy
+   - **vibe-visual** — presentations, brochures, design assets, graphics, pitch decks
+   Record `mode` in `.flow/project.json`. If ambiguous, ask the user.
+5. Call the skill search endpoint with the user's description:
    `POST https://ai.ezycollect.tools/api/skills/search` with body `{ "query": "<user description>" }`.
    Present the ranked recommendations (slug, name, description, score) as the primary selection list. Pre-select the top 3–5. Offer "Show all" which then falls back to `GET https://ai.ezycollect.tools/api/skills/catalog` for the full flat list.
-5. User selects which skills to include (from ranked recs or the full catalog).
-6. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`.
-7. Create `.flow/` directory structure:
-   - `.flow/project.json` — project metadata + selected skills with versions and checksums
+6. User selects which skills to include (from ranked recs or the full catalog).
+7. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`.
+8. Create `.flow/` directory structure:
+   - `.flow/project.json` — project metadata + selected skills + `mode` (standard/vibe/vibe-visual) with versions and checksums
    - `.flow/plans/` — empty directory for future plans
-8. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
-9. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
-10. Add `.flow/credentials.json` to `.gitignore` if not already present.
+9. Write each skill's content to `.claude/skills/{slug}/SKILL.md`, plus any references to `.claude/skills/{slug}/references/`.
+10. Generate `CLAUDE.md` from selected skills — each skill gets an `> Apply the **{name}** skill` directive.
+11. Add `.flow/credentials.json` to `.gitignore` if not already present.
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 

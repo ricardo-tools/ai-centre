@@ -91,7 +91,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 1 | User Workspace + Admin Quotas | New Capability | See per-user workspace quotas in admin dashboard, adjust limits | Not started |
 | 2 | Flow Bootstrap | New Capability | Run `flow-bootstrap`, describe project, manually select skills, get `.flow/` + CLAUDE.md | Not started |
 | 3 | RAG Skill Matching | Extension | Run `flow-bootstrap` and get AI-recommended skills based on project description | Done |
-| 4 | Vibe Mode Templates | Extension | Bootstrap a creative project and get light methodology (DRAFT→REVIEW→REFINE→DELIVER) | Not started |
+| 4 | Vibe Mode Templates | Extension | Bootstrap a creative project and get light methodology (DRAFT→REVIEW→REFINE→DELIVER) | **Done** |
 | 5 | Skill Publishing | New Capability | Run `flow-skills publish`, see the skill appear in the web library | Not started |
 | 6 | Skill Rollback | Extension | Run `flow-skills rollback`, pick a previous version, see it restored | Not started |
 | 7 | Skill Update & Fork | New Capability | Run `flow-update`, see diffs for modified skills, accept or fork | Not started |
