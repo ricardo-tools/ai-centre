@@ -49,7 +49,7 @@
 | 0 | OAuth + Flow Login | **Done** | Schema (oauth_codes, oauth_tokens), migration 0010, oauth.ts (PKCE, JWT, token rotation), 4 API routes, 3 skill ref files, 13 unit tests passing. |
 | 1 | Workspace + Admin Quotas | **Done** | user_quotas table (migration 0011), workspace actions + 3 API routes, WorkspaceListWidget with QuotaBar + QuotaEditDialog, Workspaces tab in admin. 2 new permissions (workspace:view, workspace:edit-quotas). |
 | 2 | Flow Bootstrap | **Done** | Catalog API (public), content download API (auth required), flow-bootstrap command in SKILL.md, bootstrap-client.md reference file. Slug validation, no path traversal. |
-| 3 | RAG Skill Matching | Not started | |
+| 3 | RAG Skill Matching | **Done** | skill_embeddings table (migration 0012), embeddings.ts lib (pure cosine/keyword/serialise), /api/skills/search route with keyword fallback. OpenRouter via OpenAI SDK (text-embedding-3-small). Seed upserts embeddings when OPENROUTER_API_KEY set. flow SKILL.md bootstrap updated to call search API first. 29 new tests, 237/238 total passing (1 pre-existing `deploy-polling` failure unrelated to Ch 3). |
 | 4 | Vibe Mode Templates | Not started | |
 | 5 | Skill Publishing | Not started | |
 | 6 | Skill Rollback | Not started | |

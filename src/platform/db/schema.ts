@@ -333,6 +333,16 @@ export const oauthTokens = pgTable('oauth_tokens', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ── Skill Embeddings ──────────────────────────────────────────────
+
+export const skillEmbeddings = pgTable('skill_embeddings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  skillId: uuid('skill_id').notNull().references(() => skills.id, { onDelete: 'cascade' }).unique(),
+  embedding: text('embedding').notNull(), // JSON-serialized float[]
+  model: text('model').notNull(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
 // ── User Quotas ───────────────────────────────────────────────────
 
 export const userQuotas = pgTable('user_quotas', {

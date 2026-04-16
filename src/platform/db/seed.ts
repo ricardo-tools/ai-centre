@@ -1,9 +1,16 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { eq } from 'drizzle-orm';
-import { users, skills, skillVersions, auditLog, roles, rolePermissions } from './schema';
+import { users, skills, skillVersions, auditLog, roles, rolePermissions, skillEmbeddings } from './schema';
 import { SYSTEM_ROLE_SEEDS } from '@/platform/lib/permissions';
 import { getAllSkills } from '@/platform/lib/skills';
+import {
+  buildEmbeddingText,
+  embedText,
+  EMBEDDING_MODEL,
+  isEmbeddingEnabled,
+  serializeVector,
+} from '@/platform/lib/embeddings';
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
@@ -105,6 +112,54 @@ async function seed() {
     });
 
     console.log(`  Seeded: ${skill.title} (v${skill.version})`);
+  }
+
+  // ── Skill embeddings ────────────────────────────────────────────
+  if (isEmbeddingEnabled()) {
+    console.log('\nGenerating skill embeddings via OpenRouter...');
+    let embedded = 0;
+    let skipped = 0;
+    for (const skill of allSkills) {
+      const text = buildEmbeddingText({
+        name: skill.title,
+        description: skill.description,
+      });
+      if (!text.trim()) {
+        skipped++;
+        continue;
+      }
+
+      const [row] = await db.select({ id: skills.id }).from(skills).where(eq(skills.slug, skill.slug));
+      if (!row) {
+        skipped++;
+        continue;
+      }
+
+      const vector = await embedText(text);
+      if (vector.length === 0) {
+        console.warn(`  SKIP embedding: ${skill.slug} — empty vector returned`);
+        skipped++;
+        continue;
+      }
+
+      await db.insert(skillEmbeddings).values({
+        skillId: row.id,
+        embedding: serializeVector(vector),
+        model: EMBEDDING_MODEL,
+      }).onConflictDoUpdate({
+        target: skillEmbeddings.skillId,
+        set: {
+          embedding: serializeVector(vector),
+          model: EMBEDDING_MODEL,
+          updatedAt: new Date(),
+        },
+      });
+      embedded++;
+      if (embedded % 10 === 0) console.log(`  Embedded ${embedded}/${allSkills.length} skills...`);
+    }
+    console.log(`Embeddings: ${embedded} generated, ${skipped} skipped.`);
+  } else {
+    console.log('\nSkipping embedding generation — OPENROUTER_API_KEY not set. Search will use keyword fallback.');
   }
 
   console.log('\nSeed complete!');

@@ -85,6 +85,13 @@
       "when": 1776531600000,
       "tag": "0011_add_user_quotas",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1776618000000,
+      "tag": "0012_add_skill_embeddings",
+      "breakpoints": true
     }
   ]
 }

@@ -312,8 +312,10 @@ If no action is given, list the available actions with a one-line description of
 1. Check if `.flow/credentials.json` exists. If not, silently run the `/flow login` flow first (set up auth files, open browser, wait for tokens). Do not ask — just do it. Once authenticated, continue.
 2. Check if `.flow/project.json` exists — if yes, ask "Update existing project?"
 3. Ask: "What are you building? Describe your project in a sentence or two."
-4. Fetch skill catalog: `GET https://ai.ezycollect.tools/api/skills/catalog`
-5. Present skills grouped by category (type/domain). User selects which to include.
+4. Call the skill search endpoint with the user's description:
+   `POST https://ai.ezycollect.tools/api/skills/search` with body `{ "query": "<user description>" }`.
+   Present the ranked recommendations (slug, name, description, score) as the primary selection list. Pre-select the top 3–5. Offer "Show all" which then falls back to `GET https://ai.ezycollect.tools/api/skills/catalog` for the full flat list.
+5. User selects which skills to include (from ranked recs or the full catalog).
 6. For each selected skill, download content: `GET https://ai.ezycollect.tools/api/skills/{slug}/content`.
 7. Create `.flow/` directory structure:
    - `.flow/project.json` — project metadata + selected skills with versions and checksums
