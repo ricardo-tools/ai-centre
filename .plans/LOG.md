@@ -60,7 +60,7 @@
 | 11 | Migration & Seed Refs | **Done** | db-turso-drizzle/references/migrations.md with migrate.ts runner, seed.ts template, package.json scripts, idempotency rules, error table. SKILL.md updated with workflow and reference link. Bootstrap step 12 extended to copy migration files and add db:* scripts. |
 | 12 | Email + Mailpit + Docker | **Done** | email-mailpit skill + references/templates.md: Docker Compose (Mailpit), email.ts abstraction (Nodemailer dev → Mailgun prod), .env.local template. Bootstrap step 13 added for email projects. |
 | 13 | OTP Auth Ref Files | **Done** | auth-otp skill + templates: auth.ts (JWT sessions), otp.ts (hashed OTPs, rate limiting), middleware.ts, login page, API routes, schema additions. Bootstrap step 14 added. Depends on email-mailpit and db-turso-drizzle. |
-| 14 | File Storage Ref Files | Not started | |
+| 14 | File Storage Ref Files | **Done** | storage-vercel-blob/references/templates.md: storage.ts abstraction (local fs dev → Vercel Blob prod), upload API route with size/type validation. Bootstrap step 15 added. Used existing storage-vercel-blob skill (not new file-storage-vercel per plan). |
 | 15 | Flow Status + Quotas | Not started | |
 | 16 | Community Upvotes | Not started | |
 | 17 | Remove Toolkit & Generate | Not started | |

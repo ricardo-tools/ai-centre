@@ -101,7 +101,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 11 | Migration & Seed Ref Files | Extension | Run migrations and seeds in a bootstrapped project | **Done** |
 | 12 | Email + Mailpit + Docker | New Capability | Bootstrap with email, run `docker compose up`, send test email via Mailpit | **Done** |
 | 13 | OTP Auth Ref Files | Extension | Bootstrap with auth, log in via OTP locally | **Done** |
-| 14 | File Storage Ref Files | Extension | Bootstrap with file storage, upload a file locally and to Vercel Blob | Not started |
+| 14 | File Storage Ref Files | Extension | Bootstrap with file storage, upload a file locally and to Vercel Blob | **Done** |
 | 15 | Flow Status + Quotas | Extension | Run `flow-status` and see workspace info, quotas, project state | Not started |
 | 16 | Community Upvotes | New Capability | Upvote community skills, see skills ranked by popularity | Not started |
 | 17 | Remove Toolkit & Generate | Extension | No longer see `/toolkits` or `/generate` — homepage points to Flow | Not started |

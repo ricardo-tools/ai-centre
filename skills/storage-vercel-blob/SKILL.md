@@ -409,3 +409,7 @@ Before considering Vercel Blob integration complete:
 - [ ] `.blob-storage/` added to `.gitignore` (if using local fallback)
 - [ ] Access-control proxy in place for any blobs that should not be fully public
 - [ ] No orphaned blobs — every blob has a corresponding database record
+
+## References
+
+- [Templates](references/templates.md) — storage.ts abstraction (local + Vercel Blob), upload API route, .env.local config

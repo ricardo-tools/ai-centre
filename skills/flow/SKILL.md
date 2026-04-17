@@ -364,9 +364,15 @@ If no action is given, list the available actions with a one-line description of
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
-**References:** `skills/flow/references/auth-client.md`, `skills/db-turso-drizzle/references/templates.md`, `skills/db-turso-drizzle/references/migrations.md`, `skills/email-mailpit/references/templates.md`, `skills/auth-otp/references/templates.md`
+15. **File storage setup:** If the user's project needs file uploads (they mention "upload", "files", "images", "storage", or `storage-vercel-blob` is among selected skills):
+    a. Ensure `storage-vercel-blob` is in the selected skills (add it if not already).
+    b. Read `skills/storage-vercel-blob/references/templates.md` and copy: `src/lib/storage.ts`, `src/app/api/upload/route.ts`.
+    c. Add `@vercel/blob` to dependencies.
+    d. Add `public/uploads/` to `.gitignore`.
 
-**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, email configured if needed, auth set up if needed, and the user sees a summary of what was created.
+**References:** `skills/flow/references/auth-client.md`, `skills/db-turso-drizzle/references/templates.md`, `skills/db-turso-drizzle/references/migrations.md`, `skills/email-mailpit/references/templates.md`, `skills/auth-otp/references/templates.md`, `skills/storage-vercel-blob/references/templates.md`
+
+**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, infrastructure provisioned/configured as needed (DB, email, auth, storage), and the user sees a summary of what was created.
 
 ---
 
