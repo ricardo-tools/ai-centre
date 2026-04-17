@@ -13,16 +13,9 @@ export type Permission =
   | 'skill:edit'
   | 'skill:delete'
   | 'skill:publish'
-  // Archetypes
-  | 'archetype:create'
-  | 'archetype:edit'
-  | 'archetype:delete'
-  | 'archetype:publish'
   // Showcases
   | 'showcase:upload'
   | 'showcase:delete'
-  // Projects
-  | 'project:generate'
   // Users
   | 'user:list'
   | 'user:edit-role'
@@ -38,7 +31,7 @@ export type Permission =
   // Audit
   | 'audit:view';
 
-export type PermissionCategory = 'Skills' | 'Archetypes' | 'Showcases' | 'Projects' | 'Users' | 'Roles' | 'Workspace' | 'Audit';
+export type PermissionCategory = 'Skills' | 'Showcases' | 'Users' | 'Roles' | 'Workspace' | 'Audit';
 
 export interface PermissionMeta {
   key: Permission;
@@ -53,13 +46,8 @@ export const PERMISSION_REGISTRY: PermissionMeta[] = [
   { key: 'skill:edit', label: 'Edit skills', description: 'Edit skill content (own skills for non-admins)', category: 'Skills' },
   { key: 'skill:delete', label: 'Delete skills', description: 'Delete any skill', category: 'Skills' },
   { key: 'skill:publish', label: 'Publish skills', description: 'Publish skills to the library', category: 'Skills' },
-  { key: 'archetype:create', label: 'Create archetypes', description: 'Create new project archetypes', category: 'Archetypes' },
-  { key: 'archetype:edit', label: 'Edit archetypes', description: 'Edit archetype content (own for non-admins)', category: 'Archetypes' },
-  { key: 'archetype:delete', label: 'Delete archetypes', description: 'Delete any archetype', category: 'Archetypes' },
-  { key: 'archetype:publish', label: 'Publish archetypes', description: 'Publish archetypes to the library', category: 'Archetypes' },
   { key: 'showcase:upload', label: 'Upload showcases', description: 'Upload project showcases to the gallery', category: 'Showcases' },
   { key: 'showcase:delete', label: 'Delete showcases', description: 'Delete showcases (own for non-admins)', category: 'Showcases' },
-  { key: 'project:generate', label: 'Generate projects', description: 'Generate and download project ZIPs', category: 'Projects' },
   { key: 'user:list', label: 'View users', description: 'View the user list in admin', category: 'Users' },
   { key: 'user:edit-role', label: 'Change user roles', description: 'Assign roles to users', category: 'Users' },
   { key: 'user:deactivate', label: 'Deactivate users', description: 'Activate or deactivate user accounts', category: 'Users' },
@@ -94,17 +82,13 @@ export const SYSTEM_ROLE_SEEDS = {
   member: [
     'skill:create',
     'skill:edit',
-    'archetype:create',
-    'archetype:edit',
     'showcase:upload',
     'showcase:delete',
-    'project:generate',
   ] as Permission[],
   developer: [
     'skill:create',
     'skill:edit',
     'showcase:upload',
-    'project:generate',
   ] as Permission[],
 };
 

@@ -74,14 +74,13 @@ function seedRoles(i: number) {
   // Seed role_permissions — admin gets ALL, developer gets api:*
   const adminPerms = [
     'skill:create','skill:edit','skill:delete','skill:publish',
-    'archetype:create','archetype:edit','archetype:delete','archetype:publish',
-    'showcase:upload','showcase:delete','project:generate',
+    'showcase:upload','showcase:delete',
     'user:list','user:edit-role','user:deactivate','user:invite',
     'role:create','role:edit','role:delete','audit:view',
     'api:view','api:create','api:edit','api:delete','api:test',
   ];
-  const devPerms = ['api:view','api:create','api:edit','api:delete','api:test','skill:create','skill:edit','showcase:upload','project:generate'];
-  const memberPerms = ['skill:create','skill:edit','archetype:create','archetype:edit','showcase:upload','showcase:delete','project:generate'];
+  const devPerms = ['api:view','api:create','api:edit','api:delete','api:test','skill:create','skill:edit','showcase:upload'];
+  const memberPerms = ['skill:create','skill:edit','showcase:upload','showcase:delete'];
 
   for (const perm of adminPerms) {
     try { psql(workerDbUrl(i), `INSERT INTO role_permissions (id, role_id, permission) VALUES (gen_random_uuid(), (SELECT id FROM roles WHERE slug = 'admin'), '${perm}') ON CONFLICT DO NOTHING;`); } catch { /* exists */ }

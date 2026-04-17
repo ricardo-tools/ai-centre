@@ -48,13 +48,6 @@ import TestingStrategyShowcaseWidget from '@/features/skill-detail/widgets/Testi
 import UserExperienceShowcaseWidget from '@/features/skill-detail/widgets/UserExperienceShowcaseWidget/UserExperienceShowcaseWidget';
 import WebPerformanceShowcaseWidget from '@/features/skill-detail/widgets/WebPerformanceShowcaseWidget/WebPerformanceShowcaseWidget';
 
-// ── Feature: archetypes ──────────────────────────────────────────────
-import { ArchetypeCardWidget } from '@/features/archetypes/widgets/ArchetypeCardWidget/ArchetypeCardWidget';
-
-// ── Feature: generate-project ────────────────────────────────────────
-import { ProjectGeneratorWidget } from '@/features/generate-project/widgets/ProjectGeneratorWidget/ProjectGeneratorWidget';
-import { CompositionWizardWidget } from '@/features/generate-project/widgets/CompositionWizardWidget/CompositionWizardWidget';
-
 // ── Feature: auth ────────────────────────────────────────────────────
 import { LoginWidget } from '@/features/auth/widgets/LoginWidget/LoginWidget';
 import { OAuthConsentWidget } from '@/features/auth/widgets/OAuthConsentWidget/OAuthConsentWidget';
@@ -70,9 +63,6 @@ export const widgetRegistry: Record<string, React.ComponentType<any>> = {
   'skill-card': SkillCardWidget,
   'skill-list': SkillListWidget,
   'skill-detail': SkillDetailWidget,
-  'archetype-card': ArchetypeCardWidget,
-  'project-generator': ProjectGeneratorWidget,
-  'composition-wizard': CompositionWizardWidget,
   'top-nav': TopNavWidget,
   'theme-switcher': ThemeSwitcherWidget,
   'login': LoginWidget,

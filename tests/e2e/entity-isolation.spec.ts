@@ -253,37 +253,4 @@ test.describe('Entity Isolation — Post-Reorder & Cross-Type', () => {
     expect(countAfter).toBe(count - 1);
   });
 
-  test('E5: Upvoting a skill does NOT affect a toolkit with related content', async ({ page }) => {
-    // Pick a card that isn't pre-upvoted in base data
-    const skillCard = page.locator('[data-entity-id]').nth(10);
-    const skillSlug = await skillCard.getAttribute('data-entity-id');
-    await skillCard.locator('[data-testid="upvote-button"]').click();
-    await page.waitForTimeout(500);
-
-    const skillText = await skillCard.locator('[data-testid="upvote-button"]').textContent();
-    const skillCount = parseInt(skillText?.replace(/[^\d]/g, '') ?? '0', 10);
-    expect(skillCount).toBe(BASE.upvoteCount(skillSlug!) + 1);
-
-    await page.goto('/toolkits');
-    await page.waitForLoadState('networkidle');
-
-    const toolkitButtons = page.locator('[data-testid="upvote-button"]');
-    const toolkitCount = await toolkitButtons.count();
-    for (let i = 0; i < toolkitCount; i++) {
-      const text = await toolkitButtons.nth(i).textContent();
-      const count = parseInt(text?.replace(/[^\d]/g, '') ?? '0', 10);
-      expect(count).toBe(0);
-    }
-
-    const localState = await page.evaluate((slug) => {
-      const data = JSON.parse(localStorage.getItem('ai-centre-social') ?? '{}');
-      return {
-        skillKey: data[`skill:${slug}`],
-        toolkitKey: data[`toolkit:${slug}`],
-      };
-    }, skillSlug);
-
-    expect(localState.skillKey?.liked).toBe(true);
-    expect(localState.toolkitKey).toBeUndefined();
-  });
 });

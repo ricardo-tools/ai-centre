@@ -3,10 +3,8 @@ import { getSession } from '@/platform/lib/auth';
 import { createConversation, addMessage, getMessages, updateConversationTitle } from '@/features/chat/action';
 import { buildSystemPrompt } from '@/features/chat/prompts/system-prompt';
 import { getSkillCatalog } from '@/platform/lib/skills';
-import { DOMAINS, FEATURE_ADDONS } from '@/platform/lib/toolkit-composition';
 import { shouldPreSearch, extractSearchQuery, formatPreSearchResults } from '@/features/chat/prompts/pre-search';
 import { searchSkillsDefinition, executeSearchSkills } from '@/features/chat/tools/search-skills';
-import { composeToolkitDefinition, executeComposeToolkit } from '@/features/chat/tools/compose-toolkit';
 import { generateProjectDefinition, executeGenerateProject } from '@/features/chat/tools/generate-project';
 import { navigateDefinition, executeNavigate } from '@/features/chat/tools/navigate';
 import { getSkillDetailDefinition, executeGetSkillDetail } from '@/features/chat/tools/get-skill-detail';
@@ -20,7 +18,6 @@ const DEFAULT_MODEL = 'anthropic/claude-sonnet-4';
 const tools = [
   searchSkillsDefinition,
   getSkillDetailDefinition,
-  composeToolkitDefinition,
   generateProjectDefinition,
   navigateDefinition,
   logSkillGapDefinition,
@@ -29,7 +26,6 @@ const tools = [
 const toolExecutors: Record<string, (args: Record<string, unknown>) => Promise<string>> = {
   search_skills: (args) => executeSearchSkills(args as Parameters<typeof executeSearchSkills>[0]),
   get_skill_detail: (args) => executeGetSkillDetail(args as Parameters<typeof executeGetSkillDetail>[0]),
-  compose_toolkit: (args) => executeComposeToolkit(args as Parameters<typeof executeComposeToolkit>[0]),
   generate_project: (args) => executeGenerateProject(args as Parameters<typeof executeGenerateProject>[0]),
   navigate: (args) => executeNavigate(args as Parameters<typeof executeNavigate>[0]),
   log_skill_gap: (args) => executeLogSkillGap(args as unknown as Parameters<typeof executeLogSkillGap>[0]),
@@ -124,8 +120,6 @@ export async function POST(request: NextRequest) {
   const priorMessageCount = isGreeting ? 0 : history.length - 1; // -1 because we just added the user message
   const systemPrompt = buildSystemPrompt({
     skillCatalog,
-    domains: DOMAINS.map((d) => d.title),
-    addons: FEATURE_ADDONS.map((f) => f.title),
     messageCount: Math.max(0, priorMessageCount),
     relevantSkillContent,
     relevantCorrections,

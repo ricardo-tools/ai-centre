@@ -94,40 +94,6 @@ test.describe('Smoke Tests', () => {
     console.assert();
   });
 
-  test('S4: Archetypes page loads', async ({ page }) => {
-    const console = createConsoleCollector();
-    console.start(page);
-    await page.goto('/archetypes');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    // Archetypes page should have content (cards or headings)
-    await expect(page.locator('h2').first()).toBeVisible();
-    console.assert();
-  });
-
-  test('S5: Generate page loads', async ({ page }) => {
-    const console = createConsoleCollector();
-    console.start(page);
-    await page.goto('/generate');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    console.assert();
-  });
-
-  test('S6: Toolkits page shows cards', async ({ page }) => {
-    const console = createConsoleCollector();
-    console.start(page);
-    await page.goto('/toolkits');
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
-
-    const cards = page.locator('.card-hover');
-    await expect(cards.first()).toBeVisible();
-    console.assert();
-  });
-
   test('S7: Gallery page loads', async ({ page }) => {
     const console = createConsoleCollector();
     console.start(page);

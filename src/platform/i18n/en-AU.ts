@@ -10,8 +10,6 @@ const enAU = {
   // Navigation
   'nav.home': 'Home',
   'nav.skills': 'Skills',
-  'nav.toolkits': 'Toolkits',
-  'nav.generate': 'Generate',
   'nav.gallery': 'Gallery',
 
   // Theme
@@ -21,9 +19,8 @@ const enAU = {
 
   // Home page
   'home.title': 'AI Centre',
-  'home.subtitle': 'Select a toolkit, choose your skills, describe your idea — download a project ready for Claude Code.',
+  'home.subtitle': 'The AI skill library for every team.',
   'home.browseSkills': 'Browse Skills',
-  'home.generateProject': 'Generate Project',
   'home.officialSkills': 'Official Skills ({count})',
 
   // Skills Library
@@ -42,30 +39,6 @@ const enAU = {
   'skillDetail.referenceTables': 'Reference tables',
   'skillDetail.version': 'Version',
   'skillDetail.noShowcase': 'Visual showcase not yet available for this skill. Use the "View SKILL.md" tab to see the full specification.',
-
-  // Archetypes (kept for backward compatibility)
-  'archetypes.title': 'Archetypes',
-  'archetypes.subtitle': 'Pre-configured project templates that suggest the right skills for your use case.',
-  'archetypes.suggestedSkills': 'Suggested Skills',
-  'archetypes.useThis': 'Use this archetype →',
-
-  // Toolkits
-  'toolkits.title': 'Toolkits',
-  'toolkits.subtitle': 'Pre-configured skill bundles that give you the right tools for your project type.',
-
-  // Generate
-  'generate.title': 'Generate Project',
-  'generate.subtitle': 'Select a toolkit, choose skills, describe your idea — get a project ready for Claude Code.',
-  'generate.step1': '1. Select Toolkit',
-  'generate.step2': '2. Choose Skills',
-  'generate.step3': '3. Describe Your Idea',
-  'generate.custom': 'Custom',
-  'generate.customDescription': 'Pick your own skills',
-  'generate.placeholder': 'Describe what you want to build. Claude Code will use this along with the selected skills to guide development...',
-  'generate.button': 'Generate & Download ZIP',
-  'generate.generating': 'Generating...',
-  'generate.includes': 'Your ZIP will include: CLAUDE.md + {count} skill{plural}',
-  'generate.includesTemplate': ' + presentation template',
 
   // Login
   'login.title': 'Sign in to AI Centre',

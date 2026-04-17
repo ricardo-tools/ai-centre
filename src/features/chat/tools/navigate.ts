@@ -16,7 +16,7 @@ export const navigateDefinition = {
     parameters: {
       type: 'object',
       properties: {
-        url: { type: 'string', description: 'The URL path (e.g. /skills/accessibility, /generate?preset=presentation)' },
+        url: { type: 'string', description: 'The URL path (e.g. /skills/accessibility, /gallery)' },
         label: { type: 'string', description: 'Human-readable label for the link' },
       },
       required: ['url', 'label'],

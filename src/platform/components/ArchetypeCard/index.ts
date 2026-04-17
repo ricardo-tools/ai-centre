@@ -1,1 +1,0 @@
-export { ArchetypeCard } from './ArchetypeCard';

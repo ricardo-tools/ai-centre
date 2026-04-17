@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Rocket, Books } from '@phosphor-icons/react';
+import { Books } from '@phosphor-icons/react';
 
 export function HomeHero() {
   return (
@@ -54,12 +54,12 @@ export function HomeHero() {
           lineHeight: 1.6,
         }}
       >
-        Compose a toolkit. Generate a project. Open it in VS Code with Claude Code and start building.
+        Browse the skill library, add Flow to Claude Code, and start building.
       </p>
 
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
         <Link
-          href="/generate"
+          href="/skills"
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -71,25 +71,6 @@ export function HomeHero() {
             textDecoration: 'none',
             fontSize: 14,
             fontWeight: 600,
-          }}
-        >
-          <Rocket size={18} />
-          Build a project
-        </Link>
-        <Link
-          href="/skills"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '12px 24px',
-            borderRadius: 6,
-            border: '1px solid var(--color-border)',
-            background: 'var(--color-surface)',
-            color: 'var(--color-text-body)',
-            textDecoration: 'none',
-            fontSize: 14,
-            fontWeight: 500,
           }}
         >
           <Books size={18} />

@@ -407,25 +407,6 @@ test.describe('Upvote System — Gallery & Toolkits', () => {
     }
   });
 
-  test('SCENARIO 11: Upvote works on toolkit cards', async ({ page }) => {
-    await page.goto('/toolkits');
-    await page.waitForLoadState('networkidle');
-
-    const upvoteButton = page.locator('[data-testid="upvote-button"]').first();
-    if (await upvoteButton.isVisible()) {
-      const beforeText = await upvoteButton.textContent();
-      const beforeCount = parseInt(beforeText?.replace(/[^\d]/g, '') ?? '0', 10);
-
-      await upvoteButton.click();
-      await page.waitForTimeout(1000);
-
-      const afterText = await upvoteButton.textContent();
-      const afterCount = parseInt(afterText?.replace(/[^\d]/g, '') ?? '0', 10);
-
-      expect(Math.abs(afterCount - beforeCount)).toBe(1);
-    }
-  });
-
   test('SCENARIO 12: No ThumbsUp icon remains in the codebase', async () => {
     const { execSync } = require('child_process');
     const result = execSync(

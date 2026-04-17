@@ -139,52 +139,6 @@ Versioning lifecycle:
 
 Audit log records every transition with `userId`, `timestamp`, and `metadata` (diffs, version numbers).
 
-Same versioning model applies to archetypes (via `archetype_versions` table).
-
----
-
-### Toolkit Composition System
-**Status: ✅ Complete** (renamed from "Archetypes")
-
-Four-layer composition model defined in `src/platform/lib/toolkit-composition.ts`:
-
-| Layer | Purpose | Count |
-|---|---|---|
-| **Foundation** | Always included in every toolkit | 11 skills |
-| **Domain** | Pick 1 — defines the project type | 6 domains |
-| **Feature add-ons** | Pick N — optional capabilities | 10 add-ons |
-| **Implementations** | Pick 1 per add-on — specific tech choices | Varies per add-on |
-
-**Foundation skills** (always included): `coding-standards`, `clean-architecture`, `prompt-refinement`, `verification-loop`, `strategic-context`, `documentation-research`, `quality-assurance`, `research`, `planning`, `project-reference`, `roadmap`
-
-**Domains:** Web Application (15 skills), API Service (4), Presentation (5), Print Design (4), Landing Page (11), Documentation Site (9)
-
-**Feature add-ons:** Auth (2 impl: Clerk, Custom OTP), Database (3 impl: Neon+Drizzle, Supabase, Redis), RBAC (1 impl: Drizzle), File Storage (1 impl: Vercel Blob), AI Features (3 impl: OpenRouter, Claude, fal.ai), Email (1 impl: Mailgun), PPTX Export (no impl choices), Testing (1 impl: Playwright), Observability (no impl choices), MCP Server (no impl choices)
-
-**5 preset toolkits** in `src/platform/lib/archetypes.ts`:
-- Presentation Toolkit (presentation + pptx-export)
-- Web Dashboard Toolkit (web-app + auth/database/testing/observability)
-- API Starter Toolkit (api-service + auth/database/testing)
-- Marketing Site Toolkit (landing-page, no add-ons)
-- AI Assistant Toolkit (web-app + ai-features/database/auth/testing)
-
-Pure `resolveComposition()` function produces a flat, deduplicated skill slug array from a `CompositionSelection`.
-
-- Browse presets at `/toolkits`
-- Compose at `/generate` — presets pre-populate the wizard via `?preset=<slug>`
-
----
-
-### Project Generation
-**Status: ✅ Complete**
-
-- Composition wizard at `/generate`: 5 sections (Domain → Features → Implementations → Review → Generate)
-- Resolves toolkit composition to flat skill list via `resolveComposition()`
-- User describes their idea in free text
-- Server generates ZIP: selected `SKILL.md` files + tailored `CLAUDE.md`
-- ZIP uploaded to Vercel Blob → stored in `generated_projects` table → download URL returned
-- `src/platform/lib/generate-project-zip.ts` handles ZIP assembly
-
 ---
 
 ### Showcase Gallery
@@ -249,7 +203,7 @@ Pure `resolveComposition()` function produces a flat, deduplicated skill slug ar
 
 6 sections in `src/app/page.tsx`:
 1. **HomeHero** — welcome banner
-2. **HomeToolkits** — quick start toolkit preset cards (links to `/generate?preset=<slug>`)
+2. **Flow CTA** — get started with Flow onboarding steps (links to `/skills`)
 3. **HomeStats** — platform statistics
 4. **HomeSkillSpotlights** — featured skills
 5. **HomeShowcases** — community showcases (adaptive based on count)
@@ -396,9 +350,6 @@ Further edits after publish
 | Skill library (60 skills, browse + search + filter tabs) | ✅ Complete |
 | Skill detail page (36 dedicated showcases + 24 fallback) | ✅ Complete |
 | Skill versioning (lifecycle logic) | ✅ Complete |
-| Toolkit composition system (4 layers, 6 domains, 10 add-ons, 5 presets) | ✅ Complete |
-| Toolkit browse page (`/toolkits`) | ✅ Complete |
-| Project generation wizard (`/generate`) | ✅ Complete |
 | Showcase gallery (upload, view, search, fullscreen, CRUD) | ✅ Complete |
 | Admin dashboard (users, roles, permissions, audit log) | ✅ Complete |
 | User management (invite, activate/deactivate, role assignment) | ✅ Complete |
@@ -421,13 +372,10 @@ Further edits after publish
 
 | Route | Purpose | Auth |
 |---|---|---|
-| `/` | Homepage (hero, toolkits, stats, spotlights, showcases, CTA) | Required (prod) |
+| `/` | Homepage (hero, Flow CTA, stats, spotlights, showcases, CTA) | Required (prod) |
 | `/login` | Email OTP login page | Public |
 | `/skills` | Skill library (browse, search, filter) | Required (prod) |
 | `/skills/[slug]` | Skill detail (showcase + SKILL.md toggle) | Required (prod) |
-| `/toolkits` | Browse toolkit presets | Required (prod) |
-| `/archetypes` | Legacy archetype browse (backward compat) | Required (prod) |
-| `/generate` | Composition wizard + project generation | Required (prod) |
 | `/gallery` | Showcase gallery (browse, search) | Required (prod) |
 | `/gallery/[id]` | Showcase viewer (iframe/deployed preview) | Required (prod) |
 | `/gallery/upload` | Showcase upload form | Required (prod) |
@@ -446,8 +394,6 @@ All in `src/features/`:
 |---|---|---|
 | Skill Library | `skill-library/` | Browse/search/filter server action + SkillCard, SkillList widgets |
 | Skill Detail | `skill-detail/` | 36 showcase components + showcase widgets + SkillDetail widget |
-| Archetypes | `archetypes/` | Browse action + ArchetypeCard widget |
-| Generate Project | `generate-project/` | CompositionWizard widget + generation logic |
 | Showcase Gallery | `showcase-gallery/` | Upload/CRUD server action + gallery widgets |
 | Auth | `auth/` | Login server action + Login widget |
 | User Management | `user-management/` | User CRUD actions + admin widgets |
@@ -478,9 +424,7 @@ These are non-obvious constraints that would silently regress if changed:
 
 9. **Skill showcase components are slug-keyed** — 36 skills have dedicated showcase components in `src/features/skill-detail/widgets/`. Skills without a dedicated component automatically get a styled fallback view generated from their parsed markdown sections. Adding a new skill does NOT require a showcase component — the fallback handles it gracefully.
 
-10. **FOUNDATION_SKILLS array defines always-included skills** — In `src/platform/lib/toolkit-composition.ts`. Changing this array affects every generated project for every user. Currently 11 skills.
-
-11. **Two skill registries must stay in sync** — `src/platform/lib/skills.ts` (`SKILL_DEFINITIONS`, 60 entries) and `src/platform/db/seed.ts` (`SKILLS`) are duplicate registries. When adding a new skill, update both, and add the `skills/<slug>.md` file.
+10. **Two skill registries must stay in sync** — `src/platform/lib/skills.ts` (`SKILL_DEFINITIONS`, 60 entries) and `src/platform/db/seed.ts` (`SKILLS`) are duplicate registries. When adding a new skill, update both, and add the `skills/<slug>.md` file.
 
 12. **OTP token is stored hashed** — the raw OTP is never stored. Verification must re-hash the submitted code and compare. Never store the plain code.
 

@@ -6,10 +6,6 @@
  */
 
 interface SystemPromptContext {
-  /** Available domain names for toolkit composition */
-  domains: string[];
-  /** Available feature add-on names */
-  addons: string[];
   /** Number of messages in the conversation so far (0 = first message) */
   messageCount: number;
   /** Compact skill catalog: slug | title | description */
@@ -62,13 +58,6 @@ The complete skill catalog is listed in the <catalog> section below. There are e
 - Link to skills using markdown: [Accessibility](/skills/accessibility). Do not wrap links in backticks.
 - When a user needs something the library does not cover, say so clearly ("We don't have a skill for that yet") and use the log_skill_gap tool to record the gap. Describe what the user was looking for so the team can prioritize it.
 - Do not fabricate URLs. Every link you produce must use a slug from the catalog.
-
-## Toolkit composition
-- Toolkits follow the pattern: Foundation (always included) → Domain (pick 1) → Feature add-ons (pick N).
-- Available domains: ${ctx.domains.join(', ')}
-- Available add-ons: ${ctx.addons.join(', ')}
-- Push back gently on over-selection. If someone picks 20 skills for a landing page, ask whether they really need all of them — then respect their decision.
-- Default to the minimal set that achieves the stated goal. Explain why each skill earns its place.
 
 ## Download intent
 Before generating any download, ask the user how they plan to use the skills. This determines the ZIP structure:
@@ -135,7 +124,6 @@ You have the following tools available. Use them proactively — do not make the
 
 - **search_skills** — Search the skill library by keyword, domain, or layer. Use this whenever the user describes a need, even if you think you know the answer. Grounding your response in search results keeps you accurate.
 - **get_skill_detail** — Read the full content of a skill by slug. Use when someone asks for details, wants to understand a skill deeply, or when you need to compare skills. Explain the content in your own words — never paste raw markdown back to the user. Reference the skill's showcase page at /skills/{slug}.
-- **compose_toolkit** — Build a domain + add-ons composition. Returns the resolved skill list. Use when helping someone assemble a project toolkit.
 - **generate_project** — Create a downloadable ZIP with selected skills and a tailored CLAUDE.md. See the project generation rules above.
 - **navigate** — Suggest a page for the user to visit. Only use slugs from the catalog.
 - **log_skill_gap** — When the user needs something the library does not have, log it with a description of what is missing and why the user needs it. This helps the team prioritize new skills.

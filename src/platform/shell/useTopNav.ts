@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { House, Books, Toolbox, Rocket, Images, GearSix } from '@phosphor-icons/react';
+import { House, Books, Images, GearSix } from '@phosphor-icons/react';
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react';
 import { useSession } from '@/platform/lib/SessionContext';
 import { signOut } from '@/features/auth/action';
@@ -28,8 +28,6 @@ interface UseTopNavResult {
 const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Home', icon: House },
   { href: '/skills', label: 'Skills', icon: Books },
-  { href: '/toolkits', label: 'Toolkits', icon: Toolbox },
-  { href: '/generate', label: 'Generate', icon: Rocket },
   { href: '/gallery', label: 'Gallery', icon: Images },
 ];
 

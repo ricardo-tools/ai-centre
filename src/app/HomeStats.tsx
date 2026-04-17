@@ -1,17 +1,10 @@
 import { getAllSkills } from '@/platform/lib/skills';
-import { TOOLKIT_PRESETS } from '@/platform/lib/archetypes';
-import { DOMAINS } from '@/platform/lib/toolkit-composition';
 
 export function HomeStats() {
   const skillCount = getAllSkills().length;
-  const toolkitCount = TOOLKIT_PRESETS.length;
-  const domainCount = DOMAINS.length;
 
   const stats = [
     { value: skillCount, label: 'skills' },
-    { value: toolkitCount, label: 'toolkits' },
-    { value: domainCount, label: 'domains' },
-    { value: 0, label: 'projects generated' },
   ];
 
   return (

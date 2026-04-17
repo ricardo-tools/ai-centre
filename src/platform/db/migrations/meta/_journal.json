@@ -113,6 +113,13 @@
       "when": 1776877200000,
       "tag": "0015_add_user_databases",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1776963600000,
+      "tag": "0016_drop_generated_projects",
+      "breakpoints": true
     }
   ]
 }

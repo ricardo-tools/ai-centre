@@ -1,6 +1,6 @@
 # Chapter 17: Remove Toolkit & Generate
 
-**Status:** Not started
+**Status:** Done
 **Tier:** Extension
 **Depends on:** Chapter 2 (bootstrap must be the replacement)
 **User can:** No longer see `/toolkits` or `/generate` routes. Homepage updated to point to Flow onboarding instructions.

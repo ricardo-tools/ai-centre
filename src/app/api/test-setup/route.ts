@@ -48,7 +48,6 @@ const TRANSACTIONAL_TABLES = [
   'comments',
   'showcase_views',
   'skill_downloads',
-  'generated_projects',
   'showcase_uploads',
   'audit_log',
   'verification_tokens',

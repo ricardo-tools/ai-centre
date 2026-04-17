@@ -154,18 +154,6 @@ export const showcaseUploads = pgTable('showcase_uploads', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// ── Generated Projects ───────────────────────────────────────────────
-
-export const generatedProjects = pgTable('generated_projects', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').notNull().references(() => users.id),
-  archetypeId: uuid('archetype_id').references(() => archetypes.id),
-  skillIds: jsonb('skill_ids').$type<string[]>().notNull(),
-  prompt: text('prompt').notNull(),
-  blobUrl: text('blob_url').notNull(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-});
-
 // ── Showcase Versions ───────────────────────────────────────────────
 
 export const showcaseVersions = pgTable('showcase_versions', {
