@@ -355,11 +355,18 @@ If no action is given, list the available actions with a one-line description of
     b. Read `skills/email-mailpit/references/templates.md` and copy: `docker-compose.yml` (or add Mailpit service to existing one), `src/lib/email.ts`, `.env.local` email vars.
     c. Add `nodemailer` to dependencies, `@types/nodemailer` to devDependencies.
 
+14. **Auth setup:** If the user's project needs authentication (they mention "login", "auth", "users", "sign in", or `auth-otp` is among selected skills):
+    a. Ensure `auth-otp` is in the selected skills (add it if not already). Also ensure `email-mailpit` and `db-turso-drizzle` are included (auth depends on both).
+    b. Read `skills/auth-otp/references/templates.md` and copy: `src/lib/auth.ts`, `src/lib/otp.ts`, `src/middleware.ts`, `src/app/login/page.tsx`, API routes, schema additions.
+    c. Add `jose` to dependencies.
+    d. Add `AUTH_SECRET` to `.env.local`.
+    e. Remind user to run `npm run db:generate && npm run db:migrate` to create the auth tables.
+
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
-**References:** `skills/flow/references/auth-client.md`, `skills/db-turso-drizzle/references/templates.md`, `skills/db-turso-drizzle/references/migrations.md`, `skills/email-mailpit/references/templates.md`
+**References:** `skills/flow/references/auth-client.md`, `skills/db-turso-drizzle/references/templates.md`, `skills/db-turso-drizzle/references/migrations.md`, `skills/email-mailpit/references/templates.md`, `skills/auth-otp/references/templates.md`
 
-**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, email configured if needed, and the user sees a summary of what was created.
+**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, email configured if needed, auth set up if needed, and the user sees a summary of what was created.
 
 ---
 

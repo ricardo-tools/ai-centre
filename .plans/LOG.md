@@ -59,7 +59,7 @@
 | 10 | Turso DB in Bootstrap | **Done** | user_databases table (migration 0015), turso.ts Platform API wrapper (create/token/delete/provision), POST+GET /api/workspace/databases with quota enforcement, db-turso-drizzle skill + templates, flow bootstrap updated with DB provisioning step. Workspace action now counts user databases for schemasUsed. |
 | 11 | Migration & Seed Refs | **Done** | db-turso-drizzle/references/migrations.md with migrate.ts runner, seed.ts template, package.json scripts, idempotency rules, error table. SKILL.md updated with workflow and reference link. Bootstrap step 12 extended to copy migration files and add db:* scripts. |
 | 12 | Email + Mailpit + Docker | **Done** | email-mailpit skill + references/templates.md: Docker Compose (Mailpit), email.ts abstraction (Nodemailer dev → Mailgun prod), .env.local template. Bootstrap step 13 added for email projects. |
-| 13 | OTP Auth Ref Files | Not started | |
+| 13 | OTP Auth Ref Files | **Done** | auth-otp skill + templates: auth.ts (JWT sessions), otp.ts (hashed OTPs, rate limiting), middleware.ts, login page, API routes, schema additions. Bootstrap step 14 added. Depends on email-mailpit and db-turso-drizzle. |
 | 14 | File Storage Ref Files | Not started | |
 | 15 | Flow Status + Quotas | Not started | |
 | 16 | Community Upvotes | Not started | |
