@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { ScreenRenderer } from '@/platform/screen-renderer/ScreenRenderer';
 import { skillLibraryConfig } from '@/platform/screens/SkillLibrary/SkillLibrary.screen';
 import { SkillLibraryHeader } from './SkillLibraryHeader';
@@ -9,7 +10,11 @@ export default function SkillsPage() {
       config={skillLibraryConfig}
       slots={{
         header: <SkillLibraryHeader />,
-        cards: <SkillLibraryCards />,
+        cards: (
+          <Suspense>
+            <SkillLibraryCards />
+          </Suspense>
+        ),
       }}
     />
   );

@@ -99,6 +99,8 @@ ezyCollect by Sidetrade **AI Centre** — internal platform distributing AI skil
 - Skill content read from filesystem (`skills/*.md`) at runtime via `src/platform/lib/skills.ts`
 - `SKILL_DEFINITIONS` array in `skills.ts` is the code-level registry (60 entries)
 - DB `skills` table used for versioning/publishing metadata; `seed.ts` syncs from `SKILL_DEFINITIONS`
+- **Upvoting:** Uses existing `reactions` table with `entity_type='skill'`, `emoji='thumbsup'`. Bulk-fetched via `getBulkSocialSignals`. Optimistic UI via `useSocialSignals` hook.
+- **Sort:** URL param `?sort=popular` (default: recent). Popular sorts by upvote count desc, secondary by title. Bookmarked skills always pinned to top.
 
 ---
 

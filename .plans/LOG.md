@@ -62,7 +62,7 @@
 | 13 | OTP Auth Ref Files | **Done** | auth-otp skill + templates: auth.ts (JWT sessions), otp.ts (hashed OTPs, rate limiting), middleware.ts, login page, API routes, schema additions. Bootstrap step 14 added. Depends on email-mailpit and db-turso-drizzle. |
 | 14 | File Storage Ref Files | **Done** | storage-vercel-blob/references/templates.md: storage.ts abstraction (local fs dev → Vercel Blob prod), upload API route with size/type validation. Bootstrap step 15 added. Used existing storage-vercel-blob skill (not new file-storage-vercel per plan). |
 | 15 | Flow Status + Quotas | **Done** | /flow status extended: reads project.json for local state, fetches workspace quotas (skills/databases/storage used vs limit) via GET /api/workspace. Handles unauthenticated and unreachable cases gracefully. |
-| 16 | Community Upvotes | Not started | |
+| 16 | Community Upvotes | **Done** | Sort toggle (Recent/Popular) with `?sort=popular` URL param. Upvotes already wired via existing social signals (useSocialSignals, getBulkSocialSignals, toggleReaction). Popular sort by upvote count desc, secondary by title. Suspense boundary added for useSearchParams. |
 | 17 | Remove Toolkit & Generate | Not started | |
 | 18 | Showcase Migration | Not started | |
 | C | Closing | Not started | |

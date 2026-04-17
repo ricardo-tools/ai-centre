@@ -103,7 +103,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 13 | OTP Auth Ref Files | Extension | Bootstrap with auth, log in via OTP locally | **Done** |
 | 14 | File Storage Ref Files | Extension | Bootstrap with file storage, upload a file locally and to Vercel Blob | **Done** |
 | 15 | Flow Status + Quotas | Extension | Run `flow-status` and see workspace info, quotas, project state | **Done** |
-| 16 | Community Upvotes | New Capability | Upvote community skills, see skills ranked by popularity | Not started |
+| 16 | Community Upvotes | New Capability | Upvote community skills, see skills ranked by popularity | **Done** |
 | 17 | Remove Toolkit & Generate | Extension | No longer see `/toolkits` or `/generate` — homepage points to Flow | Not started |
 | 18 | Showcase Migration | Extension | See existing showcases in the new versioned model | Not started |
 | C | Closing | — | — | Not started |

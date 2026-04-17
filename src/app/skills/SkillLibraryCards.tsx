@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { MagnifyingGlass } from '@phosphor-icons/react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { MagnifyingGlass, SortAscending, TrendUp } from '@phosphor-icons/react';
 import { Tabs } from '@/platform/components/Tabs';
 import { fetchAllSkills } from '@/features/skill-library/action';
 import { toSkills } from '@/platform/acl/skill.mapper';
@@ -13,6 +14,8 @@ import { useSocialSignals } from '@/features/social/useSocialSignals';
 import { getBulkSocialSignals, type BulkSocialSignal } from '@/features/social/action';
 import { useBookmarkOrder } from '@/features/social/useBookmarkOrder';
 import { CommentDrawer } from '@/platform/components/CommentDrawer';
+
+type SortMode = 'recent' | 'popular';
 
 // ─── Primary tabs ─────────────────────────────────────────────────────────────
 
@@ -90,6 +93,8 @@ const AI_SLUGS = new Set([
 export function SkillLibraryCards() {
   const { t } = useLocale();
   const session = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [socialData, setSocialData] = useState<Record<string, BulkSocialSignal>>({});
   const [loading, setLoading] = useState(true);
@@ -98,6 +103,18 @@ export function SkillLibraryCards() {
   const [searchQuery, setSearchQuery] = useState('');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const bookmarkedSlugs = useBookmarkOrder('skill');
+  const sortMode: SortMode = searchParams.get('sort') === 'popular' ? 'popular' : 'recent';
+
+  const handleSortChange = useCallback((mode: SortMode) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (mode === 'popular') {
+      params.set('sort', 'popular');
+    } else {
+      params.delete('sort');
+    }
+    const qs = params.toString();
+    router.replace(`/skills${qs ? `?${qs}` : ''}`, { scroll: false });
+  }, [searchParams, router]);
 
   useEffect(() => {
     fetchAllSkills().then(async (result) => {
@@ -159,14 +176,22 @@ export function SkillLibraryCards() {
     return result;
   }, [skills, activeTab, searchQuery]);
 
-  // Sort bookmarked skills to the top
+  // Sort: bookmarked first, then by sort mode
   const sortedSkills = useMemo(() => {
     const bookmarked = filtered.filter((s) => bookmarkedSlugs.has(s.slug));
-    const rest = filtered
-      .filter((s) => !bookmarkedSlugs.has(s.slug))
-      .sort((a, b) => (socialData[b.slug]?.upvoteCount ?? 0) - (socialData[a.slug]?.upvoteCount ?? 0));
+    const rest = filtered.filter((s) => !bookmarkedSlugs.has(s.slug));
+
+    if (sortMode === 'popular') {
+      rest.sort((a, b) => {
+        const diff = (socialData[b.slug]?.upvoteCount ?? 0) - (socialData[a.slug]?.upvoteCount ?? 0);
+        if (diff !== 0) return diff;
+        return a.title.localeCompare(b.title);
+      });
+    }
+    // 'recent' keeps the default order from the skills list (insertion order)
+
     return [...bookmarked, ...rest];
-  }, [filtered, bookmarkedSlugs, socialData]);
+  }, [filtered, bookmarkedSlugs, socialData, sortMode]);
 
   if (loading) {
     return (
@@ -211,9 +236,45 @@ export function SkillLibraryCards() {
         />
       </div>
 
-      {/* Result count */}
-      <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
-        {filtered.length} {filtered.length === 1 ? 'skill' : 'skills'}
+      {/* Result count + sort toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+          {filtered.length} {filtered.length === 1 ? 'skill' : 'skills'}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            data-testid="sort-recent"
+            onClick={() => handleSortChange('recent')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '4px 10px', borderRadius: 6,
+              border: '1px solid var(--color-border)',
+              background: sortMode === 'recent' ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              color: sortMode === 'recent' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              fontSize: 12, fontWeight: sortMode === 'recent' ? 600 : 400,
+              fontFamily: 'inherit', cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            <SortAscending size={14} /> Recent
+          </button>
+          <button
+            data-testid="sort-popular"
+            onClick={() => handleSortChange('popular')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '4px 10px', borderRadius: 6,
+              border: '1px solid var(--color-border)',
+              background: sortMode === 'popular' ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              color: sortMode === 'popular' ? 'var(--color-primary)' : 'var(--color-text-muted)',
+              fontSize: 12, fontWeight: sortMode === 'popular' ? 600 : 400,
+              fontFamily: 'inherit', cursor: 'pointer',
+              transition: 'all 150ms',
+            }}
+          >
+            <TrendUp size={14} /> Popular
+          </button>
+        </div>
       </div>
 
       {/* Workflow WIP alert */}
