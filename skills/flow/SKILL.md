@@ -187,19 +187,27 @@ If no action is given, list the available actions with a one-line description of
 
 **Flow:**
 
-1. Read `.plans/LOG.md`.
-2. Check for a `## Parked Session` block. If present:
+1. Read `.flow/project.json` for local state: project name, mode (standard/vibe/vibe-visual), installed skills.
+2. Read `.plans/LOG.md`.
+3. Check for a `## Parked Session` block. If present:
    - Report the parked state: plan, position, what was done, what's pending.
    - Note which checkpoints have been ticked (if resumption is in progress).
    - Report any unchecked prerequisites.
-3. If no park entry:
+4. If no park entry:
    - Check current todo list for in-progress items. If no todos exist, report based on LOG.md and session memory.
-4. Report a human-optimised summary:
+5. Report a human-optimised summary:
+   - Project name, mode, installed skill count.
    - Current plan, chapter, and step in the methodology pipeline.
    - What has been completed this session.
    - What is next.
    - Test counts from the most recent test runner output this session, or from LOG.md if no tests have run this session.
    - Any blockers or pending prerequisites.
+6. **Workspace info** (if `.flow/credentials.json` exists):
+   - GET `https://ai.ezycollect.tools/api/workspace` with Bearer token.
+   - Report: skills published (used/limit), databases (used/limit), storage (used/limit).
+   - If quota is at limit, highlight it.
+   - If not authenticated: show "Workspace: not connected — run `/flow login` for workspace info."
+   - If API unreachable: show "Could not reach AI Centre."
 
 **References:** `flow-plan-log`
 
