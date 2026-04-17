@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle, Archive, Camera } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowsOut, ArrowsIn, DownloadSimple, User, FileHtml, FileZip, SpinnerGap, Trash, LinkSimple, PencilSimple, Check, X, UploadSimple, WarningCircle, Archive, Camera, ShareNetwork } from '@phosphor-icons/react';
 
 import type { RawShowcaseUpload } from '@/features/showcase-gallery/action';
 import { deleteShowcase, updateShowcase, getSignedShowcaseUrl, retryDeploy, archiveShowcase, generateThumbnail } from '@/features/showcase-gallery/action';
@@ -19,6 +19,7 @@ import { BookmarkButton } from '@/platform/components/BookmarkButton';
 import { CommentThread } from '@/platform/components/CommentThread';
 import { Eye, ChatCircle } from '@phosphor-icons/react';
 import { VersionHistoryPanel } from '../VersionHistoryPanel';
+import { ShareModal } from '@/platform/components/ShareModal';
 
 /** Convert a blob URL to an authenticated proxy URL for private Vercel Blob storage. */
 function blobProxy(url: string): string {
@@ -26,9 +27,16 @@ function blobProxy(url: string): string {
   return `/api/blob?url=${encodeURIComponent(url)}`;
 }
 
+interface SharePermissions {
+  canView: boolean;
+  canDownload: boolean;
+  canShare: boolean;
+}
+
 interface ShowcaseViewerWidgetProps {
   showcase: RawShowcaseUpload;
   signedDeployUrl?: string | null;
+  sharePermissions?: SharePermissions | null;
 }
 
 
@@ -72,7 +80,7 @@ function DeployStepIndicator({ step, deployStatus }: { step: string | null; depl
   );
 }
 
-export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseViewerWidgetProps) {
+export function ShowcaseViewerWidget({ showcase, signedDeployUrl, sharePermissions }: ShowcaseViewerWidgetProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -122,6 +130,10 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
   const [viewCount, setViewCount] = useState<number>(0);
   const [showComments, setShowComments] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+
+  // Download permission: owner always can, shared users need can_download
+  const canDownload = isOwner || sharePermissions?.canDownload !== false;
 
   // Track view and fetch view count on mount
   useEffect(() => {
@@ -431,6 +443,16 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
             </button>
           )}
 
+          {/* Share modal — owner only */}
+          {isOwner && (
+            <button
+              onClick={() => setShareModalOpen(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <ShareNetwork size={12} /> Share
+            </button>
+          )}
+
           {/* Comments toggle */}
           <button
             onClick={() => setShowComments((v) => !v)}
@@ -472,14 +494,23 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
             <ArrowsOut size={12} /> Fullscreen
           </button>
 
-          {/* Download */}
-          <a
-            href={blobProxy(showcase.blobUrl)}
-            download={showcase.fileName}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', textDecoration: 'none', fontSize: 12, fontWeight: 500 }}
-          >
-            <DownloadSimple size={12} /> Download
-          </a>
+          {/* Download — permission-aware */}
+          {canDownload ? (
+            <a
+              href={blobProxy(showcase.blobUrl)}
+              download={showcase.fileName}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-body)', textDecoration: 'none', fontSize: 12, fontWeight: 500 }}
+            >
+              <DownloadSimple size={12} /> Download
+            </a>
+          ) : (
+            <span
+              title="You don't have download permission for this showcase"
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-muted)', fontSize: 12, fontWeight: 500, opacity: 0.5, cursor: 'not-allowed' }}
+            >
+              <DownloadSimple size={12} /> Download
+            </span>
+          )}
         </div>
       </div>
 
@@ -822,6 +853,14 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl }: ShowcaseView
       <div style={{ padding: '0 16px' }}>
         <VersionHistoryPanel showcaseId={showcase.id} isOwner={!!isOwner} />
       </div>
+
+      {/* ── Share modal ── */}
+      <ShareModal
+        resourceType="showcase"
+        resourceId={showcase.id}
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
 
       {/* ── Fullscreen overlay (portaled to body to escape overflow context) ── */}
       {isFullscreen && typeof document !== 'undefined' && createPortal(

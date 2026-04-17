@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadSimple, FileHtml, FileZip, SpinnerGap, X, Image as ImageIcon } from '@phosphor-icons/react';
+import { UploadSimple, FileHtml, FileZip, SpinnerGap, X, Image as ImageIcon, Globe, LockSimple } from '@phosphor-icons/react';
 import { useSession } from '@/platform/lib/SessionContext';
 import { uploadShowcase } from '@/features/showcase-gallery/action';
 import { SkillPicker } from '@/platform/components/SkillPicker';
@@ -30,6 +30,7 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -65,6 +66,7 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
     formData.set('title', title.trim());
     formData.set('description', description.trim());
     formData.set('skillIds', JSON.stringify(selectedSkills));
+    formData.set('visibility', visibility);
     formData.set('file', file);
     if (thumbnail) formData.set('thumbnail', thumbnail);
     // userId intentionally NOT sent — server reads it from the session
@@ -257,6 +259,72 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
           )}
         </div>
       )}
+
+      {/* Visibility */}
+      <div style={{ marginBottom: 24 }}>
+        <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--color-text-body)', marginBottom: 8 }}>
+          Who can see this?
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              borderRadius: 6,
+              border: `1px solid ${visibility === 'public' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              background: visibility === 'public' ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="radio"
+              name="visibility"
+              value="public"
+              checked={visibility === 'public'}
+              onChange={() => setVisibility('public')}
+              style={{ accentColor: 'var(--color-primary)' }}
+            />
+            <Globe size={18} style={{ color: visibility === 'public' ? 'var(--color-primary)' : 'var(--color-text-muted)', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)' }}>Everyone (public in gallery)</div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Visible to all signed-in users</div>
+            </div>
+          </label>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              borderRadius: 6,
+              border: `1px solid ${visibility === 'private' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              background: visibility === 'private' ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="radio"
+              name="visibility"
+              value="private"
+              checked={visibility === 'private'}
+              onChange={() => setVisibility('private')}
+              style={{ accentColor: 'var(--color-primary)' }}
+            />
+            <LockSimple size={18} style={{ color: visibility === 'private' ? 'var(--color-primary)' : 'var(--color-text-muted)', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)' }}>Only people I share with (private)</div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Only you and people you invite can see this</div>
+            </div>
+          </label>
+        </div>
+        {visibility === 'private' && (
+          <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '8px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
+            You can add people after publishing via the Share button.
+          </p>
+        )}
+      </div>
 
       {/* Error */}
       {error && (
