@@ -64,5 +64,5 @@
 | 15 | Flow Status + Quotas | **Done** | /flow status extended: reads project.json for local state, fetches workspace quotas (skills/databases/storage used vs limit) via GET /api/workspace. Handles unauthenticated and unreachable cases gracefully. |
 | 16 | Community Upvotes | **Done** | Sort toggle (Recent/Popular) with `?sort=popular` URL param. Upvotes already wired via existing social signals (useSocialSignals, getBulkSocialSignals, toggleReaction). Popular sort by upvote count desc, secondary by title. Suspense boundary added for useSearchParams. |
 | 17 | Remove Toolkit & Generate | **Done** | Deleted features/generate-project, features/archetypes, app/generate, app/toolkits, app/archetypes, screens, ACL mapper, domain class, ArchetypeCard component, compose-toolkit chat tool, toolkit-composition lib, archetypes lib. Removed generatedProjects table + migration 0016. Updated widget registry, nav, homepage (Flow CTA), permissions, i18n, chat route, system prompt, test-setup, e2e tests. |
-| 18 | Showcase Migration | Not started | |
+| 18 | Showcase Migration | **Done** | Seed 0005: backfills showcase_versions with v1 "Initial version" for all non-archived showcases without existing versions. Idempotent. Runs on next cold start in prod. |
 | C | Closing | Not started | |
