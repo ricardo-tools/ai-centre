@@ -350,9 +350,16 @@ If no action is given, list the available actions with a one-line description of
 
 **Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
 
-**References:** `skills/flow/references/auth-client.md` (for authenticated API calls), `skills/db-turso-drizzle/references/templates.md` (for database project templates), `skills/db-turso-drizzle/references/migrations.md` (for migration and seed templates)
+13. **Email setup:** If the user's project needs email (they mention "email", "notifications", "OTP", "transactional email", or `email-mailpit` is among selected skills):
+    a. Ensure `email-mailpit` is in the selected skills (add it if not already).
+    b. Read `skills/email-mailpit/references/templates.md` and copy: `docker-compose.yml` (or add Mailpit service to existing one), `src/lib/email.ts`, `.env.local` email vars.
+    c. Add `nodemailer` to dependencies, `@types/nodemailer` to devDependencies.
 
-**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, and the user sees a summary of what was created.
+**Do not** ask the user about environment URLs, auth prerequisites, or implementation details. Just execute the flow — handle errors as they come. **Never** suggest localhost, local dev, or alternative URLs. The production URL `https://ai.ezycollect.tools` is the only endpoint — there is no local option. If login is denied, tell the user that authorization is required to access the workspace and skill library, and offer to retry. Do not suggest workarounds.
+
+**References:** `skills/flow/references/auth-client.md`, `skills/db-turso-drizzle/references/templates.md`, `skills/db-turso-drizzle/references/migrations.md`, `skills/email-mailpit/references/templates.md`
+
+**Done when:** `.flow/project.json` exists, selected skills are downloaded, `CLAUDE.md` is generated, database provisioned if needed, email configured if needed, and the user sees a summary of what was created.
 
 ---
 
