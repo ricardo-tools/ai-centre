@@ -120,6 +120,13 @@
       "when": 1776963600000,
       "tag": "0016_drop_generated_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1777050000000,
+      "tag": "0017_add_resource_shares",
+      "breakpoints": true
     }
   ]
 }

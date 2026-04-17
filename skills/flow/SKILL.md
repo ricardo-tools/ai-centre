@@ -100,7 +100,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`, `showcase`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`, `showcase`, `share`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -511,6 +511,39 @@ Rollback is **append-only** — it creates a new version with the old content. N
 7. ZIPs are auto-deployed to the Vercel showcase project. HTML showcases are viewable immediately.
 
 **Done when:** The server confirms the showcase was published and the user sees the version number.
+
+---
+
+### `/flow share`
+
+**Trigger:** User types `/flow share` or asks to share a showcase or skill.
+
+**Flow:**
+
+1. Check if `.flow/credentials.json` exists. If not, run `/flow login` first.
+2. Ask: "What do you want to share?" Identify the resource:
+   - A showcase by title or ID
+   - A published community skill by slug
+3. Ask: "How do you want to share it?"
+   - **With a specific person** → ask for their email/userId, then choose permissions:
+     - Can view (default: yes)
+     - Can download (default: no)
+     - Can reshare (default: no)
+   - **With a link** → choose permissions + optional expiry (default: 7 days)
+4. For named user sharing:
+   POST `https://ai.ezycollect.tools/api/shares` with Bearer token and body:
+   `{ "resourceType": "showcase"|"skill", "resourceId": "...", "granteeUserId": "...", "canView": true, "canDownload": false, "canShare": false }`
+5. For link sharing:
+   POST `https://ai.ezycollect.tools/api/shares/link` with Bearer token and body:
+   `{ "resourceType": "...", "resourceId": "...", "canView": true, "canDownload": false, "canShare": false, "expiresInHours": 168 }`
+   → Returns a signed token. Build the share URL: `https://ai.ezycollect.tools/shared?token={token}`
+6. Report: "Shared with {user}" or "Share link created (expires in 7 days): {url}"
+
+To **revoke** access: DELETE `/api/shares` (named user) or DELETE `/api/shares/link` (link).
+
+To **list** who has access: GET `/api/shares?resourceType=...&resourceId=...`
+
+**Done when:** The share is confirmed and the user has the link or confirmation of the named share.
 
 ---
 

@@ -394,6 +394,26 @@ export const userDatabases = pgTable('user_databases', {
   index('idx_user_databases_user').on(table.userId),
 ]);
 
+// ── Resource Sharing ──────────────────────────────────────────────
+
+export const resourceShares = pgTable('resource_shares', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  resourceType: text('resource_type').notNull(), // 'showcase' | 'skill'
+  resourceId: text('resource_id').notNull(),
+  granteeType: text('grantee_type').notNull(), // 'user' | 'link'
+  granteeId: text('grantee_id').notNull(), // userId or tokenHash
+  canView: boolean('can_view').notNull().default(true),
+  canDownload: boolean('can_download').notNull().default(false),
+  canShare: boolean('can_share').notNull().default(false),
+  expiresAt: timestamp('expires_at'),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  unique('resource_share_unique').on(table.resourceType, table.resourceId, table.granteeType, table.granteeId),
+  index('idx_resource_shares_resource').on(table.resourceType, table.resourceId),
+  index('idx_resource_shares_grantee').on(table.granteeType, table.granteeId),
+]);
+
 // ── Skill Gaps ─────────────────────────────────────────────────────
 
 export const skillGaps = pgTable('skill_gaps', {
