@@ -1,8 +1,8 @@
 # Plan 02: Flow-First Platform
 
-**Status:** Not started
+**Status:** Complete
 **Created:** 2026-04-13
-**Completed:** —
+**Completed:** 2026-04-17
 **Depends on:** Plan 01 (Vercel Showcase Previews) — complete
 
 ---
@@ -106,7 +106,7 @@ This plan is structured as a phased rollout. Each chapter delivers a usable incr
 | 16 | Community Upvotes | New Capability | Upvote community skills, see skills ranked by popularity | **Done** |
 | 17 | Remove Toolkit & Generate | Extension | No longer see `/toolkits` or `/generate` — homepage points to Flow | Not started |
 | 18 | Showcase Migration | Extension | See existing showcases in the new versioned model | **Done** |
-| C | Closing | — | — | Not started |
+| C | Closing | — | — | **Done** |
 
 ### Chapter 0: OAuth + Flow Login
 > [ch0-oauth-flow-login.md](ch0-oauth-flow-login.md)

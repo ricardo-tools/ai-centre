@@ -65,4 +65,6 @@
 | 16 | Community Upvotes | **Done** | Sort toggle (Recent/Popular) with `?sort=popular` URL param. Upvotes already wired via existing social signals (useSocialSignals, getBulkSocialSignals, toggleReaction). Popular sort by upvote count desc, secondary by title. Suspense boundary added for useSearchParams. |
 | 17 | Remove Toolkit & Generate | **Done** | Deleted features/generate-project, features/archetypes, app/generate, app/toolkits, app/archetypes, screens, ACL mapper, domain class, ArchetypeCard component, compose-toolkit chat tool, toolkit-composition lib, archetypes lib. Removed generatedProjects table + migration 0016. Updated widget registry, nav, homepage (Flow CTA), permissions, i18n, chat route, system prompt, test-setup, e2e tests. |
 | 18 | Showcase Migration | **Done** | Seed 0005: backfills showcase_versions with v1 "Initial version" for all non-archived showcases without existing versions. Idempotent. Runs on next cold start in prod. |
-| C | Closing | Not started | |
+| C | Closing | **Done** | PROJECT_REFERENCE.md updated, plan marked complete. |
+
+**Plan 02 complete.** 19 chapters + closing. OAuth PKCE flow, workspace quotas, Flow bootstrap with RAG skill matching, community skill publishing + rollback + update/fork, showcase publishing with version history, Turso DB provisioning, email/auth/storage ref templates, sort by popularity, old toolkit/generate system removed (-4,694 lines). 6 DB migrations (0010–0016), 5 runtime seeds, 12+ new API routes, 5 new skills (db-turso-drizzle, email-mailpit, auth-otp, + 2 vibe plan templates).
