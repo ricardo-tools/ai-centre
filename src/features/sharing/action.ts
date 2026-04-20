@@ -14,7 +14,8 @@ export type ResourceType = 'showcase' | 'skill';
 export interface ShareEntry {
   id: string;
   granteeType: 'user' | 'link';
-  granteeId: string;
+  granteeId: string; // email for display (user shares) or token hash (link shares)
+  granteeUserId?: string; // raw UUID for API calls (user shares only)
   canView: boolean;
   canDownload: boolean;
   canShare: boolean;
@@ -79,10 +80,20 @@ export async function listResourceShares(
       eqOp(resourceShares.resourceId, resourceId),
     ));
 
+  // Resolve userIds to emails for display
+  const { users } = await import('@/platform/db/schema');
+  const userIds = rows.filter(r => r.granteeType === 'user').map(r => r.granteeId);
+  const emailMap = new Map<string, string>();
+  for (const uid of userIds) {
+    const [user] = await db.select({ email: users.email }).from(users).where(eqOp(users.id, uid)).limit(1);
+    if (user) emailMap.set(uid, user.email);
+  }
+
   return rows.map(r => ({
     id: r.id,
     granteeType: r.granteeType as 'user' | 'link',
-    granteeId: r.granteeId,
+    granteeId: r.granteeType === 'user' ? (emailMap.get(r.granteeId) ?? r.granteeId) : r.granteeId,
+    granteeUserId: r.granteeId, // keep the raw UUID for revoke calls
     canView: r.canView,
     canDownload: r.canDownload,
     canShare: r.canShare,
@@ -96,7 +107,7 @@ export async function listResourceShares(
 export async function grantAccess(
   resourceType: ResourceType,
   resourceId: string,
-  granteeUserId: string,
+  granteeEmailOrId: string,
   canView: boolean,
   canDownload: boolean,
   canShare: boolean,
@@ -106,16 +117,26 @@ export async function grantAccess(
   const { userId } = auth.value;
 
   if (!hasDb) return Err(new ValidationError('noDb', 'Database not available'));
-  if (!granteeUserId.trim()) return Err(new ValidationError('missingGrantee', 'User ID or email is required'));
+  const input = granteeEmailOrId.trim();
+  if (!input) return Err(new ValidationError('missingGrantee', 'User ID or email is required'));
 
-  const { resourceShares } = await import('@/platform/db/schema');
+  const { resourceShares, users } = await import('@/platform/db/schema');
+  const { eq: eqOp } = await import('drizzle-orm');
   const db = getDb();
+
+  // Resolve email to userId if input looks like an email
+  let resolvedUserId = input;
+  if (input.includes('@')) {
+    const [user] = await db.select({ id: users.id }).from(users).where(eqOp(users.email, input.toLowerCase())).limit(1);
+    if (!user) return Err(new ValidationError('userNotFound', `No user found with email ${input}`));
+    resolvedUserId = user.id;
+  }
 
   const [result] = await db.insert(resourceShares).values({
     resourceType,
     resourceId,
     granteeType: 'user',
-    granteeId: granteeUserId.trim(),
+    granteeId: resolvedUserId,
     canView,
     canDownload,
     canShare,
@@ -125,7 +146,7 @@ export async function grantAccess(
     set: { canView, canDownload, canShare },
   }).returning();
 
-  console.info('[sharing] granted access', { resourceType, resourceId, granteeUserId, by: userId });
+  console.info('[sharing] granted access', { resourceType, resourceId, grantee: input, resolvedUserId, by: userId });
   return Ok({ shareId: (result as Record<string, unknown>).id as string });
 }
 
@@ -134,25 +155,32 @@ export async function grantAccess(
 export async function revokeAccess(
   resourceType: ResourceType,
   resourceId: string,
-  granteeUserId: string,
+  granteeEmailOrId: string,
 ): Promise<Result<void, ForbiddenError>> {
   const auth = await requireAuth();
   if (!auth.ok) return auth;
 
   if (!hasDb) return Ok(undefined);
 
-  const { resourceShares } = await import('@/platform/db/schema');
+  const { resourceShares, users } = await import('@/platform/db/schema');
   const { eq: eqOp, and } = await import('drizzle-orm');
   const db = getDb();
+
+  // Resolve email to userId if needed
+  let resolvedId = granteeEmailOrId;
+  if (granteeEmailOrId.includes('@')) {
+    const [user] = await db.select({ id: users.id }).from(users).where(eqOp(users.email, granteeEmailOrId.toLowerCase())).limit(1);
+    if (user) resolvedId = user.id;
+  }
 
   await db.delete(resourceShares).where(and(
     eqOp(resourceShares.resourceType, resourceType),
     eqOp(resourceShares.resourceId, resourceId),
     eqOp(resourceShares.granteeType, 'user'),
-    eqOp(resourceShares.granteeId, granteeUserId),
+    eqOp(resourceShares.granteeId, resolvedId),
   ));
 
-  console.info('[sharing] revoked access', { resourceType, resourceId, granteeUserId });
+  console.info('[sharing] revoked access', { resourceType, resourceId, grantee: granteeEmailOrId, resolvedId });
   return Ok(undefined);
 }
 

@@ -176,26 +176,26 @@ export function ShareModal({
   // ── Update permission ─────────────────────────────────────────────
 
   const handleUpdatePermission = useCallback(async (
-    granteeId: string,
+    rawUserId: string,
     canView: boolean,
     canDownload: boolean,
     canShare: boolean,
   ) => {
-    setBusyId(granteeId);
+    setBusyId(rawUserId);
     setShares(prev => prev.map(s =>
-      s.granteeId === granteeId && s.granteeType === 'user'
+      (s.granteeUserId === rawUserId || s.granteeId === rawUserId) && s.granteeType === 'user'
         ? { ...s, canView, canDownload, canShare }
         : s
     ));
-    await grantAccess(resourceType, resourceId, granteeId, canView, canDownload, canShare);
+    await grantAccess(resourceType, resourceId, rawUserId, canView, canDownload, canShare);
     setBusyId(null);
   }, [resourceType, resourceId]);
 
   // ── Revoke ────────────────────────────────────────────────────────
 
-  const handleRevokeUser = useCallback(async (granteeId: string) => {
-    setBusyId(granteeId);
-    await revokeAccess(resourceType, resourceId, granteeId);
+  const handleRevokeUser = useCallback(async (rawUserId: string) => {
+    setBusyId(rawUserId);
+    await revokeAccess(resourceType, resourceId, rawUserId);
     await fetchShares();
     setBusyId(null);
   }, [resourceType, resourceId, fetchShares]);
@@ -320,7 +320,9 @@ export function ShareModal({
                   No one else has access yet.
                 </p>
               )}
-              {userShares.map(s => (
+              {userShares.map(s => {
+                const rawId = s.granteeUserId ?? s.granteeId;
+                return (
                 <div key={s.id} style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px',
                   borderRadius: 6, background: 'var(--color-bg)', border: '1px solid var(--color-border)',
@@ -331,12 +333,12 @@ export function ShareModal({
                   </span>
                   {canManage ? (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                      <PermissionCheckbox label="View" checked={s.canView} onChange={v => handleUpdatePermission(s.granteeId, v, s.canDownload, s.canShare)} disabled={busyId === s.granteeId} />
-                      <PermissionCheckbox label="Download" checked={s.canDownload} onChange={v => handleUpdatePermission(s.granteeId, s.canView, v, s.canShare)} disabled={busyId === s.granteeId} />
-                      <PermissionCheckbox label="Reshare" checked={s.canShare} onChange={v => handleUpdatePermission(s.granteeId, s.canView, s.canDownload, v)} disabled={busyId === s.granteeId} />
+                      <PermissionCheckbox label="View" checked={s.canView} onChange={v => handleUpdatePermission(rawId, v, s.canDownload, s.canShare)} disabled={busyId === rawId} />
+                      <PermissionCheckbox label="Download" checked={s.canDownload} onChange={v => handleUpdatePermission(rawId, s.canView, v, s.canShare)} disabled={busyId === rawId} />
+                      <PermissionCheckbox label="Reshare" checked={s.canShare} onChange={v => handleUpdatePermission(rawId, s.canView, s.canDownload, v)} disabled={busyId === rawId} />
                       <button
-                        onClick={() => handleRevokeUser(s.granteeId)}
-                        disabled={busyId === s.granteeId}
+                        onClick={() => handleRevokeUser(rawId)}
+                        disabled={busyId === rawId}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-danger)', display: 'flex', flexShrink: 0 }}
                       >
                         <Trash size={14} />
@@ -350,7 +352,8 @@ export function ShareModal({
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

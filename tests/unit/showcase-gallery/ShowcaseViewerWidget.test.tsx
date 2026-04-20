@@ -85,6 +85,7 @@ function makeShowcase(overrides: Record<string, unknown> = {}) {
     deployStatus: 'ready',
     deployUrl: 'https://my-showcase.vercel.app',
     deploymentId: 'dpl_test123',
+    visibility: 'public',
     createdAt: '2025-01-01T00:00:00.000Z',
     ...overrides,
   };
