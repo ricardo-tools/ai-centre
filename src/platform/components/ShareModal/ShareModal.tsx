@@ -12,25 +12,25 @@ import {
   SpinnerGap,
   Check,
   Crown,
+  FloppyDisk,
 } from '@phosphor-icons/react';
 import { VisibilitySelector, type Visibility } from './VisibilitySelector';
 import { PermissionCheckbox } from './PermissionCheckbox';
+import {
+  changeVisibility,
+  listResourceShares,
+  grantAccess,
+  revokeAccess,
+  createLink,
+  revokeLink,
+  type ShareEntry,
+  type ResourceType,
+} from '@/features/sharing/action';
 
 // ── Types ────────────────────────────────────────────────────────────
 
-interface ShareEntry {
-  id: string;
-  granteeType: 'user' | 'link';
-  granteeId: string;
-  canView: boolean;
-  canDownload: boolean;
-  canShare: boolean;
-  expiresAt: string | null;
-  createdAt: string;
-}
-
 interface ShareModalProps {
-  resourceType: 'showcase' | 'skill';
+  resourceType: ResourceType;
   resourceId: string;
   isOpen: boolean;
   onClose: () => void;
@@ -82,13 +82,17 @@ export function ShareModal({
 }: ShareModalProps) {
   const [shares, setShares] = useState<ShareEntry[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Staged visibility — only persists on Save
   const [visibility, setVisibility] = useState<Visibility>(currentVisibility);
+  const [visibilityDirty, setVisibilityDirty] = useState(false);
 
   // Add person
   const [email, setEmail] = useState('');
   const [addCanDownload, setAddCanDownload] = useState(false);
   const [addCanShare, setAddCanShare] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [addSuccess, setAddSuccess] = useState<string | null>(null);
 
   // Create link
   const [linkCanDownload, setLinkCanDownload] = useState(false);
@@ -98,21 +102,22 @@ export function ShareModal({
   const [createdLinkUrl, setCreatedLinkUrl] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  // Sync visibility from prop
-  useEffect(() => { setVisibility(currentVisibility); }, [currentVisibility]);
+  useEffect(() => {
+    setVisibility(currentVisibility);
+    setVisibilityDirty(false);
+  }, [currentVisibility]);
 
   // ── Fetch shares ──────────────────────────────────────────────────
 
   const fetchShares = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/shares?resourceType=${resourceType}&resourceId=${resourceId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setShares(data.shares ?? []);
-      }
+      const data = await listResourceShares(resourceType, resourceId);
+      setShares(data);
     } catch { /* empty */ }
     setLoading(false);
   }, [resourceType, resourceId]);
@@ -122,125 +127,100 @@ export function ShareModal({
       fetchShares();
       setCreatedLinkUrl(null);
       setLinkCopied(false);
+      setAddSuccess(null);
+      setSaveSuccess(false);
     }
   }, [isOpen, fetchShares]);
 
-  // ── Visibility change ─────────────────────────────────────────────
+  // ── Save visibility ───────────────────────────────────────────────
 
-  const handleVisibilityChange = useCallback(async (v: Visibility) => {
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    setSaveSuccess(false);
+    const result = await changeVisibility(resourceType, resourceId, visibility);
+    if (result.ok) {
+      onVisibilityChange?.(visibility);
+      setVisibilityDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    }
+    setSaving(false);
+  }, [resourceType, resourceId, visibility, onVisibilityChange]);
+
+  const handleVisibilitySelect = useCallback((v: Visibility) => {
     setVisibility(v);
-    onVisibilityChange?.(v);
-    try {
-      await fetch('/api/shares/visibility', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resourceType, resourceId, visibility: v }),
-      });
-    } catch { /* silent */ }
-  }, [resourceType, resourceId, onVisibilityChange]);
+    setVisibilityDirty(v !== currentVisibility);
+  }, [currentVisibility]);
 
   // ── Add person ────────────────────────────────────────────────────
 
   const handleAddPerson = useCallback(async () => {
     if (!email.trim()) return;
     setAdding(true);
-    try {
-      const res = await fetch('/api/shares', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resourceType, resourceId,
-          granteeUserId: email.trim(),
-          canView: true, canDownload: addCanDownload, canShare: addCanShare,
-        }),
-      });
-      if (res.ok) {
-        setEmail('');
-        setAddCanDownload(false);
-        setAddCanShare(false);
-        await fetchShares();
-      }
-    } catch { /* silent */ }
+    setAddSuccess(null);
+    const result = await grantAccess(
+      resourceType, resourceId, email.trim(),
+      true, addCanDownload, addCanShare,
+    );
+    if (result.ok) {
+      setAddSuccess(email.trim());
+      setEmail('');
+      setAddCanDownload(false);
+      setAddCanShare(false);
+      await fetchShares();
+      setTimeout(() => setAddSuccess(null), 3000);
+    }
     setAdding(false);
   }, [email, addCanDownload, addCanShare, resourceType, resourceId, fetchShares]);
 
-  // ── Update permission inline ──────────────────────────────────────
+  // ── Update permission ─────────────────────────────────────────────
 
   const handleUpdatePermission = useCallback(async (
     granteeId: string,
-    field: 'canView' | 'canDownload' | 'canShare',
-    value: boolean,
+    canView: boolean,
+    canDownload: boolean,
+    canShare: boolean,
   ) => {
-    setUpdatingId(granteeId);
-    // Optimistic update
+    setBusyId(granteeId);
     setShares(prev => prev.map(s =>
       s.granteeId === granteeId && s.granteeType === 'user'
-        ? { ...s, [field]: value }
+        ? { ...s, canView, canDownload, canShare }
         : s
     ));
-    try {
-      const share = shares.find(s => s.granteeId === granteeId && s.granteeType === 'user');
-      if (share) {
-        await fetch('/api/shares', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resourceType, resourceId,
-            granteeUserId: granteeId,
-            canView: field === 'canView' ? value : share.canView,
-            canDownload: field === 'canDownload' ? value : share.canDownload,
-            canShare: field === 'canShare' ? value : share.canShare,
-          }),
-        });
-      }
-    } catch { /* silent */ }
-    setUpdatingId(null);
-  }, [resourceType, resourceId, shares]);
+    await grantAccess(resourceType, resourceId, granteeId, canView, canDownload, canShare);
+    setBusyId(null);
+  }, [resourceType, resourceId]);
 
   // ── Revoke ────────────────────────────────────────────────────────
 
-  const handleRevoke = useCallback(async (granteeId: string, type: 'user' | 'link', shareId: string) => {
-    setUpdatingId(shareId);
-    try {
-      if (type === 'user') {
-        await fetch('/api/shares', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ resourceType, resourceId, granteeUserId: granteeId }),
-        });
-      } else {
-        await fetch('/api/shares/link', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ shareId }),
-        });
-      }
-      await fetchShares();
-    } catch { /* silent */ }
-    setUpdatingId(null);
+  const handleRevokeUser = useCallback(async (granteeId: string) => {
+    setBusyId(granteeId);
+    await revokeAccess(resourceType, resourceId, granteeId);
+    await fetchShares();
+    setBusyId(null);
   }, [resourceType, resourceId, fetchShares]);
+
+  const handleRevokeLink = useCallback(async (shareId: string) => {
+    setBusyId(shareId);
+    await revokeLink(shareId);
+    await fetchShares();
+    setBusyId(null);
+  }, [fetchShares]);
 
   // ── Create link ───────────────────────────────────────────────────
 
   const handleCreateLink = useCallback(async () => {
     setCreatingLink(true);
     setCreatedLinkUrl(null);
-    try {
-      const res = await fetch('/api/shares/link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resourceType, resourceId,
-          canView: true, canDownload: linkCanDownload, canShare: linkCanShare,
-          expiresInHours: linkExpiry || undefined,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCreatedLinkUrl(`${window.location.origin}/shared?token=${data.token}`);
-        await fetchShares();
-      }
-    } catch { /* silent */ }
+    const result = await createLink(
+      resourceType, resourceId,
+      true, linkCanDownload, linkCanShare,
+      linkExpiry,
+    );
+    if (result.ok) {
+      setCreatedLinkUrl(`${window.location.origin}/shared?token=${result.value.token}`);
+      await fetchShares();
+    }
     setCreatingLink(false);
   }, [resourceType, resourceId, linkCanDownload, linkCanShare, linkExpiry, fetchShares]);
 
@@ -282,11 +262,34 @@ export function ShareModal({
           </button>
         </div>
 
-        {/* Visibility (owner only) */}
+        {/* Visibility + Save (owner only) */}
         {canManage && (
           <div>
             <h4 style={sectionTitleStyle}>Visibility</h4>
-            <VisibilitySelector value={visibility} onChange={handleVisibilityChange} />
+            <VisibilitySelector value={visibility} onChange={handleVisibilitySelect} />
+            {visibilityDirty && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  style={{
+                    padding: '8px 20px', borderRadius: 6, border: 'none',
+                    background: saving ? 'var(--color-text-muted)' : 'var(--color-primary)',
+                    color: '#FFFFFF', fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                    cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.5 : 1,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}
+                >
+                  {saving ? <SpinnerGap size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <FloppyDisk size={14} />}
+                  Save
+                </button>
+                {saveSuccess && (
+                  <span style={{ fontSize: 12, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Check size={14} /> Saved
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -302,7 +305,6 @@ export function ShareModal({
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {/* Owner row */}
               {canManage && (
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px',
@@ -329,12 +331,12 @@ export function ShareModal({
                   </span>
                   {canManage ? (
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
-                      <PermissionCheckbox label="View" checked={s.canView} onChange={v => handleUpdatePermission(s.granteeId, 'canView', v)} disabled={updatingId === s.granteeId} />
-                      <PermissionCheckbox label="Download" checked={s.canDownload} onChange={v => handleUpdatePermission(s.granteeId, 'canDownload', v)} disabled={updatingId === s.granteeId} />
-                      <PermissionCheckbox label="Reshare" checked={s.canShare} onChange={v => handleUpdatePermission(s.granteeId, 'canShare', v)} disabled={updatingId === s.granteeId} />
+                      <PermissionCheckbox label="View" checked={s.canView} onChange={v => handleUpdatePermission(s.granteeId, v, s.canDownload, s.canShare)} disabled={busyId === s.granteeId} />
+                      <PermissionCheckbox label="Download" checked={s.canDownload} onChange={v => handleUpdatePermission(s.granteeId, s.canView, v, s.canShare)} disabled={busyId === s.granteeId} />
+                      <PermissionCheckbox label="Reshare" checked={s.canShare} onChange={v => handleUpdatePermission(s.granteeId, s.canView, s.canDownload, v)} disabled={busyId === s.granteeId} />
                       <button
-                        onClick={() => handleRevoke(s.granteeId, 'user', s.id)}
-                        disabled={updatingId === s.id}
+                        onClick={() => handleRevokeUser(s.granteeId)}
+                        disabled={busyId === s.granteeId}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-danger)', display: 'flex', flexShrink: 0 }}
                       >
                         <Trash size={14} />
@@ -389,6 +391,15 @@ export function ShareModal({
             <PermissionCheckbox label="Can download" checked={addCanDownload} onChange={setAddCanDownload} />
             <PermissionCheckbox label="Can reshare" checked={addCanShare} onChange={setAddCanShare} />
           </div>
+          {addSuccess && (
+            <div style={{
+              marginTop: 8, padding: '6px 10px', borderRadius: 6,
+              background: 'var(--color-success-muted)', color: 'var(--color-success)',
+              fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <Check size={14} /> Added {addSuccess}
+            </div>
+          )}
         </div>
 
         {/* Share links */}
@@ -398,9 +409,7 @@ export function ShareModal({
             Share links
           </h4>
           {linkShares.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '0 0 8px' }}>
-              No share links created yet.
-            </p>
+            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '0 0 8px' }}>No share links yet.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
               {linkShares.map(s => (
@@ -411,34 +420,21 @@ export function ShareModal({
                   <LinkIcon size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, color: 'var(--color-text-body)' }}>
-                      Link created {new Date(s.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
                       {s.expiresAt ? `Expires ${new Date(s.expiresAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}` : 'No expiry'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                     <PermBadge label="View" active={s.canView} />
                     <PermBadge label="DL" active={s.canDownload} />
-                    <PermBadge label="Share" active={s.canShare} />
                   </div>
                   {canManage && (
-                    <>
-                      <button
-                        onClick={() => handleCopyLink(`${window.location.origin}/shared?token=${s.granteeId}`)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-primary)', display: 'flex', flexShrink: 0 }}
-                        title="Copy link URL"
-                      >
-                        <Copy size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleRevoke(s.granteeId, 'link', s.id)}
-                        disabled={updatingId === s.id}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-danger)', display: 'flex', opacity: updatingId === s.id ? 0.5 : 1, flexShrink: 0 }}
-                      >
-                        <Trash size={14} />
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleRevokeLink(s.id)}
+                      disabled={busyId === s.id}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-danger)', display: 'flex', opacity: busyId === s.id ? 0.5 : 1, flexShrink: 0 }}
+                    >
+                      <Trash size={14} />
+                    </button>
                   )}
                 </div>
               ))}
@@ -454,7 +450,6 @@ export function ShareModal({
               <div style={{ display: 'flex', gap: 16 }}>
                 <PermissionCheckbox label="Can view" checked disabled onChange={() => {}} />
                 <PermissionCheckbox label="Can download" checked={linkCanDownload} onChange={setLinkCanDownload} />
-                <PermissionCheckbox label="Can reshare" checked={linkCanShare} onChange={setLinkCanShare} />
               </div>
               <select
                 value={linkExpiry}
@@ -483,11 +478,11 @@ export function ShareModal({
             {createdLinkUrl && (
               <div style={{
                 marginTop: 10, display: 'flex', alignItems: 'center', gap: 8,
-                padding: '8px 10px', borderRadius: 6, background: 'var(--color-bg)', border: '1px solid var(--color-border)',
+                padding: '8px 10px', borderRadius: 6, background: 'var(--color-success-muted)', border: '1px solid var(--color-success)',
               }}>
                 <input
                   type="text" value={createdLinkUrl} readOnly
-                  style={{ ...inputStyle, flex: 1, border: 'none', background: 'transparent', padding: 0, fontSize: 12, color: 'var(--color-text-muted)' }}
+                  style={{ ...inputStyle, flex: 1, border: 'none', background: 'transparent', padding: 0, fontSize: 12, color: 'var(--color-text-body)' }}
                   onClick={e => (e.target as HTMLInputElement).select()}
                 />
                 <button
