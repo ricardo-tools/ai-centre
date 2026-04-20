@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { UploadSimple, FileHtml, FileZip, SpinnerGap, X, Image as ImageIcon, Globe, LockSimple } from '@phosphor-icons/react';
+import { UploadSimple, FileHtml, FileZip, SpinnerGap, X, Image as ImageIcon, Globe, LockSimple, LinkSimple, Plus, Trash, UserCircle } from '@phosphor-icons/react';
 import { useSession } from '@/platform/lib/SessionContext';
 import { uploadShowcase } from '@/features/showcase-gallery/action';
 import { SkillPicker } from '@/platform/components/SkillPicker';
@@ -30,7 +30,11 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
-  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [visibility, setVisibility] = useState<'public' | 'private' | 'link_only'>('public');
+  const [shareList, setShareList] = useState<{ email: string; canDownload: boolean; canShare: boolean }[]>([]);
+  const [shareEmail, setShareEmail] = useState('');
+  const [shareCanDownload, setShareCanDownload] = useState(false);
+  const [shareCanShare, setShareCanShare] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -74,7 +78,41 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
     try {
       const result = await uploadShowcase(formData);
       if (result.ok) {
-        router.push(`/gallery/${result.value.id}`);
+        const showcaseId = result.value.id;
+        // Create shares for each person in the share list
+        for (const person of shareList) {
+          try {
+            await fetch('/api/shares', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                resourceType: 'showcase',
+                resourceId: showcaseId,
+                granteeUserId: person.email,
+                canView: true,
+                canDownload: person.canDownload,
+                canShare: person.canShare,
+              }),
+            });
+          } catch { /* continue with remaining shares */ }
+        }
+        // Create a share link if link_only mode
+        if (visibility === 'link_only') {
+          try {
+            await fetch('/api/shares/link', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                resourceType: 'showcase',
+                resourceId: showcaseId,
+                canView: true,
+                canDownload: true,
+                expiresInHours: 0, // never
+              }),
+            });
+          } catch { /* non-critical */ }
+        }
+        router.push(`/gallery/${showcaseId}`);
       } else {
         setError(result.error.message);
         setIsUploading(false);
@@ -83,7 +121,7 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
       setError('Upload failed. Check that the server is running and try again.');
       setIsUploading(false);
     }
-  }, [file, title, description, selectedSkills, session, router]);
+  }, [file, title, description, selectedSkills, visibility, shareList, session, router]);
 
   const toggleSkill = useCallback((slug: string) => {
     setSelectedSkills((prev) =>
@@ -318,11 +356,114 @@ export function ShowcaseUploadWidget({ skills = [] }: ShowcaseUploadWidgetProps)
               <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Only you and people you invite can see this</div>
             </div>
           </label>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 12px',
+              borderRadius: 6,
+              border: `1px solid ${visibility === 'link_only' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+              background: visibility === 'link_only' ? 'var(--color-primary-muted)' : 'var(--color-surface)',
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="radio"
+              name="visibility"
+              value="link_only"
+              checked={visibility === 'link_only'}
+              onChange={() => setVisibility('link_only')}
+              style={{ accentColor: 'var(--color-primary)' }}
+            />
+            <LinkSimple size={18} style={{ color: visibility === 'link_only' ? 'var(--color-primary)' : 'var(--color-text-muted)', flexShrink: 0 }} />
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-heading)' }}>Anyone with the link</div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Not listed in gallery, but accessible via link</div>
+            </div>
+          </label>
         </div>
-        {visibility === 'private' && (
-          <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '8px 0 0', lineHeight: 1.4, fontStyle: 'italic' }}>
-            You can add people after publishing via the Share button.
-          </p>
+        {/* Share with section for private/link_only */}
+        {(visibility === 'private' || visibility === 'link_only') && (
+          <div style={{ marginTop: 12, padding: '12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-heading)', marginBottom: 8 }}>
+              Share with specific people (optional)
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                type="email"
+                value={shareEmail}
+                onChange={e => setShareEmail(e.target.value)}
+                placeholder="Email or user ID"
+                style={{
+                  flex: 1, padding: '8px 10px', borderRadius: 6,
+                  border: '1px solid var(--color-border)', background: 'var(--color-bg)',
+                  color: 'var(--color-text-body)', fontSize: 13, fontFamily: 'inherit',
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && shareEmail.trim()) {
+                    setShareList(prev => [...prev, { email: shareEmail.trim(), canDownload: shareCanDownload, canShare: shareCanShare }]);
+                    setShareEmail('');
+                    setShareCanDownload(false);
+                    setShareCanShare(false);
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (shareEmail.trim()) {
+                    setShareList(prev => [...prev, { email: shareEmail.trim(), canDownload: shareCanDownload, canShare: shareCanShare }]);
+                    setShareEmail('');
+                    setShareCanDownload(false);
+                    setShareCanShare(false);
+                  }
+                }}
+                disabled={!shareEmail.trim()}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: 'none',
+                  background: !shareEmail.trim() ? 'var(--color-text-muted)' : 'var(--color-primary)',
+                  color: '#FFFFFF', fontSize: 12, fontWeight: 600, fontFamily: 'inherit',
+                  cursor: !shareEmail.trim() ? 'not-allowed' : 'pointer',
+                  opacity: !shareEmail.trim() ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                }}
+              >
+                <Plus size={12} /> Add
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-body)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={shareCanDownload} onChange={e => setShareCanDownload(e.target.checked)} style={{ accentColor: 'var(--color-primary)' }} /> Download
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--color-text-body)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={shareCanShare} onChange={e => setShareCanShare(e.target.checked)} style={{ accentColor: 'var(--color-primary)' }} /> Reshare
+              </label>
+            </div>
+            {shareList.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {shareList.map((person, i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px',
+                    borderRadius: 4, background: 'var(--color-bg)', border: '1px solid var(--color-border)',
+                  }}>
+                    <UserCircle size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: 'var(--color-text-body)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {person.email}
+                    </span>
+                    <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
+                      View{person.canDownload ? ', DL' : ''}{person.canShare ? ', Share' : ''}
+                    </span>
+                    <button
+                      onClick={() => setShareList(prev => prev.filter((_, j) => j !== i))}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--color-danger)', display: 'flex' }}
+                    >
+                      <Trash size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 

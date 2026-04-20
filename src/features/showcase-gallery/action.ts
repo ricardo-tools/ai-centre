@@ -18,7 +18,9 @@ async function readManifest(): Promise<RawShowcaseUpload[]> {
   try {
     const fs = await import('fs/promises');
     const data = await fs.readFile(await getManifestPath(), 'utf-8');
-    return JSON.parse(data);
+    const entries = JSON.parse(data) as Record<string, unknown>[];
+    // Ensure visibility field exists for backward compat with old manifests
+    return entries.map(e => ({ ...e, visibility: (e.visibility as string) ?? 'public' })) as RawShowcaseUpload[];
   } catch {
     return [];
   }
@@ -51,6 +53,7 @@ export interface RawShowcaseUpload {
   deployStatus: string;
   deployUrl: string | null;
   deploymentId: string | null;
+  visibility: string;
   createdAt: string;
 }
 
@@ -60,9 +63,14 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
   }
 
   try {
-    const { showcaseUploads, users } = await import('@/platform/db/schema');
-    const { eq, desc, and } = await import('drizzle-orm');
+    const { showcaseUploads, users, resourceShares } = await import('@/platform/db/schema');
+    const { eq, desc, and, or, sql } = await import('drizzle-orm');
+    const { getSession } = await import('@/platform/lib/auth');
     const db = getDb();
+
+    const session = await getSession();
+    const currentUserId = session?.userId ?? null;
+
     const rows = await db
       .select({
         id: showcaseUploads.id,
@@ -79,11 +87,24 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
         deployStatus: showcaseUploads.deployStatus,
         deployUrl: showcaseUploads.deployUrl,
         deploymentId: showcaseUploads.deploymentId,
+        visibility: showcaseUploads.visibility,
         createdAt: showcaseUploads.createdAt,
       })
       .from(showcaseUploads)
       .leftJoin(users, eq(showcaseUploads.userId, users.id))
-      .where(eq(showcaseUploads.archived, false))
+      .where(
+        and(
+          eq(showcaseUploads.archived, false),
+          currentUserId
+            ? or(
+                eq(showcaseUploads.visibility, 'public'),
+                eq(showcaseUploads.userId, currentUserId),
+                // User has a share record for this showcase
+                sql`EXISTS (SELECT 1 FROM resource_shares WHERE resource_type = 'showcase' AND resource_id = ${showcaseUploads.id}::text AND grantee_type = 'user' AND grantee_id = ${currentUserId} AND can_view = true)`,
+              )
+            : eq(showcaseUploads.visibility, 'public'),
+        )
+      )
       .orderBy(desc(showcaseUploads.createdAt));
 
     return Ok(rows.map((r: Record<string, unknown>) => ({
@@ -93,6 +114,7 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
       deployStatus: (r.deployStatus as string) ?? 'none',
       deployUrl: (r.deployUrl as string | null) ?? null,
       deploymentId: (r.deploymentId as string | null) ?? null,
+      visibility: (r.visibility as string) ?? 'public',
       createdAt: (r.createdAt as Date).toISOString(),
     })) as RawShowcaseUpload[]);
   } catch (err) {
@@ -129,6 +151,7 @@ export async function fetchShowcaseById(id: string): Promise<Result<RawShowcaseU
         deployStatus: showcaseUploads.deployStatus,
         deployUrl: showcaseUploads.deployUrl,
         deploymentId: showcaseUploads.deploymentId,
+        visibility: showcaseUploads.visibility,
         createdAt: showcaseUploads.createdAt,
       })
       .from(showcaseUploads)
@@ -145,6 +168,7 @@ export async function fetchShowcaseById(id: string): Promise<Result<RawShowcaseU
       deployStatus: (row.deployStatus as string) ?? 'none',
       deployUrl: (row.deployUrl as string | null) ?? null,
       deploymentId: (row.deploymentId as string | null) ?? null,
+      visibility: (row.visibility as string) ?? 'public',
       createdAt: (row.createdAt as Date).toISOString(),
     } as RawShowcaseUpload);
   } catch (err) {
@@ -256,6 +280,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
   // Save to DB (or local manifest in dev)
   if (!hasDb) {
     const mockId = crypto.randomUUID();
+    const visibilityValue = (formData.get('visibility') as string) || 'public';
     const entry: RawShowcaseUpload = {
       id: mockId,
       userId,
@@ -271,6 +296,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       deployStatus: 'none',
       deployUrl: null,
       deploymentId: null,
+      visibility: visibilityValue,
       createdAt: new Date().toISOString(),
     };
     const manifest = await readManifest();
@@ -283,6 +309,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
   try {
     const { showcaseUploads } = await import('@/platform/db/schema');
     const db = getDb();
+    const visibilityValue = (formData.get('visibility') as string) || 'public';
     const [inserted] = await db.insert(showcaseUploads).values({
       userId,
       title: title.trim(),
@@ -294,6 +321,7 @@ export async function uploadShowcase(formData: FormData): Promise<Result<{ id: s
       fileName: file.name,
       fileSizeBytes: file.size,
       deployStatus: fileType === 'zip' ? 'pending' : 'none',
+      visibility: visibilityValue,
     }).returning();
 
     const insertedId = (inserted as Record<string, unknown>).id as string;

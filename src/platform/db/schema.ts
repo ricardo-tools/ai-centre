@@ -151,6 +151,7 @@ export const showcaseUploads = pgTable('showcase_uploads', {
   deploymentId: text('deployment_id'),
   deployError: text('deploy_error'),
   archived: boolean('archived').notNull().default(false),
+  visibility: text('visibility').notNull().default('public'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -350,6 +351,7 @@ export const userQuotas = pgTable('user_quotas', {
   skillLimit: integer('skill_limit').notNull().default(5000),
   schemaLimit: integer('schema_limit').notNull().default(20),
   storageLimitBytes: integer('storage_limit_bytes').notNull().default(2147483648), // 2GB
+  defaultVisibility: text('default_visibility').notNull().default('public'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -363,6 +365,7 @@ export const communitySkills = pgTable('community_skills', {
   name: text('name').notNull(),
   description: text('description').notNull(),
   category: text('category'),
+  visibility: text('visibility').notNull().default('public'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => [
