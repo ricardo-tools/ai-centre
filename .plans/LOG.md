@@ -67,4 +67,15 @@
 | 18 | Showcase Migration | **Done** | Seed 0005: backfills showcase_versions with v1 "Initial version" for all non-archived showcases without existing versions. Idempotent. Runs on next cold start in prod. |
 | C | Closing | **Done** | PROJECT_REFERENCE.md updated, plan marked complete. |
 
+### Post-Plan 02: Sharing & Visibility — 2026-04-20
+
+| Item | Status | Notes |
+|---|---|---|
+| Resource sharing system | **Done** | resource_shares table (migration 0017), sharing.ts lib (checkPermission, grant, revoke, link tokens), API routes (POST/GET/DELETE /api/shares + /api/shares/link), /flow share command. |
+| Visibility modes | **Done** | visibility column on showcase_uploads + community_skills (migration 0018), default_visibility on user_quotas, PATCH /api/shares/visibility, gallery queries filter by visibility + shares. |
+| ShareModal UI | **Done** | Visibility selector (radio cards, save button), people list with inline permission editing, add person with feedback, share links with copy/revoke, create link with expiry. |
+| Upload form sharing | **Done** | Visibility radio (public/private/link_only), inline share-with section for private mode. |
+| Shared view page | **Done** | /shared?token=... verifies link, redirects to resource or shows expired page. |
+| Bug fix: email→userId | **Done** | grantAccess resolves email to userId before storing. Gallery query matches on UUID. listResourceShares reverse-resolves for display. |
+
 **Plan 02 complete.** 19 chapters + closing. OAuth PKCE flow, workspace quotas, Flow bootstrap with RAG skill matching, community skill publishing + rollback + update/fork, showcase publishing with version history, Turso DB provisioning, email/auth/storage ref templates, sort by popularity, old toolkit/generate system removed (-4,694 lines). 6 DB migrations (0010–0016), 5 runtime seeds, 12+ new API routes, 5 new skills (db-turso-drizzle, email-mailpit, auth-otp, + 2 vibe plan templates).
