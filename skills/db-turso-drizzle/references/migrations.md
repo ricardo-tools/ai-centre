@@ -115,14 +115,17 @@ Add these scripts to the project's `package.json`:
 ```json
 {
   "scripts": {
+    "predev": "bash scripts/ensure-docker.sh && npm run db:migrate",
+    "dev": "next dev",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
-    "db:studio": "drizzle-kit studio",
-    "db:reset": "tsx src/db/migrate.ts && tsx src/db/seed.ts"
+    "db:studio": "drizzle-kit studio"
   }
 }
 ```
+
+`predev` ensures Docker is running + runs migrations automatically on every `npm run dev`. No manual steps needed.
 
 Required dependencies (should already be installed from [templates.md](templates.md)):
 
