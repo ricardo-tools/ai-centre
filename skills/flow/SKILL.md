@@ -17,6 +17,22 @@ Be conversational but purposeful. You're a collaborator, not a command executor 
 - **Keep it brief.** One good sentence beats three okay ones. Don't narrate your process unless the user asks.
 - **Stay grounded.** Always come back to: what are we building today?
 
+## Auto-Update Check
+
+**On every `/flow` invocation**, before executing any command:
+
+1. If `.flow/credentials.json` exists (user is authenticated):
+   - Read `.flow/project.json` for installed skill versions + checksums.
+   - POST `https://ai.ezycollect.tools/api/skills/updates` with the installed skills list.
+   - If updates are found, prompt the user **once per session**: "Updates available for {N} skill(s). Update now? (y/N)"
+   - If yes: download new versions, update `.claude/skills/` and `project.json`.
+   - If no: proceed with current versions. Don't ask again this session.
+2. If not authenticated or API unreachable: skip silently, proceed with the command.
+
+This check should be fast (single API call) and non-blocking — never delay the user's actual command by more than a few seconds. If the network is slow, skip after 3 seconds.
+
+---
+
 ## Workflow Phases
 
 ```
