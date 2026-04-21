@@ -12,6 +12,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
+const AUTH_COOKIE = 'showcase-auth';
+
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
 
@@ -22,33 +24,54 @@ export async function middleware(request: NextRequest) {
     return new Response(BLOCKED_HTML, { status: 403, headers: { 'Content-Type': 'text/html' } });
   }
 
-  // Extract token from query param
+  const secret = new TextEncoder().encode(jwtSecret);
+
+  // Check 1: token in URL query param (initial load from AI Centre iframe)
   const token = url.searchParams.get('token');
-  if (!token) {
-    console.warn('[showcase-middleware] blocked:', { reason: 'no token', url: url.pathname });
-    return new Response(BLOCKED_HTML, { status: 403, headers: { 'Content-Type': 'text/html' } });
+  if (token) {
+    try {
+      await jwtVerify(token, secret);
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : 'invalid token';
+      console.warn('[showcase-middleware] blocked:', { reason, url: url.pathname });
+      return new Response(BLOCKED_HTML, { status: 403, headers: { 'Content-Type': 'text/html' } });
+    }
+
+    // Token valid — set auth cookie so subsequent requests (sub-routes, assets) work
+    const allowedOrigins = process.env.ALLOWED_ORIGINS ?? "'self'";
+    const response = NextResponse.next();
+    response.cookies.set(AUTH_COOKIE, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'none',  // needed for cross-origin iframe
+      maxAge: 300,        // 5 minutes — matches JWT expiry
+      path: '/',
+    });
+    response.headers.set('Content-Security-Policy', \`frame-ancestors \${allowedOrigins}\`);
+    response.headers.delete('X-Frame-Options');
+    response.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+    response.headers.set('x-showcase-auth', 'verified');
+    return response;
   }
 
-  // Verify JWT (jose checks signature + expiry automatically)
-  try {
-    const secret = new TextEncoder().encode(jwtSecret);
-    await jwtVerify(token, secret);
-  } catch (err) {
-    const reason = err instanceof Error ? err.message : 'invalid token';
-    console.warn('[showcase-middleware] blocked:', { reason, url: url.pathname });
-    return new Response(BLOCKED_HTML, { status: 403, headers: { 'Content-Type': 'text/html' } });
+  // Check 2: auth cookie (subsequent requests — sub-routes, assets, _next bundles)
+  const cookieToken = request.cookies.get(AUTH_COOKIE)?.value;
+  if (cookieToken) {
+    try {
+      await jwtVerify(cookieToken, secret);
+      const allowedOrigins = process.env.ALLOWED_ORIGINS ?? "'self'";
+      const response = NextResponse.next();
+      response.headers.set('Content-Security-Policy', \`frame-ancestors \${allowedOrigins}\`);
+      response.headers.delete('X-Frame-Options');
+      return response;
+    } catch {
+      // Cookie expired — fall through to blocked
+    }
   }
 
-  // Token is valid — set CSP and allow iframe embedding
-  const allowedOrigins = process.env.ALLOWED_ORIGINS ?? "'self'";
-  const response = NextResponse.next();
-  response.headers.set('Content-Security-Policy', \`frame-ancestors \${allowedOrigins}\`);
-  // Remove X-Frame-Options (Next.js sets DENY by default) — CSP frame-ancestors takes precedence
-  response.headers.delete('X-Frame-Options');
-  // Prevent edge caching of authenticated responses
-  response.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
-  response.headers.set('x-showcase-auth', 'verified');
-  return response;
+  // No valid token or cookie — blocked
+  console.warn('[showcase-middleware] blocked:', { reason: 'no valid token or session', url: url.pathname });
+  return new Response(BLOCKED_HTML, { status: 403, headers: { 'Content-Type': 'text/html' } });
 }
 
 const BLOCKED_HTML = \`<!DOCTYPE html>
