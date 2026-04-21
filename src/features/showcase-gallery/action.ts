@@ -70,6 +70,7 @@ export async function fetchAllShowcases(): Promise<Result<RawShowcaseUpload[], E
 
     const session = await getSession();
     const currentUserId = session?.userId ?? null;
+    console.debug('[showcase-gallery] fetchAll session:', { currentUserId, email: session?.email });
 
     const rows = await db
       .select({
