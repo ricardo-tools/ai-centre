@@ -62,8 +62,8 @@ export async function requestOtp(email: string): Promise<Result<void, Validation
 
       if (invitation && invitation.status === 'pending') {
         assignRoleId = invitation.roleId;
-      } else if (process.env.ADMIN_EMAIL && normalizedEmail === process.env.ADMIN_EMAIL.toLowerCase()) {
-        // Auto-promote configured admin email
+      } else if (process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL.toLowerCase().split(',').map(e => e.trim()).includes(normalizedEmail)) {
+        // Auto-promote configured admin email(s) — comma-separated
         const [adminRole] = await db
           .select()
           .from(roles)

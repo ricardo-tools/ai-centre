@@ -65,6 +65,22 @@ export async function POST(request: NextRequest) {
   const input = validation.value;
   const db = getDb();
 
+  // Guard: flow skills are admin-only — no one else can publish slugs starting with "flow"
+  const isFlowSkill = input.slug === 'flow' || input.slug.startsWith('flow-');
+  if (isFlowSkill) {
+    const { users, roles } = await import('@/platform/db/schema');
+    const [userRow] = await db.select({ roleId: users.roleId }).from(users).where(eq(users.id, userId)).limit(1);
+    if (userRow?.roleId) {
+      const [role] = await db.select({ slug: roles.slug }).from(roles).where(eq(roles.id, userRow.roleId)).limit(1);
+      if (role?.slug !== 'admin') {
+        console.warn('[skills-publish] non-admin attempted to publish flow skill', { slug: input.slug, userId });
+        return NextResponse.json({ error: 'forbidden', message: 'Only administrators can publish flow skills' }, { status: 403 });
+      }
+    } else {
+      return NextResponse.json({ error: 'forbidden', message: 'Only administrators can publish flow skills' }, { status: 403 });
+    }
+  }
+
   // Quota check — count user's community skills
   const [quotaRow] = await db.select({ skillLimit: userQuotas.skillLimit }).from(userQuotas).where(eq(userQuotas.userId, userId)).limit(1);
   const skillLimit = quotaRow?.skillLimit ?? 5000; // default if no quota row
