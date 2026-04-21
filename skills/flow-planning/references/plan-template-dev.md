@@ -74,12 +74,15 @@ Checkpoint → .claude/.strategic-context/ → compact → re-read plan.
 **Status:** Not started | In progress | Complete
 **Tier:** Foundation | New Capability | Extension
 **Depends on:** Chapter X
+**Model:** [optional — only set if the executor should override auto-selection. Values: opus | sonnet | haiku]
 **User can:** [One sentence — what's testable in the browser after this chapter]
 
 ## Goal
 
 [One paragraph: what this chapter delivers and how you know it's done.]
 ```
+
+Note: `Model` is optional. If omitted, the executor auto-selects based on tier and complexity (see `/flow execute-plan` rules).
 
 ---
 

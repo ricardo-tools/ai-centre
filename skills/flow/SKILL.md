@@ -300,11 +300,17 @@ If no action is given, list the available actions with a one-line description of
 2. Read the plan's master file and LOG.md to determine which chapters are pending.
 3. For each pending chapter, in dependency order:
    a. Read the chapter file.
-   b. **Dispatch one subagent** to implement the chapter. Always one subagent per chapter — no exceptions. The subagent receives the full chapter file, relevant codebase context, and follows whatever methodology the chapter defines.
-   c. When the subagent completes, verify the output (types, tests, build).
-   d. Update LOG.md: mark chapter done, record notes.
-   e. Update `plan.md`: mark chapter status.
-   f. Proceed to the next chapter.
+   b. **Select model** for the subagent:
+      - If the chapter has a `**Model:**` field, use that (explicit override).
+      - Otherwise, auto-select:
+        - **opus** — Foundation tier, new architecture, security-sensitive code, complex multi-layer features, anything where getting it wrong is expensive.
+        - **sonnet** — New Capability and Extension tier, standard feature work, modifications to existing patterns, API routes following conventions, UI matching existing widgets, test writing requiring business logic understanding.
+        - **haiku** — Mechanical execution only: running tests/builds, file copying/templating, doc/log updates, seed generation, simple validation.
+   c. **Dispatch one subagent** with the selected model to implement the chapter. Always one subagent per chapter — no exceptions. The subagent receives the full chapter file, relevant codebase context, and follows whatever methodology the chapter defines.
+   d. When the subagent completes, verify the output (types, tests, build).
+   e. Update LOG.md: mark chapter done, record notes.
+   f. Update `plan.md`: mark chapter status.
+   g. Proceed to the next chapter.
 4. If `instructions` are provided (e.g. "skip tests", "only chapters 0-3"), apply them. Instructions override default behaviour but not safety guardrails.
 5. After all chapters complete, execute the closing chapter if one exists.
 
