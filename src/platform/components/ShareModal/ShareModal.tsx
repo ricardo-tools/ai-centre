@@ -22,6 +22,7 @@ import {
   grantAccess,
   revokeAccess,
   createLink,
+  createStandaloneLink,
   revokeLink,
   type ShareEntry,
   type ResourceType,
@@ -37,6 +38,8 @@ interface ShareModalProps {
   isOwner?: boolean;
   currentVisibility?: Visibility;
   onVisibilityChange?: (v: Visibility) => void;
+  /** For showcases with a Vercel deployment — enables standalone link option */
+  hasDeployment?: boolean;
 }
 
 // ── Constants ───────────────────────────────────────────────────────
@@ -79,6 +82,7 @@ export function ShareModal({
   isOwner = true,
   currentVisibility = 'public',
   onVisibilityChange,
+  hasDeployment = false,
 }: ShareModalProps) {
   const [shares, setShares] = useState<ShareEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -101,6 +105,12 @@ export function ShareModal({
   const [creatingLink, setCreatingLink] = useState(false);
   const [createdLinkUrl, setCreatedLinkUrl] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Standalone link (showcase only)
+  const [standaloneExpiry, setStandaloneExpiry] = useState(168);
+  const [creatingStandalone, setCreatingStandalone] = useState(false);
+  const [standaloneUrl, setStandaloneUrl] = useState<string | null>(null);
+  const [standaloneCopied, setStandaloneCopied] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -230,6 +240,26 @@ export function ShareModal({
       setTimeout(() => setLinkCopied(false), 2000);
     });
   }, []);
+
+  // ── Create standalone link (showcase only) ────────────────────────
+
+  const handleCreateStandalone = useCallback(async () => {
+    setCreatingStandalone(true);
+    setStandaloneUrl(null);
+    const result = await createStandaloneLink(resourceId, standaloneExpiry);
+    if (result.ok) {
+      setStandaloneUrl(result.value.url);
+    }
+    setCreatingStandalone(false);
+  }, [resourceId, standaloneExpiry]);
+
+  const handleCopyStandalone = useCallback(() => {
+    if (!standaloneUrl) return;
+    navigator.clipboard.writeText(standaloneUrl).then(() => {
+      setStandaloneCopied(true);
+      setTimeout(() => setStandaloneCopied(false), 2000);
+    });
+  }, [standaloneUrl]);
 
   // ── Render ────────────────────────────────────────────────────────
 
@@ -498,6 +528,64 @@ export function ShareModal({
                   }}
                 >
                   {linkCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Standalone link (showcase with deployment only) */}
+        {canManage && hasDeployment && resourceType === 'showcase' && (
+          <div>
+            <h4 style={sectionTitleStyle}>Standalone link</h4>
+            <p style={{ fontSize: 12, color: 'var(--color-text-muted)', margin: '0 0 12px', lineHeight: 1.5 }}>
+              Opens the showcase full screen — no AI Centre, no login required. Share with anyone.
+            </p>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+              <select
+                value={standaloneExpiry}
+                onChange={e => setStandaloneExpiry(Number(e.target.value))}
+                style={{ ...inputStyle, padding: '6px 10px' }}
+              >
+                {EXPIRY_OPTIONS.map(opt => (
+                  <option key={opt.hours} value={opt.hours}>{opt.label}</option>
+                ))}
+              </select>
+              <button
+                onClick={handleCreateStandalone}
+                disabled={creatingStandalone}
+                style={{
+                  padding: '8px 16px', borderRadius: 6, border: '1px solid var(--color-border)',
+                  background: 'var(--color-surface)', color: 'var(--color-text-body)',
+                  fontSize: 13, fontWeight: 600, fontFamily: 'inherit',
+                  cursor: creatingStandalone ? 'not-allowed' : 'pointer', opacity: creatingStandalone ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {creatingStandalone ? <SpinnerGap size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <LinkIcon size={14} />}
+                Generate
+              </button>
+            </div>
+            {standaloneUrl && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 10px', borderRadius: 6, background: 'var(--color-success-muted)', border: '1px solid var(--color-success)',
+              }}>
+                <input
+                  type="text" value={standaloneUrl} readOnly
+                  style={{ ...inputStyle, flex: 1, border: 'none', background: 'transparent', padding: 0, fontSize: 11, color: 'var(--color-text-body)' }}
+                  onClick={e => (e.target as HTMLInputElement).select()}
+                />
+                <button
+                  onClick={handleCopyStandalone}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                    color: standaloneCopied ? 'var(--color-success)' : 'var(--color-primary)',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    fontSize: 12, fontWeight: 600, fontFamily: 'inherit', flexShrink: 0,
+                  }}
+                >
+                  {standaloneCopied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
                 </button>
               </div>
             )}

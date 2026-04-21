@@ -209,6 +209,42 @@ export async function createLink(
   return Ok({ token, shareId });
 }
 
+// ── Create Standalone Showcase Link ──────────────────────────────────
+
+export async function createStandaloneLink(
+  showcaseId: string,
+  expiresInHours: number = 168,
+): Promise<Result<{ url: string }, ValidationError | ForbiddenError | NotFoundError>> {
+  const auth = await requireAuth();
+  if (!auth.ok) return auth;
+
+  if (!hasDb) return Err(new ValidationError('noDb', 'Database not available'));
+
+  const { showcaseUploads } = await import('@/platform/db/schema');
+  const { eq: eqOp } = await import('drizzle-orm');
+  const db = getDb();
+
+  // Get the deploy URL
+  const [showcase] = await db.select({
+    userId: showcaseUploads.userId,
+    deployUrl: showcaseUploads.deployUrl,
+    deployStatus: showcaseUploads.deployStatus,
+  }).from(showcaseUploads)
+    .where(eqOp(showcaseUploads.id, showcaseId))
+    .limit(1);
+
+  if (!showcase) return Err(new NotFoundError('Showcase', showcaseId));
+  if (!showcase.deployUrl || showcase.deployStatus !== 'ready') {
+    return Err(new ValidationError('notDeployed', 'Showcase is not deployed yet'));
+  }
+
+  const { signStandaloneShowcaseUrl } = await import('@/platform/lib/showcase-token');
+  const url = await signStandaloneShowcaseUrl(showcase.deployUrl, expiresInHours);
+
+  console.info('[sharing] standalone link created', { showcaseId, expiresInHours });
+  return Ok({ url });
+}
+
 // ── Revoke Share Link ────────────────────────────────────────────────
 
 export async function revokeLink(shareId: string): Promise<Result<void, ForbiddenError>> {

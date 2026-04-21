@@ -24,3 +24,25 @@ export async function signShowcaseUrl(deployUrl: string): Promise<string> {
   url.searchParams.set('token', token);
   return url.toString();
 }
+
+/**
+ * Generate a standalone share URL for a showcase.
+ * Points directly at the Vercel deployment — no AI Centre chrome.
+ * Longer-lived token (matches the share link expiry).
+ */
+export async function signStandaloneShowcaseUrl(
+  deployUrl: string,
+  expiresInHours: number = 168, // 7 days default
+): Promise<string> {
+  const expiry = expiresInHours > 0 ? `${expiresInHours}h` : '365d'; // "never" = 1 year
+
+  const token = await new SignJWT({ url: deployUrl, standalone: true })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime(expiry)
+    .setIssuedAt()
+    .sign(getShowcaseSecret());
+
+  const url = new URL(deployUrl);
+  url.searchParams.set('token', token);
+  return url.toString();
+}

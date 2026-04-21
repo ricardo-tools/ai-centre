@@ -876,6 +876,7 @@ export function ShowcaseViewerWidget({ showcase, signedDeployUrl, sharePermissio
         isOwner={!!isOwner}
         currentVisibility={currentVisibility}
         onVisibilityChange={setCurrentVisibility}
+        hasDeployment={deployStatus === 'ready' && !!showcase.deployUrl}
       />
 
       {/* ── Fullscreen overlay (portaled to body to escape overflow context) ── */}
