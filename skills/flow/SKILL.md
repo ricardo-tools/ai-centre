@@ -116,7 +116,7 @@ Activated per project in CLAUDE.md.
 
 ## Commands
 
-Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`, `showcase`, `share`.
+Usage: `/flow <action>` — where action is one of: `continue`, `plan`, `status`, `research`, `audit`, `park`, `execute-plan`, `prototype`, `bootstrap`, `login`, `logout`, `publish`, `rollback`, `update`, `showcase`, `share`.
 
 If no action is given, list the available actions with a one-line description of each.
 
@@ -566,6 +566,66 @@ To **revoke** access: DELETE `/api/shares` (named user) or DELETE `/api/shares/l
 To **list** who has access: GET `/api/shares?resourceType=...&resourceId=...`
 
 **Done when:** The share is confirmed and the user has the link or confirmation of the named share.
+
+---
+
+### `/flow prototype <description>`
+
+**Trigger:** User types `/flow prototype <description>` or asks to prototype, explore, or spike a UI idea.
+
+**Flow:**
+
+1. **Scaffold check:** If `prototypes/package.json` does NOT exist, bootstrap the prototype viewer app first:
+   - Copy `${CLAUDE_SKILL_DIR}/../flow-prototype/templates/prototype-viewer/` to `./prototypes/`
+   - Run `cd prototypes && npm install`
+   - Verify the dev server starts (`npm run dev` on :4242), then stop it.
+   - Tell the user the scaffold is ready.
+2. Delegate to `flow-prototype` skill for the prototype workflow:
+   - Create project folder under `prototypes/projects/<slug>/`
+   - Write `project.json`, `brief.md`, `decisions.md`
+   - Dispatch 3 parallel subagents (Strict, Adaptive, Creative)
+   - Each produces a prototype under a randomly named folder
+   - Report results to user
+3. User reviews in the prototype viewer app (localhost:4242).
+
+**References:** `flow-prototype`
+
+**Done when:** 3 prototypes exist under the project folder and the user has been told how to review them.
+
+---
+
+### `/flow prototype iterate <project> <prototype-name> <feedback>`
+
+**Trigger:** User types `/flow prototype iterate` or picks a winner and gives feedback.
+
+**Flow:**
+
+1. Delegate to `flow-prototype` skill.
+2. Read the winner's `prototype.json` to determine its agent type (strict/adaptive/creative).
+3. Dispatch ONLY that agent with the winner's code as base + the feedback.
+4. New prototype folder created (new funny name, version tag incremented).
+5. Previous versions stay — nothing is deleted.
+
+**References:** `flow-prototype`
+
+**Done when:** A new prototype folder exists with the iterated version.
+
+---
+
+### `/flow prototype redesign <project> <feedback>`
+
+**Trigger:** User explicitly asks for fresh takes, a redesign, or "try all three again".
+
+**Flow:**
+
+1. Delegate to `flow-prototype` skill.
+2. ALL 3 agents dispatched with the current best as base + the feedback.
+3. Each applies their agent personality to the feedback, not to the base.
+4. 3 new prototype folders, version tags incremented.
+
+**References:** `flow-prototype`
+
+**Done when:** 3 new prototypes exist and the user has been told how to review them.
 
 ---
 

@@ -111,6 +111,12 @@ input:focus, textarea:focus, select:focus {
   --color-comp-fuchsia: #C026D3;
   --color-comp-fuchsia-muted: #FAE8FF;
 
+  /* Section alternating background — pale lavender in light mode */
+  --color-section-alt: #121948;
+  --color-section-alt-heading: #FFFFFF;
+  --color-section-alt-body: #C7C9E0;
+  --color-section-alt-muted: #8B8DA8;
+
   /* Gradients */
   --gradient-warm: linear-gradient(135deg, #FF5A28, #E11D48);
   --gradient-cool: linear-gradient(135deg, #1462D2, #0D9488);
@@ -166,6 +172,12 @@ input:focus, textarea:focus, select:focus {
   --color-comp-sky-muted: #082F49;
   --color-comp-fuchsia: #E879F9;
   --color-comp-fuchsia-muted: #4A044E;
+
+  /* Section alternating background — keep charcoal in dark mode */
+  --color-section-alt: var(--nm-surface-1);
+  --color-section-alt-heading: var(--nm-text-primary);
+  --color-section-alt-body: var(--nm-text-secondary);
+  --color-section-alt-muted: var(--nm-text-muted);
 
   /* Gradients */
   --gradient-warm: linear-gradient(135deg, #FF5A28, #FB7185);

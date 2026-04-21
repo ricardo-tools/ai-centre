@@ -1,0 +1,16 @@
+services:
+  prototype-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4242:4242"
+    volumes:
+      # Persist prototype projects and database across container restarts
+      - ./projects:/app/projects
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=development
+      # Override these for Turso cloud in production
+      # - TURSO_DATABASE_URL=libsql://your-db.turso.io
+      # - TURSO_AUTH_TOKEN=your-token

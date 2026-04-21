@@ -1,0 +1,29 @@
+{
+  "name": "prototypes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "tsx scripts/setup-db.ts",
+    "dev": "next dev --port 4242 --webpack",
+    "prebuild": "tsx scripts/setup-db.ts",
+    "build": "next build --webpack",
+    "start": "next start",
+    "db:setup": "tsx scripts/setup-db.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.2",
+    "@phosphor-icons/react": "^2.1.10",
+    "next": "16.2.2",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tsx": "^4.21.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5"
+  }
+}

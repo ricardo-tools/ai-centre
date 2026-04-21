@@ -1,89 +1,131 @@
 ---
 name: flow-prototype
-description: >
-  Lightweight prototyping workflow. Prototypes live in /prototypes, use the same
-  stack as the main app, require no tests or planning. Initial creation dispatches
-  three agents (Strict, Adaptive, Creative) for divergent exploration. Iterations
-  use only the winning agent unless the user requests a redesign. Activate when the
-  user asks to prototype, explore a UI idea, or create a design spike.
+description: Companion skill for flow. Lightweight prototyping workflow — dispatches three agents (Strict, Adaptive, Creative) for divergent UI/UX exploration. Iterations use only the winning agent. Ships a complete prototype viewer app template. Invoked via /flow prototype.
 ---
 
 # Flow Prototype
 
-Prototyping workflow for exploring UI/UX ideas outside the main app's dev methodology. Fast, creative, no ceremony.
+Companion skill for `flow`. Defines the prototyping methodology, agent philosophies, and the prototype viewer scaffold. Invoked by the flow router — not directly by the user.
 
-## When to activate
+**Invocation:** `/flow prototype <description>` (routed from flow)
 
-- User asks to prototype, explore, or spike a UI idea
-- User says "let's try some designs for..." or "prototype this"
-- User invokes `/prototype`
+---
 
-## Reference
+## Scaffold Template
 
-Read `prototypes/PROTOTYPE_REFERENCE.md` for app structure, navigation, data model, and agent philosophies.
+The complete prototype viewer app lives at `templates/prototype-viewer/` inside this skill directory.
+
+**What it includes:**
+- Next.js App Router with Webpack (port 4242)
+- SQLite via @libsql/client (local file in dev, Turso in prod)
+- Auto-DB-creation via `predev` script
+- Docker Compose for portable local dev
+- 7-layer architecture (domain, ACL, widgets, screens, renderer, components, hooks)
+- 3 themes (Light, Dark, Night) with full CSS custom property system
+- Review mode with pin feedback system (click-to-pin, threads, resolve)
+- Floating toolbar (live shell switching, review mode toggle)
+- User identity (localStorage, prompted on first review)
+- An example project (`workflow-matrix`) as reference
+
+**Scaffold trigger:** `/flow prototype` checks if `prototypes/package.json` exists before delegating. If missing, it copies the template and runs `npm install`.
+
+**Required companion skills for prototyping:** When the prototype viewer is scaffolded, the following skills should be present in the project (they define the rules agents follow when building prototypes):
+
+| Skill | Role in prototyping |
+|---|---|
+| `brand-design-system` | Color palette, typography, theming rules — agents follow this |
+| `brand-tokens-reference` | Actual token values, CSS copy-paste blocks |
+| `design-foundations` | Visual hierarchy, spacing, alignment, negative space |
+| `frontend-architecture` | 7-layer architecture that the viewer app follows |
+| `app-layout` | Shell layout patterns, grid configs |
+| `creative-toolkit` | Asset libraries, animation engines, data viz |
+| `responsiveness` | Responsive breakpoints, mobile-first patterns |
+| `interaction-motion` | Animation principles (when/how to animate) |
+| `content-design` | Microcopy, labels, error messages |
+| `user-experience` | UX principles for building usable prototypes |
+| `coding-standards` | Code quality rules agents follow |
+| `nextjs-app-router-turbopack` | Next.js patterns (the viewer app stack) |
+
+If any of these are missing from the project's `.claude/skills/`, warn the user — agents will produce lower-quality prototypes without them.
+
+---
+
+## Follow Project-Level Code Practices
+
+Before creating or iterating on any prototype, **read the project's CLAUDE.md** (at `prototypes/CLAUDE.md`) to determine the code practices that apply. Follow whatever it specifies — architecture layers, file organization, styling rules, naming conventions.
+
+If the CLAUDE.md is **missing or ambiguous**, stop and ask the user which practices should apply. Common questions:
+- Single `page.tsx` file or split across multiple files (components, hooks, types, mock data)?
+- If split, do they live inside the prototype folder or follow the full project architecture?
+
+Once clarified, brief all agents with the resolved approach so they produce structurally consistent output.
+
+---
 
 ## Workflow
 
+### New Project (3-agent dispatch)
+
 ```
-1. CREATE OR SELECT PROJECT
-   - If new: create project folder under prototypes/projects/<slug>/
-   - Write project.json (name, description, audit fields)
-   - Write brief.md from the user's request (goal, flow, constraints, context)
-   - If existing: read brief.md to understand the request
-
-2. DISPATCH AGENTS (parallel)
-   - Dispatch 3 subagents: Strict, Adaptive, Creative
-   - Each reads: brief.md, main app's current stack/architecture, design tokens
-   - Each produces: a page.tsx + prototype.json under a randomly named folder
-   - Agents work independently — no coordination between them
-
-3. PRESENT
-   - Report the 3 prototype names + agent types to the user
-   - User reviews in the prototype app (npm run dev in /prototypes)
-   - User leaves comments, requests iterations
-
-4. ITERATE (on request — single agent)
-   - User picks a winner and provides feedback
-   - Read the winner's prototype.json to determine its agent type
-   - Dispatch ONLY that agent with the winner's code as base + the feedback
-   - 1 new prototype folder (new funny name, version tag incremented)
-   - Previous versions stay — nothing is deleted
-
-5. REDESIGN (explicit request only)
-   - User says "redesign", "fresh takes", "try all three again", or similar
-   - ALL 3 agents dispatched with the current best as base (same as old Step 4)
-   - Each applies their personality to the feedback/changes, not to the base
-   - 3 new prototype folders, version tags incremented
-   - Only triggered by explicit user instruction — never assumed
+1. Create project folder under prototypes/projects/<slug>/
+2. Write project.json (name, description, createdBy, createdAt, updatedBy, updatedAt)
+3. Write brief.md from the user's request (goal, flow, constraints, context)
+4. Write decisions.md (empty template — always create so the tab appears)
+5. Dispatch 3 subagents in parallel: Strict, Adaptive, Creative
+   - Each reads: brief.md, prototypes/CLAUDE.md, design tokens (globals.css)
+   - Each produces: page.tsx + prototype.json under a randomly named folder
+   - Agents work independently — no coordination
+6. Report the 3 prototype names + agent types to the user
+7. User reviews in the prototype viewer (localhost:4242)
 ```
+
+### Iterate (single agent)
+
+```
+1. Read the winner's prototype.json to determine its agent type
+2. Dispatch ONLY that agent with the winner's code as base + the feedback
+3. New prototype folder (new funny name, version tag incremented)
+4. Previous versions stay — nothing is deleted
+```
+
+### Redesign (3-agent redo)
+
+```
+1. ALL 3 agents dispatched with the current best as base + the feedback
+2. Each applies their personality to the feedback/changes, not to the base
+3. 3 new prototype folders, version tags incremented
+4. Only triggered by explicit user instruction — never assumed
+```
+
+---
 
 ## Agent Prompts
 
 All agents receive the same base context:
 
 ```
-You are building a UI prototype for the Sales Enablement Hub.
+You are building a UI prototype.
 
 PROJECT BRIEF: [contents of brief.md]
 
-MAIN APP STACK: [read from webapp/package.json — framework, UI libs, fonts]
-DESIGN TOKENS: [read from webapp/src/styles/tokens.css]
-APP SHELL: The prototype renders inside AppShellReplica (TopBar with nav tabs).
-SHELL CONTEXT: [from brief.md — which route/tab is active]
-MOCK DATA: Import from @/lib/mock-data — don't hardcode data inline.
+DESIGN TOKENS: [read from prototypes/app/globals.css]
+APP SHELL: The prototype renders inside an app shell replica (EzyCollect, NewWorkflows, SimplyPaid, or bare).
+SHELL CONTEXT: [from brief.md — which shell and route/tab is active]
+CODE PRACTICES: [resolved from prototypes/CLAUDE.md or user clarification]
 
 IMPORTANT — Prototypes are interactive experiences, not static mockups:
 - Build real flows: multi-step interactions, state transitions, progress indicators
-- Add animations and transitions (use the motion library from the main app stack)
+- Add animations and transitions
 - If the brief describes navigation between views, build that navigation
 - Hover states, loading states, success/error feedback — all should be present
 - The user should be able to walk through the entire flow as if it were real
-- Mock any async operations with realistic delays (setTimeout) so the flow feels authentic
+- Mock any async operations with realistic delays so the flow feels authentic
 
-Output may be a single page.tsx with internal state management for multi-step flows,
-or multiple components if the flow is complex. Use Client Components ('use client')
-for anything interactive. Use inline styles with CSS custom properties from the
-design system.
+FILE STRUCTURE: [resolved from CLAUDE.md or user — either single page.tsx, or split
+into multiple files within the prototype folder]
+
+Use Client Components ('use client') for anything interactive. Use inline styles
+with CSS custom properties from the design system.
 ```
 
 ### Strict Agent
@@ -119,60 +161,23 @@ layout, interaction, and visual design. The goal is to show what's possible,
 not what's safe.
 ```
 
+---
+
 ## Prototype Naming
 
 Generate random two-word funny names: adjective + noun. Examples: Turbo Falcon, Dizzy Panda, Cosmic Waffle, Neon Penguin, Mango Thunder, Lazy Kraken, Pixel Moose, Quantum Burrito.
 
 Slug format: `turbo-falcon`, `dizzy-panda`, etc.
 
-## Stack Sync
+---
 
-Before generating prototypes, verify the prototype app's dependencies match the main app:
-- Same Next.js version
-- Same React version
-- Same icon library (@phosphor-icons/react)
-- Same font (Jost + JetBrains Mono via next/font/google)
-- Tokens CSS copied from main app (or symlinked)
-
-## What this skill does NOT do
+## What This Skill Does NOT Do
 
 - No tests (no vitest, no playwright)
 - No planning methodology (no chapters, no TDD)
-- No database (all data mocked)
-- No auth (local only)
+- No database work (all prototype data is mocked)
+- No auth
 - No deployment
 - No code review gates
 
-## Commands
-
-### `/prototype <description>`
-
-Create a new project and generate 3 prototypes (strict, adaptive, creative).
-
-### `/prototype iterate <project> <prototype-name> <feedback>`
-
-Iterate on a winning prototype. Dispatches only the winner's agent type.
-One new prototype folder with the next version tag.
-
-### `/prototype redesign <project> <feedback>`
-
-Full 3-agent divergent exploration using the current best as base.
-Only use when the user explicitly asks for fresh takes or a redesign.
-
-### `/prototype guide <project> <prototype-name>`
-
-Generate an implementation guide for the winning prototype. The guide bridges prototype → production by documenting:
-
-1. **Flow overview** — step-by-step user journey
-2. **Widget decomposition** — map the prototype's monolithic page.tsx to widgets following frontend-architecture patterns (widget root + size variants + data hook). Include widget names, responsibilities, and composition tree.
-3. **Reusable components** — identify UI patterns that should be shared components in `platform/ui/` (e.g. combobox, multi-select, tag input, confirm dialog)
-4. **Critical implementation details** — document interactions that were hard to get right during prototyping (text selection edge cases, closure issues, DOM position mapping, etc.) with line references to the prototype code
-5. **Brand/token updates** — flag any colours, shadows, or typography used in the prototype that don't yet exist as semantic tokens in the design system. Reference the brand-tokens-reference skill.
-6. **Prototype code references** — all references point to `prototypes/projects/<project>/<prototype>/page.tsx` with line numbers
-
-Read these before generating:
-- The prototype's `page.tsx`
-- The project's `decisions.md` and `brief.md`
-- `frontend-architecture`, `clean-architecture`, `brand-design-system`, and `brand-tokens-reference` skills
-
-Output: `prototypes/projects/<project>/implementation-guide.md`
+This is fast, creative, no-ceremony prototyping. The prototype viewer app has its own database for comments/pins/reviews, but prototype *content* is always mocked.

@@ -7,7 +7,7 @@ import { ThemeSwitcher } from '@/platform/components/ThemeSwitcher';
 
 const SHELL_EXCLUDED_PATHS = ['/login', '/oauth/consent'];
 /** Pages that render inside the shell but need edge-to-edge layout (no content padding) */
-const FLUSH_LAYOUT_PATHS = ['/chat'];
+const FLUSH_LAYOUT_PATHS = ['/chat', '/'];
 
 export function ShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
